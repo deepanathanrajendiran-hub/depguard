@@ -13,8 +13,9 @@ artifacts precisely so that naming drift cannot silently mis-score trajectories 
 
 **One deliberate extension over the frozen spec:** `trajectory.schema.json` allows
 `system_variant: "deterministic_script"` (DECISIONS.md §3 lists only `single_agent | multi_agent`),
-because the three-arm ablation (docs/DEPGUARD_FULL_PLAN.md, D8) requires the deterministic-script
-arm to emit trajectories scored by the same verifier. Flagged in the schema's `$comment`.
+because the three-arm ablation (docs/DEPGUARD_V01_PLAN.md, D8) requires the deterministic
+semver-containment script arm to emit trajectories scored by the same verifier. Flagged in the
+schema's `$comment`.
 
 Consistency between these files is enforced by `tests/test_schemas.py` — any edit that breaks
 cross-registry agreement fails CI.

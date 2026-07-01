@@ -26,7 +26,7 @@ deterministic pipeline — and how would you even know?**
 
 🚧 **Day 1** (2026-07-01). Currently in the repo: the frozen design ([DECISIONS.md](DECISIONS.md)),
 the four normative schema registries ([schemas/](schemas/)), and the consistency test suite.
-Build plan: [docs/DEPGUARD_FULL_PLAN.md](docs/DEPGUARD_FULL_PLAN.md).
+Build plan: [docs/DEPGUARD_V01_PLAN.md](docs/DEPGUARD_V01_PLAN.md).
 
 **House rule: no metric appears in this README until the run that produced it exists.**
 Results (with CIs and an honest LIMITATIONS section — including the multi-agent verdict-flip count,
@@ -49,9 +49,11 @@ even if it is zero) land with the `v0.1` release.
 
 | Release | Contents | Target |
 |---|---|---|
-| `v0.1` | Micro-corpus (npm+PyPI), 6 tools, mechanical verifier, 25–30 golden trajectories, three-arm ablation with CIs, typed MCP server, OTel→Langfuse traces, merge-blocking CI eval gate | ~2026-07-15 |
-| `v0.2` | Full frozen corpus (all 4 ecosystems), real manifest parsers, golden set 40–60, calibrated LLM judge (outside the correctness path), prompt-injection red-team eval, online evals, adaptive model routing, cost/latency dashboards | ~2026-07-29 |
-| `v1.0` | `depguard-eval` on PyPI, Terraform module, technical writeup, OpenVEX export (stretch) | ~2026-08-12 |
+| `v0.1` | Micro-corpus (npm+PyPI), 6 tools, mechanical verifier, 25–30 golden trajectories, three-arm ablation with CIs, typed MCP server (stdio), OTel→Langfuse traces, merge-blocking CI eval gate | ~2026-07-14 |
+
+Post-`v0.1` work (full corpus, more ecosystems, injection rail + red-team eval, online evals, judge
+calibration, packaging, …) is a **gated, unscheduled backlog** — see
+[docs/DEPGUARD_BACKLOG.md](docs/DEPGUARD_BACKLOG.md). Nothing there gets a date until `v0.1` ships.
 
 ## License & data
 

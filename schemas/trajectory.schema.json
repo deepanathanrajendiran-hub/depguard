@@ -3,7 +3,7 @@
   "$id": "https://raw.githubusercontent.com/depguard/schemas/trajectory.schema.json",
   "title": "DepGuard Trajectory",
   "description": "One canonical Trajectory object per run (DECISIONS.md §3), persisted as JSONL in golden/trajectories/*.jsonl. Mirrors OTel GenAI spans 1:1 (§3.1). schema_version 1.0.0.",
-  "$comment": "system_variant carries 'deterministic_script' in addition to DECISIONS.md §3's two values: the three-arm ablation (DEPGUARD_FULL_PLAN.md, D8) requires the script arm to emit trajectories scored by the same verifier. This is the one deliberate extension over §3 and is flagged here rather than silently diverging.",
+  "$comment": "system_variant carries 'deterministic_script' in addition to DECISIONS.md §3's two values: the three-arm ablation (docs/DEPGUARD_V01_PLAN.md, D8) requires the deterministic semver-containment script arm to emit trajectories scored by the same verifier. This is the one deliberate extension over §3 and is flagged here rather than silently diverging.",
   "type": "object",
   "required": [
     "schema_version", "trajectory_id", "created_at", "system_variant", "model_route",
