@@ -1,0 +1,28 @@
+[project]
+name = "depguard"
+version = "0.1.0.dev0"
+description = "Dependency-CVE false-positive triage agent, measured under a 100%-mechanical oracle (three-arm ablation: deterministic script vs single-agent vs multi-agent)"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Deepanathan Rajendiran", email = "deepanathanrajendiran@gmail.com" }]
+keywords = ["llm-agents", "evaluation", "osv", "security", "dependency-scanning", "mcp"]
+dependencies = [
+    "jsonschema>=4.21",
+    "packaging>=24.0",
+    "semver>=3.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["depguard"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

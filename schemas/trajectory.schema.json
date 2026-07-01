@@ -1,0 +1,302 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/depguard/schemas/trajectory.schema.json",
+  "title": "DepGuard Trajectory",
+  "description": "One canonical Trajectory object per run (DECISIONS.md §3), persisted as JSONL in golden/trajectories/*.jsonl. Mirrors OTel GenAI spans 1:1 (§3.1). schema_version 1.0.0.",
+  "$comment": "system_variant carries 'deterministic_script' in addition to DECISIONS.md §3's two values: the three-arm ablation (DEPGUARD_FULL_PLAN.md, D8) requires the script arm to emit trajectories scored by the same verifier. This is the one deliberate extension over §3 and is flagged here rather than silently diverging.",
+  "type": "object",
+  "required": [
+    "schema_version", "trajectory_id", "created_at", "system_variant", "model_route",
+    "corpus_snapshot_id", "gold_ref", "otel", "input", "plan", "tool_calls",
+    "evidence", "verdicts", "final_answer"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "trajectory_id": { "type": "string", "minLength": 1, "description": "== gen_ai.conversation.id" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "system_variant": { "enum": ["single_agent", "multi_agent", "deterministic_script"] },
+    "model_route": { "type": "string" },
+    "corpus_snapshot_id": { "$ref": "#/$defs/corpusSnapshotId" },
+    "gold_ref": { "type": "string", "minLength": 1, "description": "sha256 of input — joins golden/expected/*.jsonl (DECISIONS.md §4.5); metrics fail loudly if no gold record matches" },
+    "otel": {
+      "type": "object",
+      "required": ["trace_id", "root_span_id"],
+      "additionalProperties": false,
+      "properties": {
+        "trace_id": { "type": "string" },
+        "root_span_id": { "type": "string" }
+      }
+    },
+    "input": {
+      "type": "object",
+      "required": ["manifest", "alerts"],
+      "additionalProperties": false,
+      "properties": {
+        "manifest": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["ecosystem", "name", "pinned_version", "purl"],
+            "additionalProperties": false,
+            "properties": {
+              "ecosystem": { "$ref": "#/$defs/ecosystem" },
+              "name": { "type": "string", "minLength": 1 },
+              "pinned_version": { "type": "string", "minLength": 1 },
+              "purl": { "type": ["string", "null"] }
+            }
+          }
+        },
+        "alerts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["alert_id", "ecosystem", "name", "pinned_version", "advisory_id", "source"],
+            "additionalProperties": false,
+            "properties": {
+              "alert_id": { "type": "string", "minLength": 1, "description": "deterministic join key across plan, tool_calls, evidence, verdicts (§3.1)" },
+              "ecosystem": { "$ref": "#/$defs/ecosystem" },
+              "name": { "type": "string", "minLength": 1 },
+              "pinned_version": { "type": "string", "minLength": 1 },
+              "advisory_id": { "type": "string", "pattern": "^(GHSA|CVE|OSV)-" },
+              "source": { "const": "scanner" }
+            }
+          }
+        }
+      }
+    },
+    "plan": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/planStep" }
+    },
+    "tool_calls": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/toolCall" }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          { "$ref": "#/$defs/evidenceOsv" },
+          { "$ref": "#/$defs/evidenceDepsDev" }
+        ]
+      }
+    },
+    "verdicts": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/verdict" }
+    },
+    "final_answer": {
+      "type": "object",
+      "required": ["verdicts_summary", "per_alert", "emitted_at"],
+      "additionalProperties": false,
+      "properties": {
+        "verdicts_summary": {
+          "type": "object",
+          "required": ["n_alerts", "n_true_positive", "n_false_positive"],
+          "additionalProperties": false,
+          "properties": {
+            "n_alerts": { "type": "integer", "minimum": 0 },
+            "n_true_positive": { "type": "integer", "minimum": 0 },
+            "n_false_positive": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "per_alert": {
+          "type": "array",
+          "items": { "type": "object" },
+          "$comment": "display-layer summaries; shape intentionally unpinned in v1.0.0 (§3 leaves it open)"
+        },
+        "emitted_at": { "type": "string", "format": "date-time" }
+      }
+    }
+  },
+  "$defs": {
+    "ecosystem": {
+      "enum": ["npm", "PyPI", "crates.io", "Go"],
+      "$comment": "corpus ecosystems only (DECISIONS.md §0.4 / §1.2); OSV canonical casing"
+    },
+    "corpusSnapshotId": {
+      "type": "string",
+      "pattern": "^depguard-corpus-\\d{4}-\\d{2}-\\d{2}-[0-9a-f]{12}$",
+      "$comment": "form: depguard-corpus-<YYYY-MM-DD>-<sha256[:12]> (DECISIONS.md §0.5)"
+    },
+    "planAction": {
+      "enum": ["plan", "parse_manifest", "retrieve_advisory", "resolve_versions", "check_containment", "compute_minimal_fixed", "cross_check_source", "emit_verdict"],
+      "$comment": "the ONLY legal PlanStep.action values (DECISIONS.md §0.2); ships as schemas/plan_action_tool_map.json"
+    },
+    "toolName": {
+      "enum": ["parse_manifest", "osv_query_package", "check_version_affected", "resolve_published_versions", "compute_minimal_fix", "crosscheck_second_source"],
+      "$comment": "the ONLY legal tool_name / gen_ai.tool.name values (DECISIONS.md §0.1)"
+    },
+    "planStep": {
+      "type": "object",
+      "required": ["step_index", "action", "alert_id", "rationale", "status", "produced_verdict_for"],
+      "additionalProperties": false,
+      "properties": {
+        "step_index": { "type": "integer", "minimum": 0 },
+        "action": { "$ref": "#/$defs/planAction" },
+        "alert_id": { "type": ["string", "null"], "description": "null = run-level control step (joins the single control group for plan-adherence, §4.1)" },
+        "rationale": { "type": "string" },
+        "status": { "enum": ["planned", "executed", "skipped"] },
+        "produced_verdict_for": { "type": ["string", "null"], "description": "which alert_id this step advanced to a verdict — makes action-advancement mechanically computable (§3.1)" }
+      }
+    },
+    "toolCall": {
+      "type": "object",
+      "required": ["tool_call_id", "span_id", "parent_span_id", "agent", "tool_name", "tool_type", "arguments", "result", "status", "started_at", "ended_at", "source", "corpus_snapshot_id"],
+      "additionalProperties": false,
+      "properties": {
+        "tool_call_id": { "type": "string", "minLength": 1, "description": "== gen_ai.tool.call.id" },
+        "span_id": { "type": "string" },
+        "parent_span_id": { "type": "string" },
+        "agent": { "enum": ["planner", "retriever", "tool_worker", "verifier"], "description": "== gen_ai.agent.name" },
+        "tool_name": { "$ref": "#/$defs/toolName" },
+        "tool_type": { "const": "function" },
+        "arguments": { "type": "object" },
+        "result": { "$ref": "#/$defs/envelope", "description": "the {ok,data,error} envelope stored verbatim (§3.1)" },
+        "status": { "enum": ["ok", "error"] },
+        "started_at": { "type": "string", "format": "date-time" },
+        "ended_at": { "type": "string", "format": "date-time" },
+        "source": { "enum": ["osv", "deps.dev", "local"], "description": "authoritative copy in the trajectory; MUST equal data.source_meta.source (§0.5)" },
+        "corpus_snapshot_id": { "$ref": "#/$defs/corpusSnapshotId" }
+      }
+    },
+    "envelope": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["ok", "data", "error"],
+          "additionalProperties": false,
+          "properties": {
+            "ok": { "const": true },
+            "data": { "type": "object" },
+            "error": { "type": "null" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["ok", "data", "error"],
+          "additionalProperties": false,
+          "properties": {
+            "ok": { "const": false },
+            "data": { "type": "null" },
+            "error": { "$ref": "#/$defs/envelopeError" }
+          }
+        }
+      ],
+      "$comment": "exactly two branches; tools never throw (DECISIONS.md §2.1)"
+    },
+    "envelopeError": {
+      "type": "object",
+      "required": ["code", "message", "retryable"],
+      "additionalProperties": false,
+      "properties": {
+        "code": { "enum": ["BAD_INPUT", "NOT_FOUND", "SNAPSHOT_READ_ERROR", "SNAPSHOT_MALFORMED", "RANGE_UNRESOLVABLE"] },
+        "message": { "type": "string" },
+        "retryable": { "type": "boolean", "$comment": "always false in corpus mode; typed boolean (not const) so a future live-mode can add transient codes without a schema break (§2.1)" }
+      }
+    },
+    "evidenceOsv": {
+      "type": "object",
+      "required": ["evidence_id", "alert_id", "tool_call_id", "source", "advisory_id", "withdrawn", "affected_package", "range_type", "range_events", "enumerated_versions", "references", "license", "attribution_url", "corpus_snapshot_id"],
+      "additionalProperties": false,
+      "properties": {
+        "evidence_id": { "type": "string", "minLength": 1 },
+        "alert_id": { "type": "string", "minLength": 1 },
+        "tool_call_id": { "type": "string", "minLength": 1 },
+        "source": { "const": "osv" },
+        "advisory_id": { "type": "string", "minLength": 1 },
+        "withdrawn": { "type": ["string", "null"], "description": "RFC3339 timestamp stored VERBATIM, null = active; bool derived only at Verdict (§1.5)" },
+        "affected_package": {
+          "type": "object",
+          "required": ["ecosystem", "name"],
+          "additionalProperties": false,
+          "properties": {
+            "ecosystem": { "$ref": "#/$defs/ecosystem" },
+            "name": { "type": "string", "minLength": 1 }
+          }
+        },
+        "range_type": { "enum": ["SEMVER", "ECOSYSTEM", "GIT"] },
+        "range_events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "minProperties": 1,
+            "maxProperties": 1,
+            "additionalProperties": false,
+            "properties": {
+              "introduced": { "type": "string" },
+              "fixed": { "type": "string" },
+              "last_affected": { "type": "string" },
+              "limit": { "type": "string" }
+            },
+            "$comment": "each event carries EXACTLY ONE key — iterate and switch on the key, never pair positionally (§1.1)"
+          }
+        },
+        "enumerated_versions": {
+          "oneOf": [
+            { "type": "array", "items": { "type": "string" } },
+            { "type": "null" }
+          ]
+        },
+        "references": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["type", "url"],
+            "additionalProperties": false,
+            "properties": {
+              "type": { "type": "string" },
+              "url": { "type": "string" }
+            }
+          }
+        },
+        "license": { "enum": ["CC0-1.0", "CC-BY-4.0"] },
+        "attribution_url": { "type": ["string", "null"] },
+        "corpus_snapshot_id": { "$ref": "#/$defs/corpusSnapshotId", "$comment": "MUST equal traj.corpus_snapshot_id — verifier refuses to score on mismatch (§6)" }
+      }
+    },
+    "evidenceDepsDev": {
+      "type": "object",
+      "required": ["evidence_id", "alert_id", "tool_call_id", "source", "advisory_id", "checked_version", "second_source_advisory_keys", "per_version_affected_bool", "published_versions", "license", "attribution_url", "corpus_snapshot_id"],
+      "additionalProperties": false,
+      "properties": {
+        "evidence_id": { "type": "string", "minLength": 1 },
+        "alert_id": { "type": "string", "minLength": 1 },
+        "tool_call_id": { "type": "string", "minLength": 1 },
+        "source": { "const": "deps.dev" },
+        "advisory_id": { "type": ["string", "null"] },
+        "checked_version": { "type": "string", "minLength": 1 },
+        "second_source_advisory_keys": { "type": "array", "items": { "type": "string", "pattern": "^GHSA-" } },
+        "per_version_affected_bool": { "type": "boolean" },
+        "published_versions": { "type": "array", "items": { "type": "string" } },
+        "license": { "const": "CC-BY-4.0", "$comment": "ALL deps.dev-derived rows are CC-BY-4.0, enforced at row level (§1.7)" },
+        "attribution_url": { "type": "string" },
+        "corpus_snapshot_id": { "$ref": "#/$defs/corpusSnapshotId" }
+      }
+    },
+    "verdict": {
+      "type": "object",
+      "required": ["alert_id", "affected", "minimal_fixed_version", "withdrawn", "cvss3_score", "evidence_ids", "source_agreement", "reconciliation_note"],
+      "additionalProperties": false,
+      "properties": {
+        "alert_id": { "type": "string", "minLength": 1 },
+        "affected": { "type": "boolean", "description": "actionable affected — true iff raw contained AND not withdrawn; the withdrawn override lives HERE, not in the tool (§3.3/§5 P1)" },
+        "minimal_fixed_version": { "type": ["string", "null"], "description": "null whenever withdrawn==true (withdrawn_non_actionable, §2.4 tool 5)" },
+        "withdrawn": { "type": "boolean", "description": "DERIVED bool: evidence.withdrawn != null (§1.5)" },
+        "cvss3_score": { "type": ["number", "null"], "description": "display-only, never scored (§1.6)" },
+        "evidence_ids": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "source_agreement": { "enum": ["agree", "disagree", "single_source"], "description": "computed on RAW pre-withdrawn-override containment (§0.3)" },
+        "reconciliation_note": { "type": "string" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "source_agreement": { "const": "disagree" } } },
+          "then": { "properties": { "reconciliation_note": { "minLength": 1 } } },
+          "else": { "properties": { "reconciliation_note": { "const": "" } } }
+        }
+      ],
+      "$comment": "reconciliation_note MUST be non-empty iff source_agreement=='disagree' (§3.3) — enforced both directions"
+    }
+  }
+}

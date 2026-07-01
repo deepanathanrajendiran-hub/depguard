@@ -1,0 +1,51 @@
+{
+  "$comment": "NORMATIVE (DECISIONS.md §0.4). OSV ecosystem casing is authoritative everywhere on the OSV side; deps.dev system strings are lowercase. Raw string comparison on ecosystem/system is FORBIDDEN — resolve through this map. scoring_tier is ecosystem-keyed per DECISIONS.md §5(c).",
+  "schema_version": "1.0.0",
+  "corpus_ecosystems": ["npm", "PyPI", "crates.io", "Go"],
+  "minfix_ecosystems": ["npm", "crates.io", "Go"],
+  "ecosystems": {
+    "npm": {
+      "depsdev_system": "npm",
+      "comparator": "semver",
+      "in_corpus": true,
+      "scoring_tier": "membership_and_minfix"
+    },
+    "PyPI": {
+      "depsdev_system": "pypi",
+      "comparator": "pep440",
+      "in_corpus": true,
+      "scoring_tier": "membership_only",
+      "notes": "PEP440, not semver2 — membership-only, NEVER minimal-fix, regardless of OSV range type (DECISIONS.md §1.2)"
+    },
+    "crates.io": {
+      "depsdev_system": "cargo",
+      "comparator": "semver_strict",
+      "in_corpus": true,
+      "scoring_tier": "membership_and_minfix"
+    },
+    "Go": {
+      "depsdev_system": "go",
+      "comparator": "go_module_semver",
+      "in_corpus": true,
+      "scoring_tier": "membership_and_minfix"
+    },
+    "Maven": {
+      "depsdev_system": "maven",
+      "comparator": null,
+      "in_corpus": false,
+      "excluded_reason": "NO_VETTED_COMPARATOR"
+    },
+    "RubyGems": {
+      "depsdev_system": "rubygems",
+      "comparator": null,
+      "in_corpus": false,
+      "excluded_reason": "NO_VETTED_COMPARATOR"
+    },
+    "NuGet": {
+      "depsdev_system": "nuget",
+      "comparator": null,
+      "in_corpus": false,
+      "excluded_reason": "NO_VETTED_COMPARATOR"
+    }
+  }
+}

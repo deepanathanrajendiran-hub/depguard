@@ -1,0 +1,8 @@
+{
+  "parse_manifest":             ["ecosystem", "manifest_filename"],
+  "osv_query_package":          ["ecosystem", "name"],
+  "check_version_affected":     ["ecosystem", "name", "version", "osv_record.id"],
+  "resolve_published_versions": ["ecosystem", "name"],
+  "compute_minimal_fix":        ["ecosystem", "name", "current_version", "osv_record.id"],
+  "crosscheck_second_source":   ["ecosystem", "name", "version", "osv_verdict.advisory_id"]
+}

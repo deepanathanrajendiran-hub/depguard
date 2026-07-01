@@ -1,0 +1,57 @@
+{
+  "$comment": "NORMATIVE (DECISIONS.md §0.2). Single source of truth for BOTH the plan-adherence metric's alphabet AND the tool-selection metric's alphabet. Every PlanAction maps to exactly one tool, plus the two non-tool control actions (plan, emit_verdict).",
+  "schema_version": "1.0.0",
+  "tool_names": [
+    "parse_manifest",
+    "osv_query_package",
+    "check_version_affected",
+    "resolve_published_versions",
+    "compute_minimal_fix",
+    "crosscheck_second_source"
+  ],
+  "actions": {
+    "plan": {
+      "tool_name": null,
+      "gen_ai_operation_name": "plan",
+      "cardinality": "once_per_run",
+      "notes": "control action — planner emits the plan-as-data"
+    },
+    "parse_manifest": {
+      "tool_name": "parse_manifest",
+      "gen_ai_operation_name": "execute_tool",
+      "cardinality": "once_per_run"
+    },
+    "retrieve_advisory": {
+      "tool_name": "osv_query_package",
+      "gen_ai_operation_name": "execute_tool",
+      "cardinality": "per_package",
+      "notes": "also tagged retrieval in OTel"
+    },
+    "resolve_versions": {
+      "tool_name": "resolve_published_versions",
+      "gen_ai_operation_name": "execute_tool",
+      "cardinality": "per_package"
+    },
+    "check_containment": {
+      "tool_name": "check_version_affected",
+      "gen_ai_operation_name": "execute_tool",
+      "cardinality": "per_alert"
+    },
+    "compute_minimal_fixed": {
+      "tool_name": "compute_minimal_fix",
+      "gen_ai_operation_name": "execute_tool",
+      "cardinality": "per_alert"
+    },
+    "cross_check_source": {
+      "tool_name": "crosscheck_second_source",
+      "gen_ai_operation_name": "execute_tool",
+      "cardinality": "per_alert"
+    },
+    "emit_verdict": {
+      "tool_name": null,
+      "gen_ai_operation_name": "invoke_agent",
+      "cardinality": "per_alert",
+      "notes": "control action — verifier emits the Verdict; carries a non-null alert_id (joins its alert's plan-adherence group)"
+    }
+  }
+}
