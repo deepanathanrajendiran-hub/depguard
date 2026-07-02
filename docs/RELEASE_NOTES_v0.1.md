@@ -18,7 +18,7 @@ A three-arm ablation scored by the same 4-predicate mechanical verifier, paired-
   statistically indistinguishable, with **0 planner fallbacks** (instrumented, so the tie is
   genuine LLM planning). The LLM planner buys nothing on accuracy over a free, sub-second script.
 - **`multi_agent` ≫ `single_agent`**: correctness +0.448 [0.276, 0.621]. The single agent's
-  failures are evidence discipline (12 `source_agreement` + 6 minimal-fix misses) + 1
+  failures are evidence discipline (12 `source_agreement` + 6 npm-scored minimal-fix misses) + 1
   abandonment — **never a wrong affected/not-affected call** on the 28 verdicts it emitted.
 - Full numbers + raw trajectory audit trail: `results/`. Honest caveats: `LIMITATIONS.md`.
 

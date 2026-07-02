@@ -90,9 +90,12 @@ matters, and it is **not** the security call:
 
 - On the **28 of 29** alerts where it emitted a verdict, its `affected` (actionable
   affected/not-affected) judgment is **correct on all 28** — it never misclassifies a package.
-- Its correctness misses are entirely **metadata from skipped steps**: `source_agreement`
-  wrong on **12** (it skipped the deps.dev cross-check → `single_source` instead of `agree`),
-  `minimal_fixed_version` wrong on **6** (it skipped resolve/minfix).
+- Its 13 correctness misses (`(1 − 0.5517) × 29`) are entirely **metadata from skipped steps**:
+  12 alerts where it skipped the deps.dev cross-check so `source_agreement` fell to
+  `single_source` instead of `agree`, and 6 of those 12 (all npm) also carried a wrong
+  `minimal_fixed_version` from skipping resolve/fix. (A seventh alert, `fp_urllib3`, also has a
+  wrong minimal-fix in the raw data, but it is PyPI, where minimal-fix is **not** a scored field
+  (§5 P2), so it is scored correct and does not count here.)
 - The **1 verdict-flip vs multi_agent** (`flip_count_multi_vs_single = 1`) is an
   **abandonment, not a misjudgment**: on `tp_axios` the agent called **0 tools and emitted no
   verdict at all**, which the flip matrix counts as differing from multi's `affected = True`.

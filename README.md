@@ -44,9 +44,10 @@ stamp them into the trajectory's `model_route`. There were zero across all 29 mu
 
 The single agent is the more interesting result. It's worse everywhere, but not because it gets
 the security call wrong: on the 28 alerts where it returned a verdict, its affected/not-affected
-judgment was correct every time. It loses points on evidence it skipped (12 wrong
-`source_agreement`, 6 wrong minimal-fix) and on one alert it abandoned without answering. So the
-scaffolding buys completeness, not better judgment.
+judgment was correct every time. It loses points on evidence it skipped: on 12 alerts it dropped
+the deps.dev cross-check, so `source_agreement` fell to `single_source`, and 6 of those also got
+the minimal fix wrong; on one more it gave up without answering. So the scaffolding buys
+completeness, not better judgment.
 
 If there's a headline, it's the harness that can state all of this with a CI, not the agent.
 Every number above comes from [`results/`](results/) (metrics and CIs in the JSON, latency in the
@@ -62,14 +63,14 @@ deterministic arm on every push and fails the build if correctness or groundedne
 committed baseline. Deleting one step from the planner drops correctness to 0.45 and groundedness
 to 0.14, and CI goes red with a gold-vs-actual trajectory diff. Reproduction is in
 `docs/notes-for-d12.md`.
-<!-- red-CI GIF: docs/img/red-ci.gif (recorded from a real PR run) -->
+<!-- TODO: add docs/img/red-ci.gif once recorded from a real PR run -->
 
 ## Tracing
 
 Each trajectory is replayed as OpenTelemetry GenAI spans that line up 1:1 with the tool calls, and
 exported to Langfuse when the keys are set (`depguard/otel.py`). You get a `depguard.triage` root
 span with one `execute_tool` child per call, tagged with the standard `gen_ai.*` attributes.
-<!-- Langfuse trace: docs/img/langfuse-trace.png (see docs/DEPLOY.md) -->
+<!-- TODO: add docs/img/langfuse-trace.png once captured (see docs/DEPLOY.md) -->
 
 ## Quickstart
 
