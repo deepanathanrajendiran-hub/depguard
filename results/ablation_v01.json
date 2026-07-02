@@ -1,0 +1,35 @@
+{
+  "corpus_snapshot_id": "depguard-corpus-2026-07-01-c6f3471a2245",
+  "n_trajectories": 29,
+  "n_alerts": 29,
+  "arms_run": [
+    "deterministic_script"
+  ],
+  "arms_pending": [
+    "single_agent",
+    "multi_agent"
+  ],
+  "metrics": [
+    "tool_selection",
+    "action_advancement",
+    "plan_adherence",
+    "groundedness",
+    "correctness"
+  ],
+  "aggregates": {
+    "deterministic_script": {
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    }
+  },
+  "pairwise_ci": {},
+  "verdict_flip_matrix": {
+    "deterministic_script": {
+      "deterministic_script": 0
+    }
+  },
+  "flip_count_multi_vs_single": null
+}

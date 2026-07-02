@@ -43,3 +43,40 @@ set is treated as deps.dev being *silent on that version*, never as a fabricated
 - The **71–90% scanner-false-positive** figure cited elsewhere is driven largely by
   call-graph *reachability* analysis, which DepGuard deliberately does not perform.
   DepGuard addresses only the version-range-containment slice of triage.
+
+## The deterministic script arm ties the ceiling — by construction (D9)
+
+Measured over the 29-trajectory golden set (`results/ablation_v01.json`), the
+**deterministic semver-containment script** scores `correctness = 1.0000` and
+`groundedness = 1.0000`. This is expected and stated numbers-first (house rule 11): the
+script calls the *same oracle module* the gold labeler calls, so its verdicts equal gold
+by construction. The takeaway is **not** "agents lose" — it is that on the
+version-containment slice, under a mechanical oracle, a rule-based script is already at the
+ceiling, and the honest question an LLM arm must answer is whether it *matches* that ceiling
+without the determinism, not whether it beats it. `action_advancement = 0.1250` reflects
+that exactly one of the eight canonical steps per single-alert run advances a *new* verdict
+(the metric is defined that way, §4.1.2); it is comparable across arms, not a defect.
+
+## Verdict-flips can only come from omission, not from reconciliation (D9)
+
+In DepGuard's design the LLM's only freedom is *which tools to call*; the verdict logic
+(containment, withdrawn override, minimal-fix, `source_agreement`) is the shared oracle,
+identical across all three arms. So two arms that both execute the full tool chain emit
+*identical* verdicts, and an arm's verdict can differ **only** when it omits or misorders a
+tool call (e.g. skipping the cross-check drops `agree` to `single_source`; skipping
+containment defaults `affected`). Reconciliation itself never flips a verdict. Combined with
+the **0 genuine source-disagreements** already measured in the frozen extract, this predicts
+a **verdict-flip count of 0** between the single- and multi-agent arms — to be *confirmed*,
+not assumed, when those arms run.
+
+## The two LLM arms are not yet executed (measurement-completeness caveat)
+
+The ablation harness (`depguard/ablation.py`, `scripts/run_ablation.py`) is complete,
+tested, and byte-reproducible, and the **deterministic_script arm is fully measured**. The
+`single_agent` and `multi_agent` arms require a DeepSeek key (`LLM_API_KEY`) and had none in
+the build environment, so `results/ablation_v01.json` currently reports them as `pending`
+with **no fabricated numbers** — the pairwise 95% CIs and the verdict-flip matrix fill in
+only when the arms actually run (`python scripts/run_ablation.py` with a key). Expect some
+**degenerate CIs** even then: the script arm's per-trajectory correctness is a constant
+`1.0`, so any delta against it has zero variance on that metric and the interval collapses
+to the point estimate — reported as-is, not smoothed.
