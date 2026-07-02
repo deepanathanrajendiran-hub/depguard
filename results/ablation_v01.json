@@ -3,12 +3,11 @@
   "n_trajectories": 29,
   "n_alerts": 29,
   "arms_run": [
-    "deterministic_script"
-  ],
-  "arms_pending": [
+    "deterministic_script",
     "single_agent",
     "multi_agent"
   ],
+  "arms_pending": [],
   "metrics": [
     "tool_selection",
     "action_advancement",
@@ -23,13 +22,181 @@
       "plan_adherence": 1.0,
       "groundedness": 1.0,
       "correctness": 1.0
+    },
+    "single_agent": {
+      "tool_selection": 0.9205851619644723,
+      "action_advancement": 0.16502463054187191,
+      "plan_adherence": 0.5258620689655172,
+      "groundedness": 0.41379310344827586,
+      "correctness": 0.6896551724137931
+    },
+    "multi_agent": {
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
     }
   },
-  "pairwise_ci": {},
+  "pairwise_ci": {
+    "deterministic_script__vs__single_agent": {
+      "tool_selection": {
+        "observed": 0.07941483803552771,
+        "ci_lo": 0.05329153605015674,
+        "ci_hi": 0.11180773249738767,
+        "n": 29,
+        "n_boot": 10000,
+        "alpha": 0.05,
+        "significant": true
+      },
+      "action_advancement": {
+        "observed": -0.040024630541871914,
+        "ci_lo": -0.05028735632183909,
+        "ci_hi": -0.031814449917898176,
+        "n": 29,
+        "n_boot": 10000,
+        "alpha": 0.05,
+        "significant": true
+      },
+      "plan_adherence": {
+        "observed": 0.47413793103448276,
+        "ci_lo": 0.4597701149425286,
+        "ci_hi": 0.4885057471264367,
+        "n": 29,
+        "n_boot": 10000,
+        "alpha": 0.05,
+        "significant": true
+      },
+      "groundedness": {
+        "observed": 0.5862068965517241,
+        "ci_lo": 0.41379310344827586,
+        "ci_hi": 0.7586206896551724,
+        "n": 29,
+        "n_boot": 10000,
+        "alpha": 0.05,
+        "significant": true
+      },
+      "correctness": {
+        "observed": 0.3103448275862069,
+        "ci_lo": 0.13793103448275862,
+        "ci_hi": 0.4827586206896552,
+        "n": 29,
+        "n_boot": 10000,
+        "alpha": 0.05,
+        "significant": true
+      }
+    },
+    "deterministic_script__vs__multi_agent": {
+      "tool_selection": {
+        "observed": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 29,
+        "n_boot": 10000,
+        "alpha": 0.05,
+        "significant": false
+      },
+      "action_advancement": {
+        "observed": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 29,
+        "n_boot": 10000,
+        "alpha": 0.05,
+        "significant": false
+      },
+      "plan_adherence": {
+        "observed": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 29,
+        "n_boot": 10000,
+        "alpha": 0.05,
+        "significant": false
+      },
+      "groundedness": {
+        "observed": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 29,
+        "n_boot": 10000,
+        "alpha": 0.05,
+        "significant": false
+      },
+      "correctness": {
+        "observed": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 29,
+        "n_boot": 10000,
+        "alpha": 0.05,
+        "significant": false
+      }
+    },
+    "single_agent__vs__multi_agent": {
+      "tool_selection": {
+        "observed": -0.07941483803552771,
+        "ci_lo": -0.11180773249738767,
+        "ci_hi": -0.05329153605015674,
+        "n": 29,
+        "n_boot": 10000,
+        "alpha": 0.05,
+        "significant": true
+      },
+      "action_advancement": {
+        "observed": 0.040024630541871914,
+        "ci_lo": 0.031814449917898176,
+        "ci_hi": 0.05028735632183909,
+        "n": 29,
+        "n_boot": 10000,
+        "alpha": 0.05,
+        "significant": true
+      },
+      "plan_adherence": {
+        "observed": -0.47413793103448276,
+        "ci_lo": -0.4885057471264367,
+        "ci_hi": -0.4597701149425286,
+        "n": 29,
+        "n_boot": 10000,
+        "alpha": 0.05,
+        "significant": true
+      },
+      "groundedness": {
+        "observed": -0.5862068965517241,
+        "ci_lo": -0.7586206896551724,
+        "ci_hi": -0.41379310344827586,
+        "n": 29,
+        "n_boot": 10000,
+        "alpha": 0.05,
+        "significant": true
+      },
+      "correctness": {
+        "observed": -0.3103448275862069,
+        "ci_lo": -0.4827586206896552,
+        "ci_hi": -0.13793103448275862,
+        "n": 29,
+        "n_boot": 10000,
+        "alpha": 0.05,
+        "significant": true
+      }
+    }
+  },
   "verdict_flip_matrix": {
     "deterministic_script": {
-      "deterministic_script": 0
+      "deterministic_script": 0,
+      "single_agent": 0,
+      "multi_agent": 0
+    },
+    "single_agent": {
+      "deterministic_script": 0,
+      "single_agent": 0,
+      "multi_agent": 0
+    },
+    "multi_agent": {
+      "deterministic_script": 0,
+      "single_agent": 0,
+      "multi_agent": 0
     }
   },
-  "flip_count_multi_vs_single": null
+  "flip_count_multi_vs_single": 0
 }

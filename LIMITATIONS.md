@@ -57,6 +57,14 @@ without the determinism, not whether it beats it. `action_advancement = 0.1250` 
 that exactly one of the eight canonical steps per single-alert run advances a *new* verdict
 (the metric is defined that way, §4.1.2); it is comparable across arms, not a defect.
 
+**Measured answer (D9, `results/ablation_v01.json`):** the `multi_agent` arm *ties* the
+script exactly — `correctness = groundedness = tool_selection = 1.0000`, and the paired
+bootstrap on every metric delta (script − multi) is **`+0.0000 [+0.0000, +0.0000]`**, i.e.
+the two arms are statistically indistinguishable. The LLM planner buys **nothing** on
+accuracy over the rule-based script, at **94.0 s vs 0.57 s wall-clock (≈165×)**. That is the
+headline finding, framed numbers-first: the value of DepGuard is the *measurement harness*
+that can state this with a CI, not an agent that wins.
+
 ## Verdict-flips can only come from omission, not from reconciliation (D9)
 
 In DepGuard's design the LLM's only freedom is *which tools to call*; the verdict logic
@@ -65,18 +73,26 @@ identical across all three arms. So two arms that both execute the full tool cha
 *identical* verdicts, and an arm's verdict can differ **only** when it omits or misorders a
 tool call (e.g. skipping the cross-check drops `agree` to `single_source`; skipping
 containment defaults `affected`). Reconciliation itself never flips a verdict. Combined with
-the **0 genuine source-disagreements** already measured in the frozen extract, this predicts
-a **verdict-flip count of 0** between the single- and multi-agent arms — to be *confirmed*,
-not assumed, when those arms run.
+the **0 genuine source-disagreements** already measured in the frozen extract, this predicted
+a **verdict-flip count of 0** between the single- and multi-agent arms.
 
-## The two LLM arms are not yet executed (measurement-completeness caveat)
+**Confirmed (D9):** the measured flip count is **0**, and the full 3×3 `affected`-
+disagreement matrix is all zeros (`results/ablation_v01.json`). Every arm gets the actionable
+affected/not-affected call right on all 29 alerts. The `single_agent` arm's *lower*
+correctness (0.6897) and groundedness (0.4138) come entirely from skipping the deps.dev
+cross-check on some alerts — which corrupts `source_agreement` (`agree` → `single_source`)
+and un-grounds the minimal-fix claim — **not** from any different verdict on whether a
+package is affected. The distinction matters: the agents differ on *evidence discipline*,
+not on the security call.
 
-The ablation harness (`depguard/ablation.py`, `scripts/run_ablation.py`) is complete,
-tested, and byte-reproducible, and the **deterministic_script arm is fully measured**. The
-`single_agent` and `multi_agent` arms require a DeepSeek key (`LLM_API_KEY`) and had none in
-the build environment, so `results/ablation_v01.json` currently reports them as `pending`
-with **no fabricated numbers** — the pairwise 95% CIs and the verdict-flip matrix fill in
-only when the arms actually run (`python scripts/run_ablation.py` with a key). Expect some
-**degenerate CIs** even then: the script arm's per-trajectory correctness is a constant
-`1.0`, so any delta against it has zero variance on that metric and the interval collapses
-to the point estimate — reported as-is, not smoothed.
+## The LLM-arm numbers are a single measured run (not bit-reproducible)
+
+The `single_agent` and `multi_agent` figures come from ONE run of DeepSeek (`deepseek-chat`,
+temperature 0) over the 29-trajectory golden set. LLM APIs are not bit-reproducible even at
+temperature 0, so re-running `python scripts/run_ablation.py` (with a key) may shift the
+single-agent aggregates by a few points; the deterministic_script arm and every CI computed
+against it are exactly reproducible. The **script − multi_agent** CIs are degenerate by
+construction — both arms score a constant `1.0` per trajectory on correctness/groundedness,
+so the delta has zero variance and the interval collapses to `[0, 0]`; that is reported
+as-is, not smoothed, and is itself the finding (the arms are indistinguishable). Cost/latency
+are the machine's measured wall-clock, in the markdown report only.
