@@ -1,0 +1,71 @@
+{
+  "_provenance": {
+    "license": "CC-BY-4.0",
+    "note": "derived non-substantial extract (§1.7b) — never raw responses",
+    "source": "deps.dev",
+    "source_url": "https://api.deps.dev/v3/systems/pypi/packages/sqlparse"
+  },
+  "advisory_keys_by_version": {
+    "0.4.0": [
+      "GHSA-27jp-wm6q-gp25",
+      "GHSA-2m57-hf25-phgg",
+      "GHSA-p5w8-wqhj-9hhf",
+      "GHSA-rrm6-wvj7-cwh2",
+      "PYSEC-2021-333",
+      "PYSEC-2023-87"
+    ],
+    "0.4.1": [
+      "GHSA-27jp-wm6q-gp25",
+      "GHSA-2m57-hf25-phgg",
+      "GHSA-p5w8-wqhj-9hhf",
+      "GHSA-rrm6-wvj7-cwh2",
+      "PYSEC-2021-333",
+      "PYSEC-2023-87"
+    ],
+    "0.5.5": []
+  },
+  "captured_at": "2026-07-01",
+  "default_version": "0.5.5",
+  "name": "sqlparse",
+  "system": "pypi",
+  "versions": [
+    "0.1.0",
+    "0.1.1",
+    "0.1.10",
+    "0.1.11",
+    "0.1.12",
+    "0.1.13",
+    "0.1.14",
+    "0.1.15",
+    "0.1.16",
+    "0.1.17",
+    "0.1.18",
+    "0.1.19",
+    "0.1.2",
+    "0.1.3",
+    "0.1.4",
+    "0.1.5",
+    "0.1.6",
+    "0.1.7",
+    "0.1.8",
+    "0.1.9",
+    "0.2.0",
+    "0.2.1",
+    "0.2.2",
+    "0.2.3",
+    "0.2.4",
+    "0.3.0",
+    "0.3.1",
+    "0.4.0",
+    "0.4.1",
+    "0.4.2",
+    "0.4.3",
+    "0.4.4",
+    "0.5.0",
+    "0.5.1",
+    "0.5.2",
+    "0.5.3",
+    "0.5.4",
+    "0.5.5"
+  ]
+}

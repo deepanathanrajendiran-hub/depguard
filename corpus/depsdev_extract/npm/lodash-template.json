@@ -1,0 +1,20 @@
+{
+  "_provenance": {
+    "license": "CC-BY-4.0",
+    "note": "derived non-substantial extract (§1.7b) — never raw responses",
+    "source": "deps.dev",
+    "source_url": "https://api.deps.dev/v3/systems/npm/packages/lodash-template"
+  },
+  "advisory_keys_by_version": {
+    "1.0.0": [
+      "GHSA-35jh-r3h4-6jhm"
+    ]
+  },
+  "captured_at": "2026-07-01",
+  "default_version": "1.0.0",
+  "name": "lodash-template",
+  "system": "npm",
+  "versions": [
+    "1.0.0"
+  ]
+}

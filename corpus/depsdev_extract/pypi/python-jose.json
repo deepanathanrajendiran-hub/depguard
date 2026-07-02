@@ -1,0 +1,118 @@
+{
+  "_provenance": {
+    "license": "CC-BY-4.0",
+    "note": "derived non-substantial extract (§1.7b) — never raw responses",
+    "source": "deps.dev",
+    "source_url": "https://api.deps.dev/v3/systems/pypi/packages/python-jose"
+  },
+  "advisory_keys_by_version": {
+    "0.1.1": [
+      "GHSA-6c5p-j8vq-pqhj",
+      "GHSA-cjwg-qfpm-7377",
+      "GHSA-w799-prg3-cx77",
+      "PYSEC-2017-28",
+      "PYSEC-2024-232",
+      "PYSEC-2024-233",
+      "PYSEC-2025-185"
+    ],
+    "0.1.2": [
+      "GHSA-6c5p-j8vq-pqhj",
+      "GHSA-cjwg-qfpm-7377",
+      "GHSA-w799-prg3-cx77",
+      "PYSEC-2017-28",
+      "PYSEC-2024-232",
+      "PYSEC-2024-233",
+      "PYSEC-2025-185"
+    ],
+    "0.1.3": [
+      "GHSA-6c5p-j8vq-pqhj",
+      "GHSA-cjwg-qfpm-7377",
+      "GHSA-w799-prg3-cx77",
+      "PYSEC-2017-28",
+      "PYSEC-2024-232",
+      "PYSEC-2024-233",
+      "PYSEC-2025-185"
+    ],
+    "0.1.4": [
+      "GHSA-6c5p-j8vq-pqhj",
+      "GHSA-cjwg-qfpm-7377",
+      "GHSA-w799-prg3-cx77",
+      "PYSEC-2017-28",
+      "PYSEC-2024-232",
+      "PYSEC-2024-233",
+      "PYSEC-2025-185"
+    ],
+    "0.1.5": [
+      "GHSA-6c5p-j8vq-pqhj",
+      "GHSA-cjwg-qfpm-7377",
+      "GHSA-w799-prg3-cx77",
+      "PYSEC-2017-28",
+      "PYSEC-2024-232",
+      "PYSEC-2024-233",
+      "PYSEC-2025-185"
+    ],
+    "0.1.6": [
+      "GHSA-6c5p-j8vq-pqhj",
+      "GHSA-cjwg-qfpm-7377",
+      "GHSA-w799-prg3-cx77",
+      "PYSEC-2017-28",
+      "PYSEC-2024-232",
+      "PYSEC-2024-233",
+      "PYSEC-2025-185"
+    ],
+    "0.1.7": [
+      "GHSA-6c5p-j8vq-pqhj",
+      "GHSA-cjwg-qfpm-7377",
+      "GHSA-w799-prg3-cx77",
+      "PYSEC-2017-28",
+      "PYSEC-2024-232",
+      "PYSEC-2024-233",
+      "PYSEC-2025-185"
+    ],
+    "3.5.0": []
+  },
+  "captured_at": "2026-07-01",
+  "default_version": "3.5.0",
+  "name": "python-jose",
+  "system": "pypi",
+  "versions": [
+    "0.1.1",
+    "0.1.2",
+    "0.1.3",
+    "0.1.4",
+    "0.1.5",
+    "0.1.6",
+    "0.1.7",
+    "0.1.8",
+    "0.2.0",
+    "0.3.0",
+    "0.4.0",
+    "0.5.0",
+    "0.5.1",
+    "0.5.2",
+    "0.5.3",
+    "0.5.4",
+    "0.5.5",
+    "0.5.6",
+    "0.6.1",
+    "0.6.2",
+    "0.7.0",
+    "1.0.0",
+    "1.1.0",
+    "1.2.0",
+    "1.3.0",
+    "1.3.1",
+    "1.3.2",
+    "1.4.0",
+    "2.0.0",
+    "2.0.1",
+    "2.0.2",
+    "3.0.0",
+    "3.0.1",
+    "3.1.0",
+    "3.2.0",
+    "3.3.0",
+    "3.4.0",
+    "3.5.0"
+  ]
+}
