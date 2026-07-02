@@ -40,10 +40,3 @@ A three-arm ablation scored by the same 4-predicate mechanical verifier, paired-
 Full-corpus freeze, crates.io/Go, MCP HTTP transport, prompt-injection rail + red-team eval,
 online evals, LLM-judge calibration, Cloud Run auto-deploy, packaging. No dates until v0.1
 ships and the job-search gate opens.
-
-## Tag (owner)
-
-```bash
-git tag v0.1 && git push --tags
-# then create the GitHub release, pasting the table above
-```

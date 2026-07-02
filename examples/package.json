@@ -1,0 +1,10 @@
+{
+  "name": "depguard-demo-app",
+  "private": true,
+  "dependencies": {
+    "lodash": "4.17.20",
+    "axios": "1.15.1",
+    "cross-spawn": "7.0.3",
+    "node-forge": "1.4.1"
+  }
+}

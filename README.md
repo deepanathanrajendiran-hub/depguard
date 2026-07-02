@@ -1,5 +1,8 @@
 # DepGuard
 
+[![CI](https://github.com/deepanathanrajendiran-hub/depguard/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/deepanathanrajendiran-hub/depguard/actions/workflows/ci.yml)
+[![eval-gate](https://github.com/deepanathanrajendiran-hub/depguard/actions/workflows/eval-gate.yml/badge.svg?branch=main)](https://github.com/deepanathanrajendiran-hub/depguard/actions/workflows/eval-gate.yml)
+
 Most dependency-vulnerability alerts are false alarms. A scanner flags a pinned version as
 vulnerable, an engineer spends an afternoon proving it isn't, and the cycle repeats. DepGuard
 reads each alert and decides whether the pinned version is actually inside the advisory's
@@ -79,9 +82,12 @@ span with one `execute_tool` child per call, tagged with the standard `gen_ai.*`
 pip install -e .
 
 # 1. CLI: triage a manifest against the frozen corpus (no key, no network)
-depguard-triage package.json
-#   AFFECTED   alert-0-GHSA-35jh-r3h4-6jhm  GHSA-35jh-r3h4-6jhm → fix 4.17.21
-#   WITHDRAWN  alert-1-GHSA-7fhm-mqm4-2wp7  GHSA-7fhm-mqm4-2wp7
+depguard-triage examples/package.json
+#   AFFECTED      alert-0-GHSA-35jh-r3h4-6jhm   GHSA-35jh-r3h4-6jhm → fix 4.17.21
+#   AFFECTED      alert-2-GHSA-3xgq-45jj-v275   GHSA-3xgq-45jj-v275 → fix 7.0.5
+#   not affected  alert-3-GHSA-2328-f5f3-gj25
+#   # 4 of 7 alert(s) actually affected
+# (or point it at your own package.json — out-of-corpus deps fall back to a canned demo lockfile)
 
 # 2. Web demo: paste a package.json, watch verdicts stream in
 pip install -e ".[demo]" && uvicorn depguard.webapp:app --port 8080   # http://localhost:8080
