@@ -117,14 +117,17 @@ class LLMReactPolicy:
     def next(self, observation: dict) -> dict | None:
         from langchain_openai import ChatOpenAI
 
+        from depguard.llm_meter import METER
+
         client = ChatOpenAI(
             model=os.environ.get("LLM_MODEL", "deepseek-v4-flash"),
             base_url=os.environ.get("LLM_BASE_URL", "https://api.deepseek.com"),
             api_key=os.environ["LLM_API_KEY"],
             temperature=0,
         )
-        raw = client.invoke(self._prompt(observation)).content
-        return self._parse(raw, observation)
+        resp = client.invoke(self._prompt(observation))
+        METER.record_call(resp)
+        return self._parse(resp.content, observation)
 
     def _prompt(self, obs: dict) -> str:
         return (

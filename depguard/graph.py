@@ -90,9 +90,12 @@ class LLMPlanner:
 
     def __init__(self, model_route: str):
         self.model_route = model_route
+        self.fell_back = False  # set True if BOTH LLM attempts fail and we use the canonical plan
 
     def __call__(self, manifest: list[dict], alerts: list[dict]) -> list[dict]:
         from langchain_openai import ChatOpenAI
+
+        from depguard.llm_meter import METER
 
         client = ChatOpenAI(
             model=os.environ.get("LLM_MODEL", "deepseek-v4-flash"),
@@ -102,11 +105,16 @@ class LLMPlanner:
         )
         prompt = self._prompt(manifest, alerts)
         for _ in range(2):
-            raw = client.invoke(prompt).content
-            plan = self._parse(raw, alerts)
+            resp = client.invoke(prompt)
+            METER.record_call(resp)
+            plan = self._parse(resp.content, alerts)
             if plan is not None:
                 return plan
-        return deterministic_plan(manifest, alerts)  # validated fallback
+        # BOTH attempts failed — running the deterministic plan here would make this arm
+        # silently identical to the script arm, so mark it LOUDLY (meter + model_route).
+        self.fell_back = True
+        METER.record_fallback()
+        return deterministic_plan(manifest, alerts)
 
     def _prompt(self, manifest, alerts) -> str:
         return (
@@ -442,6 +450,10 @@ def run_graph(
         system_variant=system_variant, model_route=model_route, planner=planner,
     )
     _APP.invoke({"pipe": pipe})
+    # If the LLM planner fell back to the canonical plan, stamp it into model_route so the
+    # trajectory itself records that this run was NOT genuinely LLM-planned (D9 review).
+    if getattr(planner, "fell_back", False):
+        pipe.builder.model_route = f"{model_route} (planner-fallback→deterministic)"
     return pipe.result()
 
 

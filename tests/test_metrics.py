@@ -32,6 +32,41 @@ def _real(seed="tp_lodash"):
     return run_graph(inp, SNAP, system_variant="deterministic_script"), build_gold(inp, SNAP)
 
 
+def _two_alert_input():
+    """A 2-alert input (a1 npm-affected, a2 PyPI-fp) so we can exercise a MISSING verdict."""
+    s1, s2 = SEED_INPUTS["tp_lodash"], SEED_INPUTS["fp_requests"]
+    return {
+        "manifest": s1["manifest"] + s2["manifest"],
+        "alerts": [dict(s1["alerts"][0], alert_id="a1"),
+                   dict(s2["alerts"][0], alert_id="a2")],
+    }
+
+
+# --------------- missing verdicts are PENALIZED, not excluded ------------- #
+
+def test_missing_verdict_penalizes_correctness_and_groundedness():
+    """An arm that emits a verdict for only ONE of two alerts must be scored against the
+    GOLD denominator — the un-emitted alert counts as wrong/ungrounded, never dropped
+    (else skipping hard alerts silently inflates exactly the two headline metrics)."""
+    from depguard.arms.single_agent import run_single_agent
+
+    inp = _two_alert_input()
+    gold = build_gold(inp, SNAP)
+
+    def only_a1(_inp):
+        chain = ("osv_query_package", "resolve_published_versions",
+                 "check_version_affected", "compute_minimal_fix", "crosscheck_second_source")
+        return [{"tool": "parse_manifest", "alert_id": None}] + \
+               [{"tool": t, "alert_id": "a1"} for t in chain]
+
+    traj = run_single_agent(inp, SNAP, policy=only_a1)
+    assert len(traj["verdicts"]) == 1  # a2 never got a verdict
+    # denominator is the 2 gold verdicts, so at most 1/2 can be correct/grounded
+    assert correctness(traj, gold)["score"] == 0.5
+    assert groundedness(traj)["score"] == 0.5
+    assert any("a2" in f for f in correctness(traj, gold)["fails"])
+
+
 # --------------------------- tool-selection ------------------------------- #
 
 def test_tool_selection_perfect_on_deterministic_arm():

@@ -47,6 +47,20 @@ def test_ablation_metrics_are_byte_reproducible():
     assert a["verdict_flip_matrix"] == b["verdict_flip_matrix"]
 
 
+def test_ablation_persists_audit_trail_and_zero_usage_for_script_arm():
+    """The raw trajectories + per-trajectory metric rows are the audit trail (D9 review #3),
+    and the keyless script arm records zero LLM usage / zero fallbacks (D9 review #2/#5)."""
+    snap = Snapshot()
+    res = run_ablation(SUBSET, snap, arms=["deterministic_script"])
+    assert set(res["_trajectories"]["deterministic_script"]) == set(SUBSET)
+    rows = res["_metric_rows"]["deterministic_script"]
+    assert len(rows) == len(SUBSET)
+    assert all("seed" in r and "correctness" in r for r in rows)
+    u = res["llm_usage"]["deterministic_script"]
+    assert u["calls"] == 0 and u["total_tokens"] == 0 and u["fallbacks"] == 0
+    assert res["planner_fallbacks"]["deterministic_script"] == 0
+
+
 def test_markdown_flags_pending_llm_arms():
     snap = Snapshot()
     res = run_ablation(SUBSET, snap, arms=["deterministic_script"])

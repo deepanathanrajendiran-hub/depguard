@@ -171,17 +171,25 @@ def _reconstruct_record(osv_ev: dict) -> dict:
 
 
 def groundedness(trajectory: dict) -> dict:
-    """Fraction of verdicts whose `affected` AND `minimal_fixed_version` are entailed
-    by their CITED Evidence rows under the verifier rule — recomputed from evidence
-    only (a hallucinated verdict not supported by its evidence scores < 1)."""
+    """Fraction of alerts (one verdict expected per alert, §3.3) whose emitted verdict's
+    `affected` AND `minimal_fixed_version` are entailed by their CITED Evidence rows under
+    the verifier rule — recomputed from evidence only. Denominator is the ALERT set: an
+    alert with NO emitted verdict is ungrounded (never dropped), so an arm cannot inflate
+    this metric by skipping alerts. A hallucinated verdict not supported by its evidence
+    scores < 1 (§4.1.4)."""
     ev_by_id = {e["evidence_id"]: e for e in trajectory["evidence"]}
-    alert_eco = {a["alert_id"]: a["ecosystem"] for a in trajectory["input"]["alerts"]}
-    alert_ver = {a["alert_id"]: a["pinned_version"] for a in trajectory["input"]["alerts"]}
-    verdicts = trajectory["verdicts"]
+    alerts = trajectory["input"]["alerts"]
+    alert_eco = {a["alert_id"]: a["ecosystem"] for a in alerts}
+    alert_ver = {a["alert_id"]: a["pinned_version"] for a in alerts}
+    v_by_alert = {v["alert_id"]: v for v in trajectory["verdicts"]}
     grounded = 0
     fails = []
-    for v in verdicts:
-        aid = v["alert_id"]
+    for a in alerts:
+        aid = a["alert_id"]
+        v = v_by_alert.get(aid)
+        if v is None:
+            fails.append(f"{aid}: no verdict emitted (expected one)")
+            continue
         osv_ev = next((ev_by_id[i] for i in v["evidence_ids"]
                        if ev_by_id.get(i, {}).get("source") == "osv"), None)
         dd_ev = next((ev_by_id[i] for i in v["evidence_ids"]
@@ -212,33 +220,37 @@ def groundedness(trajectory: dict) -> dict:
         else:
             fails.append(f"{aid}: verdict not entailed by evidence "
                          f"(affected_ok={affected_ok}, minfix_ok={minfix_ok})")
-    score = grounded / len(verdicts) if verdicts else 1.0
+    score = grounded / len(alerts) if alerts else 1.0
     return {"score": score, "fails": fails}
 
 
 def correctness(trajectory: dict, gold: dict) -> dict:
-    """Fraction of verdicts exactly matching gold on the verifier-scored fields
-    (affected, withdrawn, source_agreement always; minimal_fixed_version only on
-    minimal-fix ecosystems, per §5 P2). Separate from groundedness (§4.1.4)."""
-    gold_by_alert = {g["alert_id"]: g for g in gold["gold_verdicts"]}
+    """Fraction of GOLD verdicts (one per alert, §3.3) exactly matching the emitted verdict
+    on the verifier-scored fields (affected, withdrawn, source_agreement always;
+    minimal_fixed_version only on minimal-fix ecosystems, §5 P2). Denominator is the gold
+    set, so an alert with NO emitted verdict counts as wrong — never silently excluded
+    (that would let an arm inflate this metric by skipping hard alerts). Separate from
+    groundedness (§4.1.4)."""
+    gold_verdicts = gold["gold_verdicts"]
+    v_by_alert = {v["alert_id"]: v for v in trajectory["verdicts"]}
     alert_eco = {a["alert_id"]: a["ecosystem"] for a in trajectory["input"]["alerts"]}
-    verdicts = trajectory["verdicts"]
     correct = 0
     fails = []
-    for v in verdicts:
-        g = gold_by_alert.get(v["alert_id"])
-        if g is None:
-            fails.append(f"{v['alert_id']}: no gold verdict")
+    for g in gold_verdicts:
+        aid = g["alert_id"]
+        v = v_by_alert.get(aid)
+        if v is None:
+            fails.append(f"{aid}: no verdict emitted (expected one)")
             continue
         fields = ["affected", "withdrawn", "source_agreement"]
-        if alert_eco.get(v["alert_id"]) in _MINFIX_ECOSYSTEMS:
+        if alert_eco.get(aid) in _MINFIX_ECOSYSTEMS:
             fields.append("minimal_fixed_version")
         if all(v.get(f) == g.get(f) for f in fields):
             correct += 1
         else:
             diff = {f: (v.get(f), g.get(f)) for f in fields if v.get(f) != g.get(f)}
-            fails.append(f"{v['alert_id']}: {diff}")
-    score = correct / len(verdicts) if verdicts else 1.0
+            fails.append(f"{aid}: {diff}")
+    score = correct / len(gold_verdicts) if gold_verdicts else 1.0
     return {"score": score, "fails": fails}
 
 

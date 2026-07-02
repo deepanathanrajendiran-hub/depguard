@@ -78,15 +78,21 @@ def main() -> int:
                           f"{s['groundedness']['fails']}")
 
     if os.environ.get("LLM_API_KEY"):
+        from depguard.llm_meter import METER
+        METER.reset()
         try:
             lper = run_arm(snap, "multi_agent")
+        except Exception as exc:  # noqa: BLE001 — key present ⇒ a crashing arm is a HARD failure
+            failed.append(f"multi_agent arm crashed (key is set): {exc!r}")
+        else:
             lagg = aggregate([s for _, s in lper])
-            print("multi_agent aggregate:", {k: round(v, 4) for k, v in lagg.items()})
+            fb = METER.snapshot()["fallbacks"]
+            print("multi_agent aggregate:", {k: round(v, 4) for k, v in lagg.items()},
+                  f"(planner_fallbacks={fb})")
+            # metric dips stay non-blocking (LLM noise ≠ regression), but a crash does not.
             for m in ("correctness", "groundedness"):
                 if lagg[m] < baseline[m] - 1e-3:
                     failed.append(f"multi_agent {m}: {lagg[m]:.4f} < baseline {baseline[m]:.4f}")
-        except Exception as exc:  # noqa: BLE001 — LLM arm is best-effort, never a flaky blocker
-            print(f"multi_agent arm error (non-blocking): {exc!r}")
 
     if failed:
         print("EVAL GATE FAILED:")
