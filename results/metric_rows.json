@@ -1,0 +1,704 @@
+{
+  "deterministic_script": [
+    {
+      "seed": "already_safe_forge",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "fp_axios",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "fp_cross_spawn",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "fp_handlebars",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "fp_requests",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "fp_ua_parser",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "fp_urllib3",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "multi_tar",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "nofix_ip",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "seed_01",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "single_src_pillow",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_axios",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_cross_spawn",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_cryptography",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_django",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_flask",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_jinja2",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_lodash",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_lodash_29mw",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_numpy",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_oauthlib",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_prismjs",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_pyyaml",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_redis",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_sqlparse",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_ws",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "withdrawn_minimist",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "withdrawn_pillow",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "withdrawn_pyjose",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    }
+  ],
+  "single_agent": [
+    {
+      "seed": "already_safe_forge",
+      "tool_selection": 0.6666666666666666,
+      "action_advancement": 0.25,
+      "plan_adherence": 0.5,
+      "groundedness": 1.0,
+      "correctness": 0.0
+    },
+    {
+      "seed": "fp_axios",
+      "tool_selection": 0.6666666666666666,
+      "action_advancement": 0.25,
+      "plan_adherence": 0.5,
+      "groundedness": 1.0,
+      "correctness": 0.0
+    },
+    {
+      "seed": "fp_cross_spawn",
+      "tool_selection": 0.6666666666666666,
+      "action_advancement": 0.25,
+      "plan_adherence": 0.5,
+      "groundedness": 1.0,
+      "correctness": 0.0
+    },
+    {
+      "seed": "fp_handlebars",
+      "tool_selection": 0.6666666666666666,
+      "action_advancement": 0.25,
+      "plan_adherence": 0.5,
+      "groundedness": 1.0,
+      "correctness": 0.0
+    },
+    {
+      "seed": "fp_requests",
+      "tool_selection": 0.9090909090909091,
+      "action_advancement": 0.16666666666666666,
+      "plan_adherence": 0.5833333333333334,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "fp_ua_parser",
+      "tool_selection": 0.6666666666666666,
+      "action_advancement": 0.25,
+      "plan_adherence": 0.5,
+      "groundedness": 1.0,
+      "correctness": 0.0
+    },
+    {
+      "seed": "fp_urllib3",
+      "tool_selection": 0.6666666666666666,
+      "action_advancement": 0.25,
+      "plan_adherence": 0.5,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "multi_tar",
+      "tool_selection": 0.9090909090909091,
+      "action_advancement": 0.16666666666666666,
+      "plan_adherence": 0.5,
+      "groundedness": 0.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "nofix_ip",
+      "tool_selection": 0.9090909090909091,
+      "action_advancement": 0.16666666666666666,
+      "plan_adherence": 0.5,
+      "groundedness": 1.0,
+      "correctness": 0.0
+    },
+    {
+      "seed": "seed_01",
+      "tool_selection": 0.6666666666666666,
+      "action_advancement": 0.25,
+      "plan_adherence": 0.5,
+      "groundedness": 1.0,
+      "correctness": 0.0
+    },
+    {
+      "seed": "single_src_pillow",
+      "tool_selection": 0.9090909090909091,
+      "action_advancement": 0.16666666666666666,
+      "plan_adherence": 0.6666666666666667,
+      "groundedness": 0.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_axios",
+      "tool_selection": 0.0,
+      "action_advancement": 0.0,
+      "plan_adherence": 0.0,
+      "groundedness": 0.0,
+      "correctness": 0.0
+    },
+    {
+      "seed": "tp_cross_spawn",
+      "tool_selection": 1.0,
+      "action_advancement": 0.14285714285714285,
+      "plan_adherence": 0.5833333333333334,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_cryptography",
+      "tool_selection": 1.0,
+      "action_advancement": 0.14285714285714285,
+      "plan_adherence": 0.5833333333333334,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_django",
+      "tool_selection": 1.0,
+      "action_advancement": 0.14285714285714285,
+      "plan_adherence": 0.5833333333333334,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_flask",
+      "tool_selection": 1.0,
+      "action_advancement": 0.14285714285714285,
+      "plan_adherence": 0.5833333333333334,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_jinja2",
+      "tool_selection": 0.9090909090909091,
+      "action_advancement": 0.16666666666666666,
+      "plan_adherence": 0.6666666666666667,
+      "groundedness": 0.0,
+      "correctness": 0.0
+    },
+    {
+      "seed": "tp_lodash",
+      "tool_selection": 1.0,
+      "action_advancement": 0.14285714285714285,
+      "plan_adherence": 0.5833333333333334,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_lodash_29mw",
+      "tool_selection": 0.9090909090909091,
+      "action_advancement": 0.16666666666666666,
+      "plan_adherence": 0.5,
+      "groundedness": 0.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_numpy",
+      "tool_selection": 0.9090909090909091,
+      "action_advancement": 0.16666666666666666,
+      "plan_adherence": 0.5,
+      "groundedness": 0.0,
+      "correctness": 0.0
+    },
+    {
+      "seed": "tp_oauthlib",
+      "tool_selection": 0.9090909090909091,
+      "action_advancement": 0.16666666666666666,
+      "plan_adherence": 0.5,
+      "groundedness": 0.0,
+      "correctness": 0.0
+    },
+    {
+      "seed": "tp_prismjs",
+      "tool_selection": 0.9090909090909091,
+      "action_advancement": 0.16666666666666666,
+      "plan_adherence": 0.5,
+      "groundedness": 0.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_pyyaml",
+      "tool_selection": 0.9090909090909091,
+      "action_advancement": 0.16666666666666666,
+      "plan_adherence": 0.5,
+      "groundedness": 0.0,
+      "correctness": 0.0
+    },
+    {
+      "seed": "tp_redis",
+      "tool_selection": 1.0,
+      "action_advancement": 0.14285714285714285,
+      "plan_adherence": 0.5833333333333334,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_sqlparse",
+      "tool_selection": 0.9090909090909091,
+      "action_advancement": 0.16666666666666666,
+      "plan_adherence": 0.5,
+      "groundedness": 0.0,
+      "correctness": 0.0
+    },
+    {
+      "seed": "tp_ws",
+      "tool_selection": 0.9090909090909091,
+      "action_advancement": 0.16666666666666666,
+      "plan_adherence": 0.6666666666666667,
+      "groundedness": 0.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "withdrawn_minimist",
+      "tool_selection": 0.9090909090909091,
+      "action_advancement": 0.16666666666666666,
+      "plan_adherence": 0.6666666666666667,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "withdrawn_pillow",
+      "tool_selection": 0.6666666666666666,
+      "action_advancement": 0.25,
+      "plan_adherence": 0.5,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "withdrawn_pyjose",
+      "tool_selection": 0.6666666666666666,
+      "action_advancement": 0.25,
+      "plan_adherence": 0.5,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    }
+  ],
+  "multi_agent": [
+    {
+      "seed": "already_safe_forge",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "fp_axios",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "fp_cross_spawn",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "fp_handlebars",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "fp_requests",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "fp_ua_parser",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "fp_urllib3",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "multi_tar",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "nofix_ip",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "seed_01",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "single_src_pillow",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_axios",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_cross_spawn",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_cryptography",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_django",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_flask",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_jinja2",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_lodash",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_lodash_29mw",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_numpy",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_oauthlib",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_prismjs",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_pyyaml",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_redis",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_sqlparse",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_ws",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "withdrawn_minimist",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "withdrawn_pillow",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "withdrawn_pyjose",
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    }
+  ]
+}

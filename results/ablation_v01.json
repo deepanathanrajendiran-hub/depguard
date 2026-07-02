@@ -24,11 +24,11 @@
       "correctness": 1.0
     },
     "single_agent": {
-      "tool_selection": 0.9205851619644723,
-      "action_advancement": 0.16502463054187191,
+      "tool_selection": 0.8213166144200627,
+      "action_advancement": 0.18185550082101806,
       "plan_adherence": 0.5258620689655172,
-      "groundedness": 0.41379310344827586,
-      "correctness": 0.6896551724137931
+      "groundedness": 0.6206896551724138,
+      "correctness": 0.5517241379310345
     },
     "multi_agent": {
       "tool_selection": 1.0,
@@ -41,18 +41,18 @@
   "pairwise_ci": {
     "deterministic_script__vs__single_agent": {
       "tool_selection": {
-        "observed": 0.07941483803552771,
-        "ci_lo": 0.05329153605015674,
-        "ci_hi": 0.11180773249738767,
+        "observed": 0.17868338557993732,
+        "ci_lo": 0.11598746081504703,
+        "ci_hi": 0.26123301985370945,
         "n": 29,
         "n_boot": 10000,
         "alpha": 0.05,
         "significant": true
       },
       "action_advancement": {
-        "observed": -0.040024630541871914,
-        "ci_lo": -0.05028735632183909,
-        "ci_hi": -0.031814449917898176,
+        "observed": -0.05685550082101806,
+        "ci_lo": -0.07655993431855501,
+        "ci_hi": -0.036319786535303905,
         "n": 29,
         "n_boot": 10000,
         "alpha": 0.05,
@@ -60,26 +60,26 @@
       },
       "plan_adherence": {
         "observed": 0.47413793103448276,
-        "ci_lo": 0.4597701149425286,
-        "ci_hi": 0.4885057471264367,
+        "ci_lo": 0.4367816091954023,
+        "ci_hi": 0.5229885057471264,
         "n": 29,
         "n_boot": 10000,
         "alpha": 0.05,
         "significant": true
       },
       "groundedness": {
-        "observed": 0.5862068965517241,
-        "ci_lo": 0.41379310344827586,
-        "ci_hi": 0.7586206896551724,
+        "observed": 0.3793103448275862,
+        "ci_lo": 0.20689655172413793,
+        "ci_hi": 0.5517241379310345,
         "n": 29,
         "n_boot": 10000,
         "alpha": 0.05,
         "significant": true
       },
       "correctness": {
-        "observed": 0.3103448275862069,
-        "ci_lo": 0.13793103448275862,
-        "ci_hi": 0.4827586206896552,
+        "observed": 0.4482758620689655,
+        "ci_lo": 0.27586206896551724,
+        "ci_hi": 0.6206896551724138,
         "n": 29,
         "n_boot": 10000,
         "alpha": 0.05,
@@ -135,18 +135,18 @@
     },
     "single_agent__vs__multi_agent": {
       "tool_selection": {
-        "observed": -0.07941483803552771,
-        "ci_lo": -0.11180773249738767,
-        "ci_hi": -0.05329153605015674,
+        "observed": -0.17868338557993732,
+        "ci_lo": -0.26123301985370945,
+        "ci_hi": -0.11598746081504703,
         "n": 29,
         "n_boot": 10000,
         "alpha": 0.05,
         "significant": true
       },
       "action_advancement": {
-        "observed": 0.040024630541871914,
-        "ci_lo": 0.031814449917898176,
-        "ci_hi": 0.05028735632183909,
+        "observed": 0.05685550082101806,
+        "ci_lo": 0.03631978653530376,
+        "ci_hi": 0.07655993431855501,
         "n": 29,
         "n_boot": 10000,
         "alpha": 0.05,
@@ -154,26 +154,26 @@
       },
       "plan_adherence": {
         "observed": -0.47413793103448276,
-        "ci_lo": -0.4885057471264367,
-        "ci_hi": -0.4597701149425286,
+        "ci_lo": -0.5229885057471264,
+        "ci_hi": -0.4367816091954023,
         "n": 29,
         "n_boot": 10000,
         "alpha": 0.05,
         "significant": true
       },
       "groundedness": {
-        "observed": -0.5862068965517241,
-        "ci_lo": -0.7586206896551724,
-        "ci_hi": -0.41379310344827586,
+        "observed": -0.3793103448275862,
+        "ci_lo": -0.5517241379310345,
+        "ci_hi": -0.20689655172413793,
         "n": 29,
         "n_boot": 10000,
         "alpha": 0.05,
         "significant": true
       },
       "correctness": {
-        "observed": -0.3103448275862069,
-        "ci_lo": -0.4827586206896552,
-        "ci_hi": -0.13793103448275862,
+        "observed": -0.4482758620689655,
+        "ci_lo": -0.6206896551724138,
+        "ci_hi": -0.27586206896551724,
         "n": 29,
         "n_boot": 10000,
         "alpha": 0.05,
@@ -184,19 +184,50 @@
   "verdict_flip_matrix": {
     "deterministic_script": {
       "deterministic_script": 0,
-      "single_agent": 0,
+      "single_agent": 1,
       "multi_agent": 0
     },
     "single_agent": {
-      "deterministic_script": 0,
+      "deterministic_script": 1,
       "single_agent": 0,
-      "multi_agent": 0
+      "multi_agent": 1
     },
     "multi_agent": {
       "deterministic_script": 0,
-      "single_agent": 0,
+      "single_agent": 1,
       "multi_agent": 0
     }
   },
-  "flip_count_multi_vs_single": 0
+  "flip_count_multi_vs_single": 1,
+  "llm_usage": {
+    "deterministic_script": {
+      "calls": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "total_tokens": 0,
+      "cost_usd": 0.0,
+      "fallbacks": 0
+    },
+    "single_agent": {
+      "calls": 159,
+      "prompt_tokens": 47661,
+      "completion_tokens": 92124,
+      "total_tokens": 139785,
+      "cost_usd": 0.11420487000000001,
+      "fallbacks": 0
+    },
+    "multi_agent": {
+      "calls": 29,
+      "prompt_tokens": 5910,
+      "completion_tokens": 15657,
+      "total_tokens": 21567,
+      "cost_usd": 0.018818400000000002,
+      "fallbacks": 0
+    }
+  },
+  "planner_fallbacks": {
+    "deterministic_script": 0,
+    "single_agent": 0,
+    "multi_agent": 0
+  }
 }
