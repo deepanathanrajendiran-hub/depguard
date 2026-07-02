@@ -330,70 +330,20 @@ class Pipeline:
             self.builder.mark_executed(i, produced_verdict_for=aid)
 
     def _emit_verdict(self, alert_id):
-        pa = self.per_alert.get(alert_id, {})
-        contained = pa.get("contained", False)
-        withdrawn = pa.get("withdrawn_ts") is not None
-        affected = contained and not withdrawn  # §3.3 withdrawn override HERE
-        minimal_fixed = None if withdrawn else pa.get("minimal_fixed")
-        agreement = pa.get("agreement", "single_source")
-        note = "" if agreement != "disagree" else "OSV and deps.dev disagree on this version"
-        evidence_ids = [e for e in (pa.get("osv_evidence_id"), pa.get("dd_evidence_id")) if e]
-        self.builder.add_verdict({
-            "alert_id": alert_id,
-            "affected": affected,
-            "minimal_fixed_version": minimal_fixed,
-            "withdrawn": withdrawn,
-            "cvss3_score": None,
-            "evidence_ids": evidence_ids,
-            "source_agreement": agreement,
-            "reconciliation_note": note,
-        })
+        self.builder.add_verdict(assemble_verdict(alert_id, self.per_alert.get(alert_id, {})))
 
-    # -- evidence helpers -------------------------------------------------- #
+    # -- evidence helpers (thin wrappers over the shared module-level builders) -- #
     def _add_osv_evidence(self, alert_id, record, tool_call_id) -> str:
-        eco = self.alerts[alert_id]["ecosystem"]
-        name = self.alerts[alert_id]["name"]
-        version = self.alerts[alert_id]["pinned_version"]
-        range_type, range_events, enumerated = _osv_evidence_fields(record, eco, name, version)
-        prov = record.get("_provenance", {})
-        row = {
-            "evidence_id": f"ev-osv-{alert_id}",
-            "alert_id": alert_id,
-            "tool_call_id": tool_call_id,
-            "source": "osv",
-            "advisory_id": record["id"],
-            "withdrawn": record.get("withdrawn"),
-            "affected_package": {"ecosystem": eco, "name": name},
-            "range_type": range_type,
-            "range_events": range_events,
-            "enumerated_versions": enumerated,
-            "references": [
-                {"type": r.get("type", "WEB"), "url": r["url"]}
-                for r in record.get("references", []) if r.get("url")
-            ],
-            "license": prov.get("license", "CC0-1.0"),
-            "attribution_url": prov.get("source_url"),
-            "corpus_snapshot_id": self.snapshot.snapshot_id,
-        }
+        row = osv_evidence_row(
+            self.alerts[alert_id], record, tool_call_id, self.snapshot.snapshot_id
+        )
         return self.builder.add_evidence(row)
 
     def _add_depsdev_evidence(self, alert_id, record, crosscheck_data, pa, tool_call_id) -> str:
-        a = self.alerts[alert_id]
-        meta = crosscheck_data.get("source_meta", {})
-        row = {
-            "evidence_id": f"ev-dd-{alert_id}",
-            "alert_id": alert_id,
-            "tool_call_id": tool_call_id,
-            "source": "deps.dev",
-            "advisory_id": record["id"],
-            "checked_version": a["pinned_version"],
-            "second_source_advisory_keys": crosscheck_data.get("second_source_advisory_keys", []),
-            "per_version_affected_bool": crosscheck_data.get("per_version_affected_bool", False),
-            "published_versions": pa.get("versions", []),
-            "license": "CC-BY-4.0",
-            "attribution_url": meta.get("source_url") or "deps.dev (attribution unavailable)",
-            "corpus_snapshot_id": self.snapshot.snapshot_id,
-        }
+        row = depsdev_evidence_row(
+            self.alerts[alert_id], record, crosscheck_data,
+            pa.get("versions", []), tool_call_id, self.snapshot.snapshot_id,
+        )
         return self.builder.add_evidence(row)
 
     def _synthesize_manifest(self, ecosystem, manifest) -> str:
@@ -587,3 +537,73 @@ def _gold_scored_args(tool, keys, alert, ecosystem) -> dict:
         elif key in ("osv_record.id", "osv_verdict.advisory_id"):
             out[key] = alert["advisory_id"] if alert else None
     return out
+
+def osv_evidence_row(alert: dict, record: dict, tool_call_id: str, snapshot_id: str) -> dict:
+    """The §3.2 OSV Evidence row for one alert — shared by the graph Pipeline AND the
+    single-agent arm so both cite identical, verifier-groundable evidence (one builder,
+    no drift). Cites the affected entry that WITNESSES containment (`_matched_entry`)."""
+    eco, name, version = alert["ecosystem"], alert["name"], alert["pinned_version"]
+    range_type, range_events, enumerated = _osv_evidence_fields(record, eco, name, version)
+    prov = record.get("_provenance", {})
+    return {
+        "evidence_id": f"ev-osv-{alert['alert_id']}",
+        "alert_id": alert["alert_id"],
+        "tool_call_id": tool_call_id,
+        "source": "osv",
+        "advisory_id": record["id"],
+        "withdrawn": record.get("withdrawn"),
+        "affected_package": {"ecosystem": eco, "name": name},
+        "range_type": range_type,
+        "range_events": range_events,
+        "enumerated_versions": enumerated,
+        "references": [
+            {"type": r.get("type", "WEB"), "url": r["url"]}
+            for r in record.get("references", []) if r.get("url")
+        ],
+        "license": prov.get("license", "CC0-1.0"),
+        "attribution_url": prov.get("source_url"),
+        "corpus_snapshot_id": snapshot_id,
+    }
+
+
+def depsdev_evidence_row(alert: dict, record: dict, crosscheck_data: dict,
+                         versions: list[str], tool_call_id: str, snapshot_id: str) -> dict:
+    """The §3.2 deps.dev Evidence row — shared builder (see `osv_evidence_row`)."""
+    meta = crosscheck_data.get("source_meta", {})
+    return {
+        "evidence_id": f"ev-dd-{alert['alert_id']}",
+        "alert_id": alert["alert_id"],
+        "tool_call_id": tool_call_id,
+        "source": "deps.dev",
+        "advisory_id": record["id"],
+        "checked_version": alert["pinned_version"],
+        "second_source_advisory_keys": crosscheck_data.get("second_source_advisory_keys", []),
+        "per_version_affected_bool": crosscheck_data.get("per_version_affected_bool", False),
+        "published_versions": versions,
+        "license": "CC-BY-4.0",
+        "attribution_url": meta.get("source_url") or "deps.dev (attribution unavailable)",
+        "corpus_snapshot_id": snapshot_id,
+    }
+
+
+def assemble_verdict(alert_id: str, pa: dict) -> dict:
+    """The §3.3 Verdict from one alert's accumulated tool results — the withdrawn override
+    lives HERE (not in the tool). Shared by the Pipeline verifier node AND the single-agent
+    arm so all three ablation arms emit verdicts by the identical rule."""
+    contained = pa.get("contained", False)
+    withdrawn = pa.get("withdrawn_ts") is not None
+    affected = contained and not withdrawn
+    minimal_fixed = None if withdrawn else pa.get("minimal_fixed")
+    agreement = pa.get("agreement", "single_source")
+    note = "" if agreement != "disagree" else "OSV and deps.dev disagree on this version"
+    evidence_ids = [e for e in (pa.get("osv_evidence_id"), pa.get("dd_evidence_id")) if e]
+    return {
+        "alert_id": alert_id,
+        "affected": affected,
+        "minimal_fixed_version": minimal_fixed,
+        "withdrawn": withdrawn,
+        "cvss3_score": None,
+        "evidence_ids": evidence_ids,
+        "source_agreement": agreement,
+        "reconciliation_note": note,
+    }
