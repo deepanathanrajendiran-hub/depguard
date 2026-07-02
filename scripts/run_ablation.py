@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the three-arm ablation → results/ablation_v01.{json,md} (docs/HANDOFF_D8-D14.md §D9).
+"""Run the three-arm ablation → results/ablation_v01.{json,md}.
 
 The deterministic_script arm always runs (no key). The single_agent and multi_agent LLM
 arms run ONLY when LLM_API_KEY is set — otherwise they are reported as `pending` and NO LLM

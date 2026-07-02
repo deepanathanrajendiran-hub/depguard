@@ -39,17 +39,17 @@ set is treated as deps.dev being *silent on that version*, never as a fabricated
 
 - Corpus is **npm + PyPI only**, 40 hand-picked advisories — a branch-coverage
   fixture, NOT a representative sample. The `all.zip` full freeze + crates.io/Go are
-  v0.2 (`docs/DEPGUARD_BACKLOG.md`).
+  v0.2.
 - The **71–90% scanner-false-positive** figure cited elsewhere is driven largely by
   call-graph *reachability* analysis, which DepGuard deliberately does not perform.
   DepGuard addresses only the version-range-containment slice of triage.
 
-## The deterministic script arm ties the ceiling — by construction (D9)
+## The deterministic script arm ties the ceiling — by construction
 
 Measured over **29 golden trajectories on a frozen npm+PyPI micro-corpus**
 (`results/ablation_v01.json`), the **deterministic semver-containment script** scores
 `correctness = groundedness = tool_selection = 1.0000`. This is expected and stated
-numbers-first (house rule 11): the script calls the *same oracle module* the gold labeler
+numbers-first: the script calls the *same oracle module* the gold labeler
 calls, so its verdicts equal gold by construction. The takeaway is **not** "agents lose" —
 it is that on the version-containment slice, under a mechanical oracle, a rule-based script
 is already at the ceiling, and the honest question an LLM arm must answer is whether it
@@ -58,7 +58,7 @@ is already at the ceiling, and the honest question an LLM arm must answer is whe
 single-alert run advances a *new* verdict (the metric is defined that way, §4.1.2); it is
 comparable across arms, not a defect.
 
-**Measured answer (D9):** the `multi_agent` arm *ties* the script exactly —
+**Measured answer:** the `multi_agent` arm *ties* the script exactly —
 `correctness = groundedness = tool_selection = 1.0000`, **0 planner fallbacks** (see below),
 and the paired bootstrap on every metric delta (script − multi) is
 **`+0.0000 [+0.0000, +0.0000]`**. That interval is **degenerate by construction**: both arms
@@ -71,7 +71,7 @@ The LLM planner buys **nothing** on accuracy over the rule-based script — at *
 value of DepGuard is the *measurement harness* that can state this with a CI, not an agent
 that wins.
 
-## The multi_agent tie is genuine, not a silent fallback (D9)
+## The multi_agent tie is genuine, not a silent fallback
 
 A multi_agent arm scoring a perfect `1.0` could be the interesting result ("a
 planner→executor scaffold recovers determinism on a decidable task") **or** an artifact (the
@@ -81,7 +81,7 @@ fallback counter, and a `planner-fallback→deterministic` suffix stamped into `
 **Measured: `planner_fallbacks = 0` across all 29 multi_agent runs** — the tie is real LLM
 planning, not a fall-through to the script.
 
-## What the single-agent arm actually gets wrong (D9)
+## What the single-agent arm actually gets wrong
 
 The `single_agent` arm (one ReAct loop, no planner) scores `correctness = 0.5517`,
 `groundedness = 0.6207`, at **1002 s / \$0.114 / 159 LLM calls** — significantly worse on
@@ -103,7 +103,7 @@ matters, and it is **not** the security call:
 So the multi-agent scaffold's measured value here is **completeness and never giving up** —
 not better security judgment.
 
-## Metric-scope caveat: instruction-following under scaffolding (D9)
+## Metric-scope caveat: instruction-following under scaffolding
 
 The multi_agent planner prompt *enumerates* the expected per-alert tool sequence, so on this
 task `plan-adherence` and `tool-selection` partly measure **instruction-following under heavy

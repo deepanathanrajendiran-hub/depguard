@@ -216,7 +216,7 @@ def test_crosscheck_malformed_extract_is_snapshot_malformed():
 def test_no_http_in_the_tool_and_data_layer():
     """The tool + corpus layer must never touch the network (§1.4). graph.py, otel.py and
     arms/single_agent.py are EXCLUDED: the `multi_agent` planner, the Langfuse OTLP
-    exporter (§D6) and the `single_agent` ReAct policy (house rule 9, §D8) are the
+    exporter and the `single_agent` ReAct policy are the
     legitimate outbound LLM/telemetry integrations by design — all env-gated on
     LLM_API_KEY / an OTLP endpoint and never reached by the tool/corpus code."""
     import depguard

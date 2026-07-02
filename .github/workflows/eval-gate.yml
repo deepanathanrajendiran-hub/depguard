@@ -1,10 +1,10 @@
 name: eval-gate
 
-# The merge-blocking golden-trajectory eval (DECISIONS.md §4.1; DEPGUARD_V01_PLAN D7).
+# The merge-blocking golden-trajectory eval (DECISIONS.md §4.1).
 # The DETERMINISTIC arm blocks: it is fully reproducible and needs no API key, so it
 # goes red the instant any core regresses (tools, oracle, verifier, evidence, graph,
 # metrics). If the LLM_API_KEY secret is set, the multi_agent arm additionally runs
-# (house rule 9) and must not drop correctness/groundedness below the committed
+# and must not drop correctness/groundedness below the committed
 # baseline — but it never blocks on non-deterministic plan-metric noise.
 
 on:

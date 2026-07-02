@@ -1,10 +1,10 @@
-"""The demo triage core (docs/HANDOFF_D8-D14.md §D11), transport-agnostic and LLM-free.
+"""The demo triage core, transport-agnostic and LLM-free.
 
 Both the web demo (`depguard/webapp.py`, SSE) and the CLI (`depguard/cli.py`) drive this — so
-the CLI works with NO web framework installed (house rule 13: if the build slips, the web page
+the CLI works with NO web framework installed (if the build slips, the web page
 is cut but the CLI stays). Alerts are SYNTHESIZED by querying the frozen corpus for advisories
 affecting each pasted dependency (not a live scanner); the triage runs the deterministic
-`script_arm`. Coverage-aware fallback (review HIGH-2): a manifest that fails to parse OR hits
+`script_arm`. Coverage-aware fallback: a manifest that fails to parse OR hits
 nothing in the corpus falls back to a canned famous lockfile — never an empty table.
 """
 
@@ -74,7 +74,7 @@ def _osv_evidence(trajectory: dict) -> dict | None:
 
 def triage_events(ecosystem: str, manifest_text: str, snapshot):
     """Sync generator of triage event dicts (transport-agnostic). Web wraps each as one SSE
-    frame; the CLI prints each. Env-gated Langfuse export (§D6) fires per trajectory when
+    frame; the CLI prints each. Env-gated Langfuse export fires per trajectory when
     LANGFUSE_* keys are set."""
     inp, fallback, note = _build_input(ecosystem, manifest_text, snapshot)
     yield {"type": "meta", "snapshot_id": snapshot.snapshot_id, "ecosystem": ecosystem,

@@ -1,4 +1,4 @@
-"""The 'paste your package.json' demo surface (docs/HANDOFF_D8-D14.md §D11), honestly staged.
+"""The 'paste your package.json' demo surface, honestly staged.
 
 A FastAPI app: `GET /` serves a minimal paste-and-stream page; `POST /triage` streams
 Server-Sent Events (per-alert plan → tool steps → verdict with evidence citation). Alerts are
@@ -7,7 +7,7 @@ affecting each pasted dependency, so every verdict is reproducible against
 `corpus_snapshot_id` (the UI says so, plainly). The triage itself runs the deterministic
 `script_arm` (no LLM, no key).
 
-Coverage-aware fallback (review HIGH-2): if the manifest fails to parse OR no pasted
+Coverage-aware fallback: if the manifest fails to parse OR no pasted
 dependency hits the corpus, we fall back to a canned famous lockfile so the demo shows real
 verdicts instead of an empty table — an empty result is the real demo-death, not stale data.
 """

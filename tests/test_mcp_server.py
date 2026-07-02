@@ -1,4 +1,4 @@
-"""D10 — the MCP server (docs/HANDOFF_D8-D14.md §D10). stdio ONLY.
+"""D10 — the MCP server. stdio ONLY.
 
 Spawns the server as a real stdio subprocess with the official SDK client and asserts:
 (1) list_tools returns EXACTLY the six §0.1 registry tool names, each with an input schema;

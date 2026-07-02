@@ -1,4 +1,4 @@
-"""D11 — the demo webapp (docs/HANDOFF_D8-D14.md §D11).
+"""D11 — the demo webapp.
 
 Covers the honest staging (frozen-snapshot label, no live scanner), the SSE triage stream
 producing real verdicts, and the coverage-aware fallback to a canned lockfile when the paste

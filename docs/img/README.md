@@ -9,6 +9,6 @@ placeholders.
   see `docs/DEPLOY.md` → "Capture the Langfuse trace screenshot".
 
 - **`red-ci.gif`** — the merge-blocking eval gate going **red** on a planner regression.
-  How to produce it: see `docs/notes-for-d12.md` (a one-line break in `deterministic_plan`
-  drops correctness to 0.45 / groundedness to 0.14 → gate fails). Open the PR, screen-record
-  the failing Actions run, save here, close the PR unmerged.
+  How to produce it: delete the `cross_check_source` step from `deterministic_plan` in
+  `depguard/graph.py` (correctness → 0.45, groundedness → 0.14, gate fails). Open a PR,
+  screen-record the failing Actions run, save the GIF here, close the PR unmerged.

@@ -6,7 +6,7 @@ Claude Desktop, …) can install it and call the exact same tools the agents use
 returning the same `{ok, data, error}` envelope.
 
 - **Transport:** stdio only. (Streamable HTTP is deliberately out of scope for v0.1 — see
-  `docs/DEPGUARD_BACKLOG.md`.)
+  the v0.2 backlog.)
 - **Data:** the frozen `corpus/` snapshot only. **No network, no API key.** Verdicts are
   reproducible against `corpus_snapshot_id = depguard-corpus-2026-07-01-c6f3471a2245`.
 

@@ -8,8 +8,8 @@ planner:
 - `deterministic_script` — a rule-based planner emits the canonical §0.2 plan (NO
   LLM). This is the ablation's deterministic arm AND the arm the seed/golden tests
   run, so the graph is mechanically verified in plain CI with no API key.
-- `multi_agent` — the planner is an LLM (DeepSeek via the OpenAI-format client,
-  house rule 9), the ONLY LLM node in v0.1; its plan is validated against the §0.2
+- `multi_agent` — the planner is an LLM (DeepSeek via the OpenAI-format client),
+  the ONLY LLM node in v0.1; its plan is validated against the §0.2
   enum (out-of-enum actions rejected/retried) and then executed identically.
 
 The executor FOLLOWS the plan (a worse plan ⇒ missing tool calls ⇒ worse verdicts),
@@ -85,7 +85,7 @@ def deterministic_plan(manifest: list[dict], alerts: list[dict]) -> list[dict]:
 
 class LLMPlanner:
     """The `multi_agent` arm's planner — DeepSeek via the OpenAI-format client
-    (house rule 9). Emits plan-as-data; actions outside the §0.2 enum are rejected
+   . Emits plan-as-data; actions outside the §0.2 enum are rejected
     and one retry is attempted before falling back to the canonical plan."""
 
     def __init__(self, model_route: str):

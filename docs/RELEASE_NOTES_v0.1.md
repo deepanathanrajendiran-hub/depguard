@@ -35,7 +35,7 @@ A three-arm ablation scored by the same 4-predicate mechanical verifier, paired-
 - Typed **MCP server** (stdio, 6 tools); **CLI** (`depguard-triage`) + **web demo** (SSE,
   coverage-aware fallback); **OpenTelemetry GenAI** spans → Langfuse (1:1).
 
-## Not in v0.1 (gated backlog — `docs/DEPGUARD_BACKLOG.md`)
+## Not in v0.1 (gated backlog)
 
 Full-corpus freeze, crates.io/Go, MCP HTTP transport, prompt-injection rail + red-team eval,
 online evals, LLM-judge calibration, Cloud Run auto-deploy, packaging. No dates until v0.1

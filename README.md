@@ -61,8 +61,9 @@ rows are a single run, not a bit-reproducible one.
 A merge-blocking CI job (`scripts/run_eval.py`, `.github/workflows/eval-gate.yml`) re-scores the
 deterministic arm on every push and fails the build if correctness or groundedness slips below the
 committed baseline. Deleting one step from the planner drops correctness to 0.45 and groundedness
-to 0.14, and CI goes red with a gold-vs-actual trajectory diff. Reproduction is in
-`docs/notes-for-d12.md`.
+to 0.14, and CI goes red with a gold-vs-actual trajectory diff. To reproduce, delete the
+`cross_check_source` step from `deterministic_plan` in `depguard/graph.py` and run
+`python scripts/run_eval.py check`.
 <!-- TODO: add docs/img/red-ci.gif once recorded from a real PR run -->
 
 ## Tracing

@@ -1,4 +1,4 @@
-# DepGuard demo image (docs/HANDOFF_D8-D14.md §D11). The frozen corpus is BAKED IN, so the
+# DepGuard demo image. The frozen corpus is BAKED IN, so the
 # container needs no network and no API key to serve verifiable verdicts.
 FROM python:3.12-slim
 

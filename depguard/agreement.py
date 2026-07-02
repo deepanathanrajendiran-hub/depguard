@@ -1,7 +1,7 @@
 """Source-agreement core (DECISIONS.md §0.3 / §5 P4) — the ONE definition of
 `agree | disagree | single_source`, imported by BOTH the §5 verifier (gold labeler)
 and §2.4 tool 6 `crosscheck_second_source` (the agent-facing tool), so they cannot
-diverge (handoff house rule 3, shared-oracle principle).
+diverge (shared-oracle principle).
 
 Agreement is computed on RAW containment (pre-withdrawn-override, v1.2.0): the
 withdrawn override is an actionability rule, not a source conflict.

@@ -1,4 +1,4 @@
-"""The `single_agent` ablation arm (docs/HANDOFF_D8-D14.md §D8).
+"""The `single_agent` ablation arm.
 
 ONE ReAct-style loop holding all six tools — NO supervisor and NO separate planner
 (contrast `multi_agent`, which has an LLM planner feeding a fixed executor). The agent's
@@ -18,8 +18,8 @@ Policy interface (two kinds, unified in `run_single_agent`):
                `canonical_policy`/`lazy_policy` reference chains that drive the arm
                deterministically in keyless CI).
   * interactive — any object exposing `.next(observation) -> decision | None`, driven in a
-               real observe→act loop. `LLMReactPolicy` (DeepSeek, house rule 9) is the live
-               arm, used only when LLM_API_KEY is set (D9's ablation run).
+               real observe→act loop. `LLMReactPolicy` (DeepSeek) is the live
+               arm, used only when LLM_API_KEY is set.
 A `decision` is `{"tool": <tool_name|"__done__">, "alert_id": <str|None>}`.
 """
 
@@ -102,13 +102,13 @@ def lazy_policy(trajectory_input: dict) -> list[dict]:
 
 
 # --------------------------------------------------------------------------- #
-# the live arm: a real ReAct policy over DeepSeek (house rule 9)
+# the live arm: a real ReAct policy over DeepSeek
 # --------------------------------------------------------------------------- #
 
 class LLMReactPolicy:
     """ONE ReAct loop over DeepSeek: given the tools and the observations so far, pick the
     NEXT single tool call (or `__done__`). No planner, no supervisor. Requires LLM_API_KEY —
-    used only in D9's ablation run, never in keyless CI. `model_route` records the model id
+    used only in the ablation run, never in keyless CI. `model_route` records the model id
     in the trajectory."""
 
     def __init__(self, model_route: str):

@@ -1,9 +1,9 @@
-"""The three-arm ablation harness (DECISIONS.md §4.4; docs/HANDOFF_D8-D14.md §D9).
+"""The three-arm ablation harness (DECISIONS.md §4.4).
 
 Runs each arm over the SAME golden set, scores every trajectory with the SAME metrics
 module, and reports per-arm aggregates, pairwise paired-bootstrap 95% CIs, and the
 verdict-flip 3×3 matrix. The deterministic_script arm always runs (no key); the two LLM
-arms run ONLY when LLM_API_KEY is set (house rule 9) — otherwise they are reported as
+arms run ONLY when LLM_API_KEY is set — otherwise they are reported as
 `pending`, never fabricated (house rule: no un-measured number anywhere).
 
 The metric scores and CIs are byte-reproducible: the script arm is deterministic and the

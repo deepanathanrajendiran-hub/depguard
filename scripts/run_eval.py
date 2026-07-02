@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""The merge-blocking eval (DECISIONS.md §4.1 metrics; DEPGUARD_V01_PLAN D7).
+"""The merge-blocking eval (DECISIONS.md §4.1 metrics).
 
 Runs the graph over every golden input and scores it with the mechanical metrics.
 The gate is keyed to the **deterministic_script arm**: fully reproducible, no API key,

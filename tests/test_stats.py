@@ -1,4 +1,4 @@
-"""D9 — paired-bootstrap statistics (docs/HANDOFF_D8-D14.md §D9).
+"""D9 — paired-bootstrap statistics.
 
 The ablation compares arms on the SAME golden trajectories, so per-trajectory deltas
 d_i = m_A(t_i) − m_B(t_i) are paired — pairing cancels per-trajectory difficulty variance.

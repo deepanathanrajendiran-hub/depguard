@@ -3,7 +3,7 @@
 ONE source of truth for the id formula, imported by BOTH the freeze script
 (`scripts/freeze_micro.py`, which stamps the id into `SNAPSHOT.lock`) and the
 corpus test (`tests/test_corpus.py`, which recomputes it from the on-disk bytes)
-and D4's snapshot loader — so the stored id and any recomputation cannot drift.
+and the snapshot loader — so the stored id and any recomputation cannot drift.
 
 v0.1 form (DECISIONS.md editorial note 3 — NO `all.zip` operand in the micro-corpus):
 

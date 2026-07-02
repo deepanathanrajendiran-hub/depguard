@@ -93,7 +93,7 @@ def export_trajectory_spans(trajectory: dict, *, exporter=None) -> TracerProvide
 
 
 def configure_langfuse_exporter():
-    """An OTLP exporter to Langfuse if keys are set (§D6), else None (export no-ops)."""
+    """An OTLP exporter to Langfuse if keys are set, else None (export no-ops)."""
     public = os.environ.get("LANGFUSE_PUBLIC_KEY")
     secret = os.environ.get("LANGFUSE_SECRET_KEY")
     if not (public and secret):

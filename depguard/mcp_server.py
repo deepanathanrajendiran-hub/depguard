@@ -1,5 +1,4 @@
-"""DepGuard's six triage tools, published as a typed MCP server (DECISIONS.md §0.1;
-docs/HANDOFF_D8-D14.md §D10). stdio transport ONLY — Streamable HTTP is BANNED in v0.1
+"""DepGuard's six triage tools, published as a typed MCP server (DECISIONS.md §0.1). stdio transport ONLY — Streamable HTTP is BANNED in v0.1
 (backlog). Any stock MCP client (Claude Code, Claude Desktop, …) installs it and gets the
 same six tools the agents use, returning the same `{ok,data,error}` envelope verbatim.
 

@@ -1,4 +1,4 @@
-"""D8 — the two non-multi-agent ablation arms (docs/HANDOFF_D8-D14.md §D8).
+"""D8 — the two non-multi-agent ablation arms.
 
 Both arms MUST emit the same schema-valid §3 Trajectory as the multi-agent graph so
 one verifier + one metrics module score all three. The deterministic script arm is the

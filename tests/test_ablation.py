@@ -1,4 +1,4 @@
-"""D9 — the ablation harness (docs/HANDOFF_D8-D14.md §D9), exercised WITHOUT an LLM key.
+"""D9 — the ablation harness, exercised WITHOUT an LLM key.
 
 The script arm always runs; the LLM arms are pending (no key). We assert the harness shape,
 the script arm's by-construction perfect correctness/groundedness, byte-reproducibility of

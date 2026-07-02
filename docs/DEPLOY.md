@@ -5,7 +5,7 @@ SSE. The frozen `corpus/` is baked into the image, so the container needs **no n
 API key** to serve verifiable verdicts. Deployment itself needs the owner's `gcloud` auth —
 everything below is copy-paste ready.
 
-> **First thing cut if the build slips** (plan house rule 13): the CLI + MCP server + Loom
+> **First thing cut if the build slips**: the CLI + MCP server + Loom
 > stand on their own. This page is a bonus, not load-bearing.
 
 ## Run locally

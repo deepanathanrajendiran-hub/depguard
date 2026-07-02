@@ -1,4 +1,4 @@
-"""The three-arm ablation (docs/DEPGUARD_V01_PLAN.md D8). All three arms emit the SAME
+"""The three-arm ablation. All three arms emit the SAME
 schema-valid §3 Trajectory so one verifier + one metrics module score them:
 
 - `deterministic_script` — the deterministic semver-containment script (no LLM); the frozen

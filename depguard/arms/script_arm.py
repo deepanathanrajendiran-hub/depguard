@@ -1,4 +1,4 @@
-"""The `deterministic_script` ablation arm (docs/HANDOFF_D8-D14.md §D8; house rules 10-11).
+"""The `deterministic_script` ablation arm.
 
 Honest label: the **deterministic semver-containment script** — the version-range slice
 osv-scanner performs WITHOUT call-graph reachability. It contains NO LLM.
@@ -12,7 +12,7 @@ SECOND deterministic implementation that could drift from the first (and from th
 this arm is a thin adapter over that one pipeline. Consequence, asserted as a test: this
 arm reproduces `golden/trajectories/<seed>.jsonl` byte-for-byte. Its verdicts equal the
 oracle gold BY CONSTRUCTION because every tool it calls IS the oracle the gold labeler
-calls — the headline finding of the ablation, not an agent victory (house rule 11).
+calls — the headline finding of the ablation, not an agent victory.
 """
 
 from __future__ import annotations
