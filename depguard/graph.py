@@ -246,20 +246,22 @@ class Pipeline:
         a = self.alerts[alert_id]
         pa = self.per_alert.setdefault(alert_id, {})
         record = pa.get("record")
-        if record is not None:
-            result = check_version_affected(
-                a["ecosystem"], a["name"], a["pinned_version"], record,
-                corpus_snapshot_id=self.snapshot.snapshot_id,
-            )
-            self.builder.add_tool_call(
-                agent="tool_worker", tool_name="check_version_affected",
-                arguments={"ecosystem": a["ecosystem"], "name": a["name"],
-                           "version": a["pinned_version"], "osv_record": {"id": record["id"]}},
-                result=result, source="local",
-            )
-            data = result["data"] if result["ok"] else {}
-            pa["contained"] = bool(data.get("contained"))
-            pa["withdrawn_ts"] = data.get("withdrawn_timestamp")
+        if record is None:
+            self.builder._plan[step_index]["status"] = "skipped"
+            return
+        result = check_version_affected(
+            a["ecosystem"], a["name"], a["pinned_version"], record,
+            corpus_snapshot_id=self.snapshot.snapshot_id,
+        )
+        self.builder.add_tool_call(
+            agent="tool_worker", tool_name="check_version_affected",
+            arguments={"ecosystem": a["ecosystem"], "name": a["name"],
+                       "version": a["pinned_version"], "osv_record": {"id": record["id"]}},
+            result=result, source="local",
+        )
+        data = result["data"] if result["ok"] else {}
+        pa["contained"] = bool(data.get("contained"))
+        pa["withdrawn_ts"] = data.get("withdrawn_timestamp")
         self.builder.mark_executed(step_index)
 
     def _exec_minfix(self, step_index, alert_id):
@@ -267,46 +269,50 @@ class Pipeline:
         pa = self.per_alert.setdefault(alert_id, {})
         record = pa.get("record")
         versions = pa.get("versions", [])
-        if record is not None:
-            result = compute_minimal_fix(
-                a["ecosystem"], a["name"], a["pinned_version"], record, versions,
-                corpus_snapshot_id=self.snapshot.snapshot_id,
-            )
-            self.builder.add_tool_call(
-                agent="tool_worker", tool_name="compute_minimal_fix",
-                arguments={"ecosystem": a["ecosystem"], "name": a["name"],
-                           "current_version": a["pinned_version"],
-                           "osv_record": {"id": record["id"]}},
-                result=result, source="local",
-            )
-            pa["minimal_fixed"] = result["data"]["minimal_fixed_version"] if result["ok"] else None
+        if record is None:
+            self.builder._plan[step_index]["status"] = "skipped"
+            return
+        result = compute_minimal_fix(
+            a["ecosystem"], a["name"], a["pinned_version"], record, versions,
+            corpus_snapshot_id=self.snapshot.snapshot_id,
+        )
+        self.builder.add_tool_call(
+            agent="tool_worker", tool_name="compute_minimal_fix",
+            arguments={"ecosystem": a["ecosystem"], "name": a["name"],
+                       "current_version": a["pinned_version"],
+                       "osv_record": {"id": record["id"]}},
+            result=result, source="local",
+        )
+        pa["minimal_fixed"] = result["data"]["minimal_fixed_version"] if result["ok"] else None
         self.builder.mark_executed(step_index)
 
     def _exec_crosscheck(self, step_index, alert_id):
         a = self.alerts[alert_id]
         pa = self.per_alert.setdefault(alert_id, {})
         record = pa.get("record")
-        if record is not None:
-            osv_verdict = {
-                "contained": pa.get("contained", False),
-                "advisory_id": record["id"],
-                "aliases": record.get("aliases", []),
-            }
-            result = crosscheck_second_source(
-                a["ecosystem"], a["name"], a["pinned_version"], osv_verdict,
-                snapshot=self.snapshot,
-            )
-            tc_id = self.builder.add_tool_call(
-                agent="tool_worker", tool_name="crosscheck_second_source",
-                arguments={"ecosystem": a["ecosystem"], "name": a["name"],
-                           "version": a["pinned_version"],
-                           "osv_verdict": {"advisory_id": record["id"]}},
-                result=result, source="deps.dev",
-            )
-            if result["ok"]:
-                d = result["data"]
-                pa["agreement"] = d["agreement"]
-                pa["dd_evidence_id"] = self._add_depsdev_evidence(alert_id, record, d, pa, tc_id)
+        if record is None:
+            self.builder._plan[step_index]["status"] = "skipped"
+            return
+        osv_verdict = {
+            "contained": pa.get("contained", False),
+            "advisory_id": record["id"],
+            "aliases": record.get("aliases", []),
+        }
+        result = crosscheck_second_source(
+            a["ecosystem"], a["name"], a["pinned_version"], osv_verdict,
+            snapshot=self.snapshot,
+        )
+        tc_id = self.builder.add_tool_call(
+            agent="tool_worker", tool_name="crosscheck_second_source",
+            arguments={"ecosystem": a["ecosystem"], "name": a["name"],
+                       "version": a["pinned_version"],
+                       "osv_verdict": {"advisory_id": record["id"]}},
+            result=result, source="deps.dev",
+        )
+        if result["ok"]:
+            d = result["data"]
+            pa["agreement"] = d["agreement"]
+            pa["dd_evidence_id"] = self._add_depsdev_evidence(alert_id, record, d, pa, tc_id)
         self.builder.mark_executed(step_index)
 
     # -- verifier ---------------------------------------------------------- #
@@ -315,6 +321,11 @@ class Pipeline:
             if step["action"] != "emit_verdict":
                 continue
             aid = step["alert_id"]
+            if self.per_alert.get(aid, {}).get("record") is None:
+                # retrieval failed / advisory absent → nothing to verdict (a branch);
+                # skip rather than emit an evidence-less verdict (§3.3 minItems 1).
+                self.builder._plan[i]["status"] = "skipped"
+                continue
             self._emit_verdict(aid)
             self.builder.mark_executed(i, produced_verdict_for=aid)
 

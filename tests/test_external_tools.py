@@ -214,12 +214,12 @@ def test_crosscheck_malformed_extract_is_snapshot_malformed():
 # ===================================================================== #
 
 def test_no_http_in_the_tool_and_data_layer():
-    """The tool + corpus layer must never touch the network (§1.4). graph.py is
-    EXCLUDED: its `multi_agent` planner is the one legitimate LLM node (house rule 9),
-    so it references the provider base URL by design."""
+    """The tool + corpus layer must never touch the network (§1.4). graph.py and
+    otel.py are EXCLUDED: the `multi_agent` planner (house rule 9) and the Langfuse
+    OTLP exporter (§D6) are the two legitimate outbound integrations by design."""
     import depguard
     root = Path(depguard.__file__).parent
-    allowed_network = {"graph.py"}
+    allowed_network = {"graph.py", "otel.py"}
     offenders = []
     for py in root.rglob("*.py"):
         if py.name in allowed_network:

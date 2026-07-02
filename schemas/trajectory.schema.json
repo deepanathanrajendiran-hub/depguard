@@ -267,7 +267,7 @@
         "source": { "const": "deps.dev" },
         "advisory_id": { "type": ["string", "null"] },
         "checked_version": { "type": "string", "minLength": 1 },
-        "second_source_advisory_keys": { "type": "array", "items": { "type": "string", "pattern": "^GHSA-" } },
+        "second_source_advisory_keys": { "type": "array", "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9]*-[A-Za-z0-9.-]+$" }, "$comment": "deps.dev advisoryKeys are NOT GHSA-exclusive — it also serves PYSEC/CVE/GO/RUSTSEC ids (verified against live data 2026-07-01); §3.2's 'GHSA-...' was illustrative. Any advisory-db-prefixed id is valid." },
         "per_version_affected_bool": { "type": "boolean" },
         "published_versions": { "type": "array", "items": { "type": "string" } },
         "license": { "const": "CC-BY-4.0", "$comment": "ALL deps.dev-derived rows are CC-BY-4.0, enforced at row level (§1.7)" },
