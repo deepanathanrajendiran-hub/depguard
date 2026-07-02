@@ -120,3 +120,18 @@ per-arm trajectories and per-trajectory metric rows are persisted under `results
 audit trail, so any figure here is checkable post-hoc. Cost is **derived** from measured
 token counts at DeepSeek's published rate (stated in the report); tokens and latency are
 measured.
+
+## Other v0.1 scope notes
+
+- **No LLM judge in the correctness path.** Correctness and groundedness are **100%
+  mechanical** — the same oracle labels gold and scores predictions. DECISIONS.md §4.3
+  reserves a *calibrated* LLM judge for **soft narrative quality only** (e.g. the readability
+  of a `reconciliation_note`), never for verdict correctness; that judge is **not built in
+  v0.1**. So no result here depends on an LLM grading an LLM.
+- **Frozen snapshot, not a live scanner.** All advisory/version data is a committed 2026-07
+  snapshot (`corpus_snapshot_id` on every evidence row); the tools never touch the network.
+  Verdicts reflect that snapshot's accuracy, not today's advisory database — a real deployment
+  would re-freeze on a schedule and diff snapshots. The demo says this in the UI.
+- **Sandbox tools, not a real upgrade.** DepGuard *names* the minimal safe upgrade from the
+  published-version list; it does not apply it, run the project's tests against it, or check
+  transitive/peer-dependency compatibility. Acting on the verdict is out of v0.1 scope.
