@@ -188,8 +188,15 @@ class _Executor:
         agent = "retriever" if action in _RETRIEVER_ACTIONS else "tool_worker"
         if tool == "parse_manifest":
             self._parse_manifest(agent, action)
+        elif aid not in self.alerts:
+            # A per-alert tool needs a valid alert_id, but a real LLM sometimes emits a
+            # null/unknown one. Treat it as a wasted no-op step (recorded in history so the
+            # ReAct loop can course-correct) — NEVER crash the whole run on one bad decision.
+            self._history.append({"tool": tool, "alert_id": aid,
+                                  "result": {"ignored": "missing or unknown alert_id"}})
+            return
         else:
-            if aid is not None and aid not in self._order:
+            if aid not in self._order:
                 self._order.append(aid)
             {
                 "osv_query_package": self._retrieve,

@@ -137,6 +137,28 @@ def test_single_agent_tool_selection_recall_full(snap):
     assert tool_selection(traj, gold)["recall"] == 1.0
 
 
+def test_single_agent_survives_malformed_alert_ids(snap):
+    """A real LLM sometimes emits a per-alert tool with a null/unknown alert_id (this crashed
+    the first re-run). The executor must treat it as a wasted no-op, never KeyError."""
+    def bad_policy(_inp):
+        return [
+            {"tool": "parse_manifest", "alert_id": None},
+            {"tool": "osv_query_package", "alert_id": None},        # malformed: null id
+            {"tool": "osv_query_package", "alert_id": "ghost"},     # malformed: unknown id
+            {"tool": "osv_query_package", "alert_id": "seed_01-a1"},  # valid
+            {"tool": "check_version_affected", "alert_id": "seed_01-a1"},
+            {"tool": "resolve_published_versions", "alert_id": "seed_01-a1"},
+            {"tool": "compute_minimal_fix", "alert_id": "seed_01-a1"},
+            {"tool": "crosscheck_second_source", "alert_id": "seed_01-a1"},
+        ]
+
+    traj = run_single_agent(SEED_INPUTS["seed_01"], snap, policy=bad_policy)  # must not raise
+    assert traj["system_variant"] == "single_agent"
+    # the two malformed decisions produced NO tool calls (only the 5 valid + parse_manifest)
+    assert len(traj["tool_calls"]) == 6
+    assert len(traj["verdicts"]) == 1  # the one real alert still gets a verdict
+
+
 class _ReplayController:
     """An interactive `.next()` policy (like LLMReactPolicy) that replays a fixed decision
     list — exercises the real observe→act loop with NO API key."""
