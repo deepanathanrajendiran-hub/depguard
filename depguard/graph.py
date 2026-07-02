@@ -75,8 +75,6 @@ def deterministic_plan(manifest: list[dict], alerts: list[dict]) -> list[dict]:
              "rationale": "is the pinned version in the affected range?"},
             {"action": "compute_minimal_fixed", "alert_id": aid,
              "rationale": "smallest published safe upgrade"},
-            {"action": "cross_check_source", "alert_id": aid,
-             "rationale": "reconcile against deps.dev"},
             {"action": "emit_verdict", "alert_id": aid,
              "rationale": "emit the reconciled verdict"},
         ]
