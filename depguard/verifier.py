@@ -30,8 +30,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from depguard.agreement import DepsDevObservation, agreement_state
 from depguard.oracle import RangeUnresolvableError, record_containment, select_entries
 from depguard.tools.pure import minimal_fix_gold
+
+# DepsDevObservation is re-exported (moved to depguard.agreement for D4 tool 6 reuse).
+__all__ = ["DepsDevObservation", "scoring_tier", "verify_verdict", "VerdictScore",
+           "PredicateResult"]
 
 # Ecosystem-keyed scoring tiers (§1.2 / §5(c)). tests/test_verifier.py asserts
 # these constants equal the normative registry (schemas/ecosystem_system_map.json).
@@ -43,15 +48,6 @@ def scoring_tier(ecosystem: str) -> str:
     if ecosystem not in _CORPUS_ECOSYSTEMS:
         raise LookupError(f"{ecosystem!r} is not a corpus ecosystem (DECISIONS.md §1.2)")
     return "membership_and_minfix" if ecosystem in _MINFIX_ECOSYSTEMS else "membership_only"
-
-
-@dataclass(frozen=True)
-class DepsDevObservation:
-    """What the frozen deps.dev extract says about the checked (package, version)."""
-
-    package_known: bool
-    version_advisory_keys: list[str]  # advisoryKeys[] on the checked pinned version
-    package_advisory_keys: list[str]  # union of advisoryKeys[] across all versions
 
 
 @dataclass(frozen=True)
@@ -76,17 +72,6 @@ def _excluded(reason: str) -> VerdictScore:
         status="excluded", exclusion_reason=reason,
         predicates={}, correct=None, agreement_metric_eligible=False,
     )
-
-
-def _agreement_gold(
-    raw_contained: bool, alias_set: frozenset[str], depsdev: DepsDevObservation | None
-) -> str:
-    if depsdev is None or not depsdev.package_known:
-        return "single_source"
-    if not alias_set & set(depsdev.package_advisory_keys):
-        return "single_source"  # silent after full alias resolution (§0.3)
-    depsdev_says_affected = bool(alias_set & set(depsdev.version_advisory_keys))
-    return "agree" if depsdev_says_affected == raw_contained else "disagree"
 
 
 def verify_verdict(
@@ -132,7 +117,7 @@ def verify_verdict(
 
     # P4 — source agreement on RAW containment (v1.2.0), full alias resolution
     alias_set = frozenset({osv_record["id"], *osv_record.get("aliases", [])})
-    agreement_gold = _agreement_gold(raw_contained, alias_set, depsdev)
+    agreement_gold = agreement_state(raw_contained, alias_set, depsdev)
     p4_passed = verdict["source_agreement"] == agreement_gold
     if agreement_gold == "disagree" and not verdict.get("reconciliation_note"):
         p4_passed = False  # §3.3: note MUST be non-empty on disagree

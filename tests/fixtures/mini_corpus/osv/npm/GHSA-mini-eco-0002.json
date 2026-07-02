@@ -1,0 +1,22 @@
+{
+  "id": "GHSA-mini-eco-0002",
+  "modified": "2024-01-01T00:00:00Z",
+  "withdrawn": null,
+  "aliases": [],
+  "summary": "Widget advisory with only an ECOSYSTEM range and no enumerated versions — must be EXCLUDED by osv_query_package curation (§1.2/§2.4 tool 2).",
+  "affected": [
+    {
+      "package": {"ecosystem": "npm", "name": "widget", "purl": null},
+      "ranges": [{"type": "ECOSYSTEM", "events": [{"introduced": "0"}]}],
+      "versions": []
+    }
+  ],
+  "references": [],
+  "database_specific": null,
+  "_provenance": {
+    "source": "osv",
+    "source_url": "https://github.com/advisories/GHSA-mini-eco-0002",
+    "license": "CC-BY-4.0",
+    "retrieved": "2026-07-01"
+  }
+}

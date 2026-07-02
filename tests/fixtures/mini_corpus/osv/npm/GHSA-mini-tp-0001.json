@@ -1,0 +1,23 @@
+{
+  "id": "GHSA-mini-tp-0001",
+  "modified": "2024-01-01T00:00:00Z",
+  "withdrawn": null,
+  "aliases": ["CVE-2024-00001"],
+  "summary": "Test widget vulnerability (npm SEMVER [0, 2.0.0)).",
+  "affected": [
+    {
+      "package": {"ecosystem": "npm", "name": "widget", "purl": null},
+      "ranges": [{"type": "SEMVER", "events": [{"introduced": "0"}, {"fixed": "2.0.0"}]}],
+      "versions": [],
+      "scoring_tier": "membership_and_minfix"
+    }
+  ],
+  "references": [{"type": "WEB", "url": "https://example.test/widget"}],
+  "database_specific": null,
+  "_provenance": {
+    "source": "osv",
+    "source_url": "https://github.com/advisories/GHSA-mini-tp-0001",
+    "license": "CC-BY-4.0",
+    "retrieved": "2026-07-01"
+  }
+}

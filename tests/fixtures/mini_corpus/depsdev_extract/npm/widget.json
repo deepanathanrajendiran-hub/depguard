@@ -1,0 +1,18 @@
+{
+  "system": "npm",
+  "name": "widget",
+  "versions": ["1.0.0", "1.5.0", "2.0.0", "2.1.0"],
+  "default_version": "2.1.0",
+  "advisory_keys_by_version": {
+    "1.5.0": ["GHSA-mini-tp-0001"],
+    "2.0.0": [],
+    "2.1.0": []
+  },
+  "captured_at": "2026-07-01",
+  "_provenance": {
+    "source": "deps.dev",
+    "source_url": "https://api.deps.dev/v3/systems/npm/packages/widget",
+    "license": "CC-BY-4.0",
+    "note": "derived non-substantial extract (§1.7b) — never raw responses"
+  }
+}
