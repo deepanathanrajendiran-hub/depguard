@@ -11,6 +11,8 @@ dependencies = [
     "jsonschema>=4.21",
     "packaging>=24.0",
     "semver>=3.0",
+    "langgraph>=0.2",
+    "langchain-openai>=0.2",
 ]
 
 [project.optional-dependencies]

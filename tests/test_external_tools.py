@@ -213,13 +213,19 @@ def test_crosscheck_malformed_extract_is_snapshot_malformed():
 # No network in the tool layer (§1.4 / D4 acceptance)
 # ===================================================================== #
 
-def test_no_http_in_the_package_source():
+def test_no_http_in_the_tool_and_data_layer():
+    """The tool + corpus layer must never touch the network (§1.4). graph.py is
+    EXCLUDED: its `multi_agent` planner is the one legitimate LLM node (house rule 9),
+    so it references the provider base URL by design."""
     import depguard
     root = Path(depguard.__file__).parent
+    allowed_network = {"graph.py"}
     offenders = []
     for py in root.rglob("*.py"):
+        if py.name in allowed_network:
+            continue
         text = py.read_text()
         for needle in ("http://", "https://", "urllib.request", "requests.get", "socket."):
             if needle in text:
                 offenders.append(f"{py.name}:{needle}")
-    assert not offenders, f"network references in tool layer: {offenders}"
+    assert not offenders, f"network references in tool/data layer: {offenders}"
