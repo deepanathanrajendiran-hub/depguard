@@ -1,0 +1,14 @@
+{
+  "corpus_snapshot_id": "depguard-corpus-2026-07-01-c6f3471a2245",
+  "n_trajectories": 29,
+  "deterministic_script": {
+    "aggregate": {
+      "tool_selection": 1.0,
+      "action_advancement": 0.125,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    }
+  },
+  "note": "Honest first-run numbers \u2014 never rounded up. action_advancement is the structural ratio of verdict-producing steps to all executed steps (\u00a74.1.2); it is not an error. NO ablation/comparison numbers here \u2014 those arrive in D8\u2013D9 (out of v0.1 D7 scope)."
+}

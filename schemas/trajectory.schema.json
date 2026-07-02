@@ -58,7 +58,7 @@
               "ecosystem": { "$ref": "#/$defs/ecosystem" },
               "name": { "type": "string", "minLength": 1 },
               "pinned_version": { "type": "string", "minLength": 1 },
-              "advisory_id": { "type": "string", "pattern": "^(GHSA|CVE|OSV)-" },
+              "advisory_id": { "type": "string", "pattern": "^[A-Z][A-Z0-9]*-[A-Za-z0-9.-]+$", "$comment": "any OSV advisory-db id (GHSA/CVE/OSV/PYSEC/GO/RUSTSEC/...); §3's GHSA/CVE were illustrative" },
               "source": { "const": "scanner" }
             }
           }

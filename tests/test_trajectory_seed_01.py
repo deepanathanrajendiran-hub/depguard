@@ -107,7 +107,8 @@ def test_committed_golden_artifacts_match_a_fresh_run():
 
 def test_gold_sidecar_shape():
     gold = json.loads((REPO / "golden" / "expected" / f"{SEED}.jsonl").read_text())
-    assert set(gold) == {"gold_ref", "gold_plan_actions", "gold_tool_calls", "gold_verdicts"}
+    assert set(gold) == {"gold_ref", "gold_plan_actions", "gold_plan",
+                         "gold_tool_calls", "gold_verdicts"}
     assert gold["gold_plan_actions"][0] == "plan"
     assert gold["gold_plan_actions"][-1] == "emit_verdict"
     assert gold["gold_tool_calls"][0]["tool_name"] == "parse_manifest"

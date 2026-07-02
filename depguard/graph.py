@@ -27,7 +27,7 @@ from typing import Any, Callable, TypedDict
 from langgraph.graph import END, START, StateGraph
 
 from depguard.agreement import agreement_state, observe_from_extract
-from depguard.oracle import record_containment
+from depguard.oracle import record_containment, select_entries
 from depguard.snapshot import Snapshot
 from depguard.tools.external import (
     crosscheck_second_source,
@@ -353,7 +353,8 @@ class Pipeline:
     def _add_osv_evidence(self, alert_id, record, tool_call_id) -> str:
         eco = self.alerts[alert_id]["ecosystem"]
         name = self.alerts[alert_id]["name"]
-        range_type, range_events, enumerated = _osv_evidence_fields(record, eco, name)
+        version = self.alerts[alert_id]["pinned_version"]
+        range_type, range_events, enumerated = _osv_evidence_fields(record, eco, name, version)
         prov = record.get("_provenance", {})
         row = {
             "evidence_id": f"ev-osv-{alert_id}",
@@ -412,24 +413,33 @@ def _find_record(advisories, advisory_id):
     return None
 
 
-def _osv_evidence_fields(record, eco, name):
-    entries = [
-        e for e in record.get("affected", [])
-        if (e.get("package") or {}).get("ecosystem") == eco
-        and (e.get("package") or {}).get("name") == name
-    ]
+def _matched_entry(record, eco, name, version):
+    """The affected entry that DECIDES containment for `version` (the witness), so the
+    Evidence row cites the entry that actually produced the verdict — critical for
+    multi-`affected[]` records where a later entry is the one containing the version.
+    Falls back to the first E_A entry when none contains (a not-contained verdict)."""
+    entries = select_entries(record, eco, name)
     for e in entries:
-        semver = [r for r in e.get("ranges") or [] if r.get("type") == "SEMVER"]
-        if semver:
-            return "SEMVER", list(semver[0].get("events", [])), (e.get("versions") or None)
-    for e in entries:
-        ranges = e.get("ranges") or []
-        if ranges:
-            rt = ranges[0].get("type", "ECOSYSTEM")
-            return rt, list(ranges[0].get("events", [])), (e.get("versions") or None)
-    # only enumerated versions, no ranges
-    versions = (entries[0].get("versions") if entries else None) or None
-    return "ECOSYSTEM", [], versions
+        try:
+            if record_containment(dict(record, affected=[e]), eco, name, version).contained:
+                return e
+        except Exception:  # noqa: BLE001 — undecidable entry, keep looking
+            continue
+    return entries[0] if entries else None
+
+
+def _osv_evidence_fields(record, eco, name, version):
+    entry = _matched_entry(record, eco, name, version)
+    if entry is None:
+        return "ECOSYSTEM", [], None
+    semver = [r for r in entry.get("ranges") or [] if r.get("type") == "SEMVER"]
+    if semver:
+        return "SEMVER", list(semver[0].get("events", [])), (entry.get("versions") or None)
+    ranges = entry.get("ranges") or []
+    if ranges:
+        return ranges[0].get("type", "ECOSYSTEM"), list(ranges[0].get("events", [])), \
+            (entry.get("versions") or None)
+    return "ECOSYSTEM", [], (entry.get("versions") or None)
 
 
 # --------------------------------------------------------------------------- #
@@ -555,6 +565,9 @@ def build_gold(trajectory_input: dict, snapshot: Snapshot) -> dict:
     return {
         "gold_ref": gold_ref_for(trajectory_input),
         "gold_plan_actions": [s["action"] for s in plan],
+        # gold_plan carries alert_id per step — required for the alert-grouped
+        # plan-adherence metric (§4.1.3); gold_plan_actions alone cannot group.
+        "gold_plan": [{"action": s["action"], "alert_id": s["alert_id"]} for s in plan],
         "gold_tool_calls": gold_tool_calls,
         "gold_verdicts": [gold_verdict(a, snapshot) for a in alerts],
     }

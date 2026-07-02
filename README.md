@@ -24,13 +24,25 @@ deterministic pipeline — and how would you even know?**
 
 ## Status
 
-🚧 **Day 1** (2026-07-01). Currently in the repo: the frozen design ([DECISIONS.md](DECISIONS.md)),
-the four normative schema registries ([schemas/](schemas/)), and the consistency test suite.
-Build plan: [docs/DEPGUARD_V01_PLAN.md](docs/DEPGUARD_V01_PLAN.md).
+🚧 **Building v0.1** (D3–D7 complete, 2026-07-02). In the repo and green in CI:
+
+- **Frozen micro-corpus** — 40 hand-picked npm + PyPI advisories + a deps.dev *derived
+  extract* (ToS-safe), byte-reproducible from `scripts/freeze_micro.py`
+  (`corpus_snapshot_id = depguard-corpus-2026-07-01-c6f3471a2245`).
+- **Six typed tools** on the uniform `{ok,data,error}` envelope — three pure (the oracle),
+  three snapshot-backed (they *are* the deterministic CI mocks; no network in the tool layer).
+- **The 4-predicate mechanical verifier** (same code labels gold and scores predictions)
+  and the **four §4.1 metrics** (tool-selection, action-advancement, alert-grouped
+  plan-adherence, groundedness + correctness).
+- **LangGraph graph** (planner → retriever → tool_worker → verifier) emitting schema-valid
+  trajectories, mirrored 1:1 to **OpenTelemetry GenAI spans** (Langfuse-ready).
+- **29 golden trajectories** across every branch category, gold-labeled by the oracle, plus a
+  **merge-blocking eval gate** (`scripts/run_eval.py`) keyed to `golden/baseline.json`.
 
 **House rule: no metric appears in this README until the run that produced it exists.**
-Results (with CIs and an honest LIMITATIONS section — including the multi-agent verdict-flip count,
-even if it is zero) land with the `v0.1` release.
+The three-arm ablation numbers (with paired-bootstrap CIs) are **D8–D9 work and are not
+here yet.** Honest constraints — including that the frozen corpus contains **zero genuine
+source-disagreements**, exactly as predicted — are in [LIMITATIONS.md](LIMITATIONS.md).
 
 ## How it works (design frozen in [DECISIONS.md](DECISIONS.md))
 

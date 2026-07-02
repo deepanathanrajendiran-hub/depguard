@@ -24,4 +24,25 @@ pip install -e ".[dev]"
 pytest
 ```
 
-CI runs `pytest` on every push and PR; the merge-blocking golden-trajectory eval gate lands in Phase 1 (D7).
+## The merge-blocking eval gate
+
+Two CI workflows run on every push and PR:
+
+- **`ci.yml`** — `pytest` (the unit + integration suite).
+- **`eval-gate.yml`** — `python scripts/run_eval.py check`: runs the graph over all
+  29 golden inputs and scores them with the §4.1 metrics. It **blocks the merge** if
+  the reproducible `deterministic_script` arm drops any aggregate metric below
+  `golden/baseline.json`, or if any trajectory's correctness/groundedness falls under
+  1.0. This gate guards the scarce asset — the mechanical oracle + verifier + evidence.
+
+  If the `LLM_API_KEY` repo secret is set, the gate also runs the `multi_agent` (LLM)
+  arm and fails if *its* correctness/groundedness regress below baseline. The LLM arm
+  is intentionally **not** the primary blocker — a non-deterministic merge-gate is an
+  anti-pattern; plan-metric noise from the LLM never blocks.
+
+Both jobs should be marked **required** in branch protection (owner's one-time click:
+Settings → Branches → protect `main` → require `test` and `eval` status checks).
+
+Regenerate baseline + golden only from an honest run: `python scripts/gen_golden.py`
+then `python scripts/run_eval.py baseline` — commit whatever the numbers are, never
+rounded up (house rule 2).
