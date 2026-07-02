@@ -21,6 +21,7 @@ scripts = { depguard-mcp = "depguard.mcp_server:main" }
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
+demo = ["fastapi>=0.110", "uvicorn[standard]>=0.29"]
 
 [build-system]
 requires = ["hatchling"]
