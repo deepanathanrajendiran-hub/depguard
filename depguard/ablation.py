@@ -154,6 +154,11 @@ def run_ablation(seed_inputs: dict, snapshot, arms: list[str] | None = None) -> 
 def _fmt_ci(ci: dict) -> str:
     if ci["observed"] is None:
         return "n/a"
+    if ci.get("degenerate"):
+        # A zero-variance delta vector is an identity, not an estimate: printing
+        # `+0.0000 [0, 0]` invites the reader to treat a tautology as a tight CI.
+        what = "identical" if ci["observed"] == 0.0 else "constant"
+        return f"{ci['observed']:+.4f} (identity: {what} on all {ci['n']})"
     star = " *" if ci["significant"] else ""
     return f"{ci['observed']:+.4f} [{ci['ci_lo']:+.4f}, {ci['ci_hi']:+.4f}]{star}"
 

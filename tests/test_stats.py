@@ -75,3 +75,45 @@ def test_compare_arms_length_mismatch_raises():
     except ValueError:
         return
     raise AssertionError("expected ValueError on unaligned arms")
+
+
+# ------------------------------------------------------------------ #
+# Degenerate deltas (v1.1.0)
+# ------------------------------------------------------------------ #
+# The v0.1 report printed `deterministic_script − multi_agent = +0.0000 [0, 0]` for
+# every metric and let readers take the tight interval as a precise estimate. It is
+# not an estimate: both arms scored a constant 1.0 on all 29 trajectories, so the
+# delta vector is 29 identical zeros and resampling zeros can only ever return zero.
+# A zero-variance delta vector is an IDENTITY, not a hypothesis test, and must be
+# labelled as one.
+
+def test_all_zero_deltas_are_flagged_degenerate():
+    r = paired_bootstrap_delta([0.0] * 29)
+    assert r["degenerate"] is True
+    assert r["observed"] == 0.0 and r["ci_lo"] == 0.0 and r["ci_hi"] == 0.0
+    assert r["significant"] is False
+
+
+def test_constant_nonzero_deltas_are_also_degenerate():
+    """A constant delta is equally an identity — the CI collapses onto the constant
+    and `significant` would otherwise read as a real finding."""
+    r = paired_bootstrap_delta([0.25] * 12)
+    assert r["degenerate"] is True
+
+
+def test_a_real_spread_is_not_degenerate():
+    r = paired_bootstrap_delta([0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0])
+    assert r["degenerate"] is False
+
+
+def test_empty_input_is_degenerate():
+    assert paired_bootstrap_delta([])["degenerate"] is True
+
+
+def test_formatter_prints_an_identity_not_a_ci():
+    from depguard.ablation import _fmt_ci
+    out = _fmt_ci(paired_bootstrap_delta([0.0] * 29))
+    assert "identity" in out.lower()
+    assert "[" not in out, f"a degenerate delta was typeset as an interval: {out!r}"
+    spread = _fmt_ci(paired_bootstrap_delta([0.0, 1.0] * 8))
+    assert "[" in spread and "identity" not in spread.lower()

@@ -76,22 +76,26 @@ def tool_selection(trajectory: dict, gold: dict) -> dict:
 # 2. ACTION-ADVANCEMENT (§4.1.2)
 # --------------------------------------------------------------------------- #
 
-def action_advancement(trajectory: dict) -> dict:
-    """|executed steps that advanced a previously-unverdicted alert| / |executed
-    steps|. A redundant repeat (an already-verdicted alert) does not count."""
-    executed = [s for s in trajectory["plan"] if s["status"] == "executed"]
-    verdicted: set = set()
-    advancing = 0
-    fails = []
-    for s in executed:
-        pvf = s.get("produced_verdict_for")
-        if pvf is not None and pvf not in verdicted:
-            advancing += 1
-            verdicted.add(pvf)
-        elif pvf is not None:
-            fails.append(f"redundant advance for already-verdicted {pvf}")
-    score = advancing / len(executed) if executed else 0.0
-    return {"score": score, "advancing": advancing, "executed": len(executed), "fails": fails}
+def verdict_yield(trajectory: dict) -> dict:
+    """|distinct alerts given a verdict| / |alerts given| (§4.1.2, v1.1.0).
+
+    Replaces `action_advancement`, which was |steps advancing a new alert| / |executed
+    steps|. On a one-alert-per-trajectory corpus that numerator is always 0 or 1, so the
+    old metric reduced to `1 / n_executed_steps` and scored an arm HIGHER for doing less
+    work. On the shipped v0.1 `single_agent` rows it was ANTI-correlated with correctness
+    (r = -0.172): its nine 4-step runs took the experiment's best value, 0.2500, while
+    being 3-of-9 correct, and its six full 7-step runs took the worst value, 0.1429, while
+    being 6-of-6 correct — which is how results/ablation_v01.md came to mark the
+    deterministic arm "significantly worse" than an arm that got 13 of 29 alerts wrong.
+
+    `verdict_yield` is a coverage metric, not an efficiency one: it is invariant to step
+    count and makes abandonment (the `tp_axios` shape) visible as a loss."""
+    alert_ids = {a["alert_id"] for a in trajectory["input"]["alerts"]}
+    answered = {v["alert_id"] for v in trajectory["verdicts"]} & alert_ids
+    fails = [f"{aid}: no verdict emitted" for aid in sorted(alert_ids - answered)]
+    score = len(answered) / len(alert_ids) if alert_ids else 1.0
+    return {"score": score, "answered": len(answered), "alerts": len(alert_ids),
+            "fails": fails}
 
 
 # --------------------------------------------------------------------------- #
@@ -316,7 +320,7 @@ def correctness(trajectory: dict, gold: dict, snapshot) -> dict:
 # aggregation
 # --------------------------------------------------------------------------- #
 
-METRICS = ("tool_selection", "action_advancement", "plan_adherence",
+METRICS = ("tool_selection", "verdict_yield", "plan_adherence",
            "groundedness", "correctness")
 
 
@@ -326,7 +330,7 @@ def score_trajectory(trajectory: dict, gold: dict, snapshot) -> dict:
     observation for each alert. Both call sites already hold a Snapshot."""
     return {
         "tool_selection": tool_selection(trajectory, gold),
-        "action_advancement": action_advancement(trajectory),
+        "verdict_yield": verdict_yield(trajectory),
         "plan_adherence": plan_adherence(trajectory, gold),
         "groundedness": groundedness(trajectory),
         "correctness": correctness(trajectory, gold, snapshot),

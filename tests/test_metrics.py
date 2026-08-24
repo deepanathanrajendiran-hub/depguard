@@ -15,7 +15,6 @@ sys.path.insert(0, str(REPO))
 
 from depguard.graph import build_gold, run_graph  # noqa: E402
 from depguard.metrics import (  # noqa: E402
-    action_advancement,
     correctness,
     groundedness,
     plan_adherence,
@@ -107,16 +106,10 @@ def _plan(*steps):
     return out
 
 
-def test_action_advancement_counts_only_new_verdicts():
-    traj = {"plan": _plan(
-        ("plan", None, "executed", None),
-        ("emit_verdict", "a1", "executed", "a1"),
-        ("emit_verdict", "a1", "executed", "a1"),  # redundant repeat — must not count
-    )}
-    r = action_advancement(traj)
-    assert r["advancing"] == 1
-    assert r["executed"] == 3
-    assert any("redundant" in f for f in r["fails"])
+# `action_advancement` was retired in v1.1.0 — it was anti-correlated with correctness
+# (r = -0.172) because on a one-alert corpus it reduced to 1/n_executed_steps and
+# rewarded quitting early. Its replacement, `verdict_yield`, is covered end to end by
+# tests/test_verdict_yield.py.
 
 
 # --------------------------- plan-adherence ------------------------------- #
