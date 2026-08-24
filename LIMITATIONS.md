@@ -121,9 +121,13 @@ agreement-rate metric — §5 P4). A version absent from the keyed set is treate
 being *silent on that version*, never as a fabricated `disagree`. The agreement-rate metric
 therefore has few eligible data points.
 
-## Two fail-unsafe defects the harness caught, and one it did not
+## Defects found in this codebase, and who found them
 
-The trajectory harness recorded all three; only the third was noticed before shipping.
+The trajectory harness recorded the evidence for 1–3; only #3 was noticed before shipping.
+Items 4–6 were found by an independent review of the finished branch, **after** their
+numbers had already been written into the README. They are listed rather than quietly
+corrected, because "the harness catches what I would otherwise ship" only means anything if
+it is applied to my own work.
 
 1. **`verdicts_summary` dismissed unanswered alerts.** `trajectory.py::build()` computed
    `n_false_positive = n_alerts - n_true_positive`, so any alert a run failed to answer
@@ -155,6 +159,24 @@ The trajectory harness recorded all three; only the third was noticed before shi
    answered 13 of 29 alerts wrong. Replaced by `verdict_yield` (distinct alerts verdicted /
    alerts given): invariant to step count, monotone with quality, and it makes abandonment
    a loss rather than a win. The deterministic arm moves 0.125 → 1.0.
+4. **The fail-unsafe fix covered only one of two arms.** `arms/single_agent.py` carried the
+   identical `data = result["data"] if result["ok"] else {}` / `contained = bool(...)`, so
+   the ReAct arm still turned an error envelope into a shipped `affected: false` — and fed
+   that fabricated `False` back into its own policy through `_summary`. One of the three
+   ablation arms still had the bug #2's fix was announced as removing.
+5. **The "honest baseline" was crippled by its own grammar.** The regex arm parsed
+   `"requests 2.1.0 through 2.5.3"` as *excluding* 2.5.3 (`through` shared an alternation
+   with `before`, which is exclusive), and could not read a `v`-prefixed version at all —
+   while `redact._VERSION_TOKEN` matches inside `v1.27.0` anyway, so gold called those seeds
+   decidable and the control was scored against a token it could not see. `regex_baseline`
+   went **0.4000 → 0.4750**, and the headline `llm − regex` delta fell from +0.2500 to
+   **+0.1667**. A baseline weakened by its own defects flatters whatever it is compared
+   against, and it flattered mine.
+6. **The published LLM row mixed a 3-run mean with run-1 everything else.** Counts, latency,
+   calls and cost came from run 1 while the accuracy column was a mean, so the table read
+   `0.6417 … 26 | 40` when 26/40 = 0.65 and reported a third of the real spend — and the CIs
+   were computed from run 1's per-seed vector, making a delta printed beside a mean actually
+   a delta against one run.
 
 ## v0.1's single-agent number did not reproduce
 
