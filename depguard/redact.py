@@ -79,6 +79,13 @@ def expand_events(events: list[dict], published: list[str], ecosystem: str) -> l
     inclusive, sibling intervals OR together, and an `introduced` that is never closed
     runs to +inf — including one interrupted by the next `introduced`.
 
+    TWO DELIBERATE DIVERGENCES from `_intervals`, both on inputs it can never see here:
+    `_intervals` treats a `limit` event as an exclusive close and RAISES on an unknown
+    event key, whereas this function skips both. Proposals reach it only through
+    `llm_extractor._normalize_events`, which filters to introduced/fixed/last_affected, so
+    neither case is reachable — but an extractor must never be able to crash the harness
+    with malformed output, and silently covering nothing is the safe reading.
+
     That last rule is not a detail. P5's premise is that the same semantics apply on both
     sides of the comparison, so a malformed proposal must expand exactly as the identical
     events would behave inside a real record. Dropping a dangling `introduced` here (an

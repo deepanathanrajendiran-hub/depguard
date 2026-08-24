@@ -178,6 +178,23 @@ def format_markdown(result: dict) -> str:
         lines.append(
             f"- **arms pending (require `LLM_API_KEY`): {', '.join(pending)}** — "
             "re-run `python scripts/run_ablation.py` with a DeepSeek key to fill these in.")
+    reps = result.get("repeats")
+    if reps:
+        lines += ["", "## LLM-arm repeat spread", "",
+                  "_The table below is a SINGLE run. LLM APIs are not bit-reproducible even "
+                  "at temperature 0, so an n=1 figure is an observation, not a propensity. "
+                  "These are the same arms re-run end to end._",
+                  "",
+                  "| arm | runs | correctness (mean) | min | max | groundedness (mean) | min | max |",
+                  "| --- | --- | --- | --- | --- | --- | --- | --- |"]
+        for arm, r in reps.items():
+            lines.append(
+                f"| {arm} | {r['n']} | {r['correctness_mean']:.4f} | "
+                f"{r['correctness_min']:.4f} | {r['correctness_max']:.4f} | "
+                f"{r['groundedness_mean']:.4f} | {r['groundedness_min']:.4f} | "
+                f"{r['groundedness_max']:.4f} |")
+        lines += ["", "_A min-max spread over a handful of runs is not a confidence "
+                      "interval and understates the true variance._"]
     lines += ["", "## Per-arm metrics (mean over the golden set)", ""]
     from depguard.llm_meter import PRICE_PER_MTOK
     cols = result["metrics"]

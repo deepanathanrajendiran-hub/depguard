@@ -1,5 +1,13 @@
 """The four mechanical trajectory metrics (DECISIONS.md §4.1) + correctness.
 
+UNDECIDABLE ALERTS ARE TREATED DIFFERENTLY BY DIFFERENT METRICS, on purpose:
+`correctness` EXCLUDES them (the oracle cannot decide the alert, so it is not the arm's
+fault); `groundedness` still divides by the full alert set, so an unanswered alert counts
+as ungrounded (the arm gathered no evidence entailing a verdict, which IS about the arm);
+and `plan_adherence` scores executed steps only, so a step marked `failed` earns no credit.
+Three questions, three answers — "could the oracle decide this?", "did the arm support what
+it said?", "did the arm follow the plan?" — and they are not required to agree.
+
 Each metric returns `(score ∈ [0,1], fails: list[str])` per trajectory. Nothing here
 is an LLM judgment — every number is recomputed from the trajectory + its gold
 sidecar (and, for groundedness, the cited Evidence rows only). Aggregate across the
@@ -16,7 +24,6 @@ from depguard.oracle import RangeUnresolvableError, record_containment
 from depguard.tools.pure import minimal_fix_gold
 
 _SCHEMAS = Path(__file__).resolve().parent.parent / "schemas"
-_MINFIX_ECOSYSTEMS = frozenset({"npm", "crates.io", "Go"})
 
 
 def _tool_key_args() -> dict:
