@@ -153,7 +153,7 @@ def verify_range_reconstruction(
     true_record: dict,
     published_versions: list[str],
 ) -> RangeScore:
-    """P5 — SEMANTIC-RANGE-EQUIVALENCE (§5, v1.2.0). Scores a range reconstructed from
+    """P5 — SEMANTIC-RANGE-EQUIVALENCE (§5.1, v1.2.0). Scores a range reconstructed from
     advisory PROSE against the unredacted record, mechanically.
 
     Text equality is the wrong test: `last_affected: 5.1.2` and `fixed: 5.2b1` are

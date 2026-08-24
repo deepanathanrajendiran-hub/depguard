@@ -328,6 +328,35 @@ No LLM, no rubric, no human in this path.
 
 ---
 
+## 5.1 P5 — SEMANTIC-RANGE-EQUIVALENCE (the prose slice, v1.2.0)
+
+**Why this predicate exists.** §5's four predicates run on a task that is mechanically decidable from the frozen bytes. That was the right choice for building a shared-oracle verifier, but it has a consequence the v0.1 report understated: the deterministic script *is* the reference implementation of the label function, so it scores 1.0000 by construction, and the LLM arms could at best **tie**. They did. A comparison whose best possible outcome is "no difference" carries no information about the agent, and the `[0,0]` CI it produces is an identity, not an estimate. (Measured: the `deterministic_script` and `multi_agent` trajectories are byte-identical across verdicts, evidence, tool sequence, tool arguments and tool results — 174 tool calls each; the only differing content is 232 free-text `rationale` strings that no metric reads.)
+
+P5 adds a slice where the deterministic path **provably cannot compete**, without weakening the mechanical verifier.
+
+**The transform.** `redact.redact_ranges(record)` drops `ranges` and `versions` from every `affected[]` entry and keeps package, id, aliases, `withdrawn`, `summary`, `details`, `references`. It is a pure function of already-frozen bytes: the `corpus/` directory is never written, `corpus_snapshot_id` is unchanged, every v0.1 number remains reproducible, and the slice is byte-reproducible because redaction is deterministic. The affected range now survives **only in the `details` prose** — all 40 corpus records carry non-empty details (median 414 chars), 34 of 40 carry a version token.
+
+**Why the script provably fails.** Per §5's entry-selection rule, an entry decides containment by `versions[]` membership or a `SEMVER` range, and ECOSYSTEM/GIT-only entries **abstain**. Redaction removes both, so every entry in `E_A` abstains and `record_containment` raises `RANGE_UNRESOLVABLE`. This is a raised exception asserted by a committed test (`tests/test_prose_slice.py::test_script_arm_cannot_decide_redacted`), not a measured shortfall open to argument.
+
+**P5 definition.** For a proposal `P = {events, versions, abstain}` over package `(e, n)` with frozen published list `L`:
+
+- `gold_abstain` = the prose (`summary + details`) contains **no version token**. Determined mechanically by regex over frozen bytes — no human judgement enters the label.
+- If `P.abstain` (or `P` is absent): `P5 = gold_abstain`.
+- If `gold_abstain` and `P` proposes a range: **`P5 = false`** (invention).
+- Otherwise materialise `P` against `L` — union of `P.versions` and the OSV-semantics expansion of `P.events`, intersected with `L` — into a record carrying that version set, then require **bitvector equality**:
+
+  `∀ v ∈ L : record_containment(S_true, e, n, v).contained == record_containment(S_materialized, e, n, v).contained`
+
+  Versions unparseable by the ecosystem comparator, and versions the true record itself cannot decide, leave the bitvector on both sides.
+
+**Two properties this buys.** (a) It scores **behaviour, not text**: `last_affected: 4.17.20` and `fixed: 4.17.21` are different strings denoting the same set of real releases, and P5 calls them equal — exactly when no published release separates them. Equivalence is defined relative to `L` on purpose, because containment over real releases is the only thing the verdict and minimal-fix consume. (b) The **abstention asymmetry** (abstaining is correct iff `gold_abstain`) means neither an always-abstain nor an always-guess extractor can farm the metric.
+
+**Shared-oracle status.** Preserved more literally here than anywhere else in the system: gold and prediction differ *only* in which record was passed to one identical `record_containment` call. No LLM judge touches the correctness path, in this predicate or any other.
+
+**Arms.** `deterministic_script` (no prose parser — abstains by construction), `regex_baseline` (a good-faith non-LLM grammar, present so that "you should have written the parser" is answered with a number rather than an opinion), and `llm_extractor`. Reported by `scripts/run_prose_slice.py` into `results/prose_slice.{json,md}`.
+
+---
+
 ## 6. Snapshot Determinism
 
 Every trajectory records `corpus_snapshot_id`; every Evidence row records `corpus_snapshot_id`. Verifier asserts `all(e.corpus_snapshot_id == traj.corpus_snapshot_id)`; mismatch ⇒ trajectory invalid (scored 0, flagged) — prevents live-API contamination of gold labels. `corpus_snapshot_id` hashes BOTH frozen slices (§0.5), so one hash proves both halves match. CI mock server replays ONLY this snapshot.

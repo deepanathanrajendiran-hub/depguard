@@ -1,4 +1,4 @@
-"""The prose slice (DECISIONS.md §6, v1.2.0): make the task undecidable by grammar.
+"""The prose slice (DECISIONS.md §5.1, v1.2.0): make the task undecidable by grammar.
 
 WHY THIS EXISTS. Version-range triage over a frozen corpus is mechanically decidable, so
 a plain semver-containment script solves it at 1.0000 and the LLM arms can at best tie —

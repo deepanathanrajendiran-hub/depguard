@@ -214,14 +214,19 @@ def test_crosscheck_malformed_extract_is_snapshot_malformed():
 # ===================================================================== #
 
 def test_no_http_in_the_tool_and_data_layer():
-    """The tool + corpus layer must never touch the network (§1.4). graph.py, otel.py and
-    arms/single_agent.py are EXCLUDED: the `multi_agent` planner, the Langfuse OTLP
-    exporter and the `single_agent` ReAct policy are the
-    legitimate outbound LLM/telemetry integrations by design — all env-gated on
-    LLM_API_KEY / an OTLP endpoint and never reached by the tool/corpus code."""
+    """The tool + corpus layer must never touch the network (§1.4). graph.py, otel.py,
+    arms/single_agent.py and llm_extractor.py are EXCLUDED: the `multi_agent` planner, the
+    Langfuse OTLP exporter, the `single_agent` ReAct policy and the prose-slice LLM
+    extractor are the legitimate outbound LLM/telemetry integrations by design — all
+    env-gated on LLM_API_KEY / an OTLP endpoint and never reached by the tool/corpus code.
+
+    Note what is NOT on this list: depguard/extractors.py, which holds the null and regex
+    extractors. The regex arm is the prose slice's scientific control, so it must be
+    mechanically impossible for it to have consulted anything but the frozen bytes it was
+    handed — which is why the LLM extractor lives in its own module."""
     import depguard
     root = Path(depguard.__file__).parent
-    allowed_network = {"graph.py", "otel.py", "single_agent.py"}
+    allowed_network = {"graph.py", "otel.py", "single_agent.py", "llm_extractor.py"}
     offenders = []
     for py in root.rglob("*.py"):
         if py.name in allowed_network:

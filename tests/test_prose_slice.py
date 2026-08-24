@@ -1,4 +1,4 @@
-"""The prose slice (§6, v1.2.0) — the slice where the deterministic script provably loses.
+"""The prose slice (§5.1, v1.2.0) — the slice where the deterministic script provably loses.
 
 v0.1's headline was `deterministic_script ≡ multi_agent`, Δ = 0 with a [0,0] CI. That
 tie was the CEILING before any code ran: the task was chosen to be mechanically decidable

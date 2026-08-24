@@ -1,4 +1,4 @@
-"""Range extractors for the prose slice (§6, v1.2.0).
+"""Range extractors for the prose slice (§5.1, v1.2.0).
 
 Each takes the surviving advisory prose and returns a proposal
 `{events, versions, abstain}` that `verifier.verify_range_reconstruction` (P5) scores.
@@ -17,7 +17,12 @@ Three implementations, one per arm:
                    the open form ("before X", "prior to X"), inclusive forms ("through
                    X", "X and earlier"), and explicit comparators.
 
-  llm_extractor    the `single_agent` / `multi_agent` arms (depguard/graph.py wires it).
+  llm_extractor    lives in depguard/llm_extractor.py, NOT here. This module is kept
+                   provably network-free (tests/test_external_tools.py greps the tool
+                   and data layer for network references and this file is not on the
+                   allowlist), because the regex baseline is a scientific control: it
+                   must be impossible for it to have consulted anything but the frozen
+                   bytes it was handed.
 
 An extractor MUST abstain when it finds nothing, and must never invent a range: P5
 scores abstention as correct exactly when the prose carries no version token, so both
