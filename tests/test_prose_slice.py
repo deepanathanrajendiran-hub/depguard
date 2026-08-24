@@ -383,3 +383,25 @@ def test_error_envelope_from_check_is_not_read_as_not_affected(tmp_path, monkeyp
     )
     assert traj["final_answer"]["verdicts_summary"]["n_unresolved"] == 1
     assert traj["final_answer"]["verdicts_summary"]["n_false_positive"] == 0
+
+
+def test_expand_events_matches_oracle_intervals_on_dangling_introduced():
+    """P5 compares two runs of the same oracle, so a malformed proposal must expand
+    exactly as those events would behave inside a real record. An `introduced` that is
+    never closed — including one interrupted by the next `introduced` — runs to +inf in
+    `oracle._intervals`, and must here too."""
+    from depguard.oracle import _intervals
+
+    pub = ["1.0.0", "1.5.0", "2.0.0", "2.5.0", "3.0.0"]
+    events = [{"introduced": "1.0.0"}, {"introduced": "2.5.0"}, {"fixed": "3.0.0"}]
+
+    intervals = [(lo, hi, inc) for lo, hi, inc, _ in _intervals(events)]
+    assert ("1.0.0", None, False) in intervals, "guard: the oracle must open-end this"
+
+    # 1.0.0 runs to +inf, so everything from 1.0.0 up is covered
+    assert expand_events(events, pub, "npm") == pub
+
+
+def test_expand_events_open_ended_trailing_interval():
+    pub = ["1.0.0", "2.0.0", "3.0.0"]
+    assert expand_events([{"introduced": "2.0.0"}], pub, "npm") == ["2.0.0", "3.0.0"]

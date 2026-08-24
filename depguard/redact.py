@@ -76,12 +76,19 @@ def expand_events(events: list[dict], published: list[str], ecosystem: str) -> l
     """Expand proposed OSV interval events into the subset of PUBLISHED versions they
     cover, applying the OSV spec exactly as `oracle._intervals` does: `introduced`
     opens inclusive ("0" = -inf), `fixed` closes exclusive, `last_affected` closes
-    inclusive, sibling intervals OR together.
+    inclusive, sibling intervals OR together, and an `introduced` that is never closed
+    runs to +inf — including one interrupted by the next `introduced`.
 
-    Expansion is relative to the frozen published list on purpose. Containment over
-    REAL releases is the only thing the verdict and minimal-fix consume, so two
-    reconstructions that differ only where no release exists (`last_affected: 5.1.2`
-    vs `fixed: 5.2b1`) are semantically identical and must score identically."""
+    That last rule is not a detail. P5's premise is that the same semantics apply on both
+    sides of the comparison, so a malformed proposal must expand exactly as the identical
+    events would behave inside a real record. Dropping a dangling `introduced` here (an
+    easy shortcut) would score a sloppy reconstruction differently from the way the oracle
+    would actually read it.
+
+    Expansion is relative to the frozen published list on purpose. Containment over REAL
+    releases is the only thing the verdict and minimal-fix consume, so two reconstructions
+    that differ only where no release exists (`last_affected: 5.1.2` vs `fixed: 5.2b1`)
+    are semantically identical and must score identically."""
     comparator = get_comparator(ecosystem)
     keyed = []
     for v in published:
@@ -97,13 +104,16 @@ def expand_events(events: list[dict], published: list[str], ecosystem: str) -> l
             continue  # malformed event: ignore rather than crash the arm
         ((kind, value),) = event.items()
         if kind == "introduced":
+            if lower is not None:
+                # previous interval never closed → open-ended (oracle._intervals)
+                covered |= _covered(keyed, comparator, lower, None, False)
             lower = value
         elif kind in ("fixed", "last_affected"):
             if lower is None:
                 continue
             covered |= _covered(keyed, comparator, lower, value, kind == "last_affected")
             lower = None
-    if lower is not None:  # an unclosed interval runs to +inf
+    if lower is not None:  # a trailing unclosed interval also runs to +inf
         covered |= _covered(keyed, comparator, lower, None, False)
     return sorted(covered)
 
