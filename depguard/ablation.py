@@ -207,15 +207,28 @@ def format_markdown(result: dict) -> str:
     else:
         lines.append("_pending — only one arm ran; no pairwise comparison possible yet._")
 
-    lines += ["", "## Verdict-flip matrix (alerts whose actionable `affected` differs)", ""]
+    lines += ["",
+              "## Verdict-state divergence matrix",
+              "",
+              "_Counts alerts whose verdict STATE differs. Emitting no verdict is its own "
+              "state, so an abandonment counts here without either arm having made a "
+              "differing security judgement — read the footnote before calling a non-zero "
+              "cell a disagreement._",
+              ""]
     lines.append("| A ⧵ B | " + " | ".join(arms) + " |")
     lines.append("|" + "---|" * (len(arms) + 1))
     for a in arms:
         row = [a] + [str(result["verdict_flip_matrix"][a][b]) for b in arms]
         lines.append("| " + " | ".join(row) + " |")
     fc = result["flip_count_multi_vs_single"]
-    lines += ["", f"**Flip count (multi_agent vs single_agent): "
+    lines += ["", f"**Divergence count (multi_agent vs single_agent): "
               f"{'pending — LLM arms not run' if fc is None else fc}**", ""]
+    if fc:
+        lines += ["> Check the per-seed rows before reading this as a differing security "
+                  "call. In v0.1 the single divergence was `tp_axios`, where single_agent "
+                  "called 0 tools and emitted no verdict at all — an abandonment, not a "
+                  "misjudgement. On all 28 alerts where it DID answer, its "
+                  "affected/not-affected call matched gold.", ""]
 
     fallbacks = result.get("planner_fallbacks", {})
     offenders = {a: c for a, c in fallbacks.items() if c}
