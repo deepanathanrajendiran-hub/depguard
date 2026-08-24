@@ -15,16 +15,21 @@ unredacted record by containment bitvector, running the SAME
 
 ## Per-arm range accuracy
 
-| arm | range accuracy | correct | scored | wrong abstain | wrong range | latency (s) | LLM calls | cost |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| deterministic_script | 0.1500 | 6 | 40 | 34 | 0 | 0.0 | 0 | $0.0000 |
-| regex_baseline | 0.4000 | 16 | 40 | 13 | 11 | 0.25 | 0 | $0.0000 |
+| arm | range accuracy | correct | scored | wrong abstain | wrong range | latency (s) | LLM calls | cost | fallbacks |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| deterministic_script | 0.1500 | 6 | 40 | 34 | 0 | 0.0 | 0 | $0.0000 | 0 |
+| regex_baseline | 0.4000 | 16 | 40 | 13 | 11 | 0.26 | 0 | $0.0000 | 0 |
+| llm_extractor | 0.6417 [0.6250–0.6500] | 26 | 40 | 2 | 12 | 215.69 | 40 | $0.0806 | 0 |
+
+_LLM arm run 3x; the bracket is the min–max spread across runs, not a confidence interval._
 
 ## Pairwise deltas (paired bootstrap, 10k resamples, 95% CI)
 
 | comparison | Δ range accuracy |
 | --- | --- |
 | `deterministic_script - regex_baseline` | -0.2500 [-0.4000, -0.1250] * |
+| `deterministic_script - llm_extractor` | -0.5000 [-0.6500, -0.3500] * |
+| `regex_baseline - llm_extractor` | -0.2500 [-0.4000, -0.1250] * |
 
 `*` marks an interval excluding 0.
 
