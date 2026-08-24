@@ -41,7 +41,7 @@ def run_arm(snap, variant):
     out = []
     for name, inp in SEED_INPUTS.items():
         traj = run_graph(inp, snap, system_variant=variant)
-        out.append((name, score_trajectory(traj, build_gold(inp, snap))))
+        out.append((name, score_trajectory(traj, build_gold(inp, snap), snap)))
     return out
 
 

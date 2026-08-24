@@ -1,0 +1,18 @@
+{
+  "id": "GHSA-dis-0001",
+  "modified": "2026-07-01T00:00:00Z",
+  "withdrawn": null,
+  "aliases": [],
+  "summary": "Fixture advisory used to manufacture a P4 disagree state",
+  "details": "Versions prior to 2.0.0 of gizmo are affected.",
+  "affected": [
+    {
+      "package": {"ecosystem": "npm", "name": "gizmo", "purl": null},
+      "ranges": [{"type": "SEMVER", "events": [{"introduced": "0"}, {"fixed": "2.0.0"}]}],
+      "versions": [],
+      "scoring_tier": "membership_and_minfix"
+    }
+  ],
+  "references": [],
+  "database_specific": null
+}

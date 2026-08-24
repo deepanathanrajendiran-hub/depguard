@@ -97,7 +97,7 @@ def run_ablation(seed_inputs: dict, snapshot, arms: list[str] | None = None) -> 
         t0 = time.perf_counter()
         for n in names:
             traj = runner(seed_inputs[n], snapshot)
-            sc = score_trajectory(traj, golds[n])
+            sc = score_trajectory(traj, golds[n], snapshot)
             arm_trajs[n] = traj
             rows.append({"seed": n, **{m: sc[m]["score"] for m in METRICS}})
             for m in METRICS:

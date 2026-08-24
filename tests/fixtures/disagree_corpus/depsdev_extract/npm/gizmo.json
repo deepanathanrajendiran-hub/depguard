@@ -1,0 +1,14 @@
+{
+  "_provenance": {
+    "license": "CC-BY-4.0",
+    "note": "SYNTHETIC fixture — not a deps.dev capture. Contradicts the OSV record on 2.0.0 on purpose.",
+    "source": "deps.dev",
+    "source_url": "fixture://disagree"
+  },
+  "advisory_keys_by_version": {
+    "1.0.0": ["GHSA-dis-0001"],
+    "2.0.0": ["GHSA-dis-0001"],
+    "2.0.1": []
+  },
+  "default_version": "2.0.1"
+}
