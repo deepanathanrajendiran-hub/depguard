@@ -36,7 +36,7 @@ from depguard.tools.pure import minimal_fix_gold
 
 # DepsDevObservation is re-exported (moved to depguard.agreement for D4 tool 6 reuse).
 __all__ = ["DepsDevObservation", "scoring_tier", "verify_verdict", "VerdictScore",
-           "PredicateResult"]
+           "PredicateResult", "RangeScore", "verify_range_reconstruction"]
 
 # Ecosystem-keyed scoring tiers (§1.2 / §5(c)). tests/test_verifier.py asserts
 # these constants equal the normative registry (schemas/ecosystem_system_map.json).
@@ -131,4 +131,96 @@ def verify_verdict(
         predicates=predicates,
         correct=correct,
         agreement_metric_eligible=agreement_gold != "single_source",
+    )
+
+@dataclass(frozen=True)
+class RangeScore:
+    """P5 result. `passed=None` means the alert was not scoreable at all."""
+    status: str  # "scored" | "abstained" | "excluded"
+    passed: bool | None
+    gold_abstain: bool
+    n_versions: int = 0
+    n_mismatch: int = 0
+    mismatches: tuple = ()
+    exclusion_reason: str | None = None
+
+
+def verify_range_reconstruction(
+    proposal: dict | None,
+    *,
+    ecosystem: str,
+    name: str,
+    true_record: dict,
+    published_versions: list[str],
+) -> RangeScore:
+    """P5 — SEMANTIC-RANGE-EQUIVALENCE (§5, v1.2.0). Scores a range reconstructed from
+    advisory PROSE against the unredacted record, mechanically.
+
+    Text equality is the wrong test: `last_affected: 5.1.2` and `fixed: 5.2b1` are
+    different strings that mean the same thing whenever no release sits between them.
+    So P5 scores BEHAVIOUR, not text. The claim is materialised against the frozen
+    published-version list and both sides are run through the SAME
+    `oracle.record_containment`:
+
+        gold[v] = record_containment(true_record,          eco, name, v).contained
+        pred[v] = record_containment(materialized_claim,   eco, name, v).contained
+
+    for every published v; P5 passes iff the two bitvectors are equal. Gold and
+    prediction differ only in which record was fed to one identical call, so the
+    shared-oracle principle holds more literally here than anywhere else in the system
+    — and no LLM judge touches the correctness path.
+
+    ABSTENTION. A record whose prose carries no version token cannot be reconstructed by
+    anything, so `redact.gold_abstains` marks it gold-ABSTAIN and the correct answer is
+    to abstain. Abstaining on a decidable record is a miss; inventing a range on an
+    abstain record is a miss. That asymmetry is what stops an extractor from farming the
+    metric by always abstaining (or always guessing)."""
+    from depguard.comparators import VersionParseError
+    from depguard.oracle import RangeUnresolvableError, record_containment
+    from depguard.redact import gold_abstains, materialize_proposal
+
+    gold_abstain = gold_abstains(true_record)
+
+    if proposal is None or proposal.get("abstain"):
+        return RangeScore(
+            status="abstained", passed=gold_abstain, gold_abstain=gold_abstain,
+        )
+    if gold_abstain:
+        return RangeScore(
+            status="scored", passed=False, gold_abstain=True,
+            exclusion_reason="invented_a_range_for_prose_with_no_version_token",
+        )
+
+    materialized = materialize_proposal(
+        true_record, proposal, ecosystem=ecosystem, name=name,
+        published=published_versions,
+    )
+    mismatches = []
+    n = 0
+    for version in published_versions:
+        try:
+            gold_bit = record_containment(true_record, ecosystem, name, version).contained
+        except (RangeUnresolvableError, VersionParseError):
+            # Either the true record cannot decide this version, or the version string
+            # is not parseable by the ecosystem comparator at all (the frozen npm and
+            # PyPI lists carry artefacts like '1.3.2.win32-py2.4'). Not scoreable on
+            # either side, so it leaves the bitvector rather than counting against an arm.
+            continue
+        try:
+            pred_bit = record_containment(
+                materialized, ecosystem, name, version
+            ).contained
+        except (RangeUnresolvableError, VersionParseError):
+            pred_bit = False  # a claim that decides nothing asserts nothing
+        n += 1
+        if gold_bit != pred_bit:
+            mismatches.append((version, gold_bit, pred_bit))
+    if n == 0:
+        return RangeScore(
+            status="excluded", passed=None, gold_abstain=False,
+            exclusion_reason="no_scoreable_published_version",
+        )
+    return RangeScore(
+        status="scored", passed=not mismatches, gold_abstain=False,
+        n_versions=n, n_mismatch=len(mismatches), mismatches=tuple(mismatches[:8]),
     )

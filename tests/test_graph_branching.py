@@ -25,7 +25,14 @@ def _error_codes(traj):
 
 def test_unpinned_version_branches_to_bad_input():
     """A range spec instead of a pin (an unpinned manifest entry) is unparseable →
-    check_version_affected returns BAD_INPUT; the trajectory stays schema-valid."""
+    check_version_affected returns BAD_INPUT; the trajectory stays schema-valid.
+
+    BEHAVIOUR CHANGE (v1.1.0). This previously asserted `len(traj["verdicts"]) == 1`
+    with the comment "retrieval still succeeded, so a verdict is still emitted
+    (fallback, not affected)". That fallback was the most user-visible instance of the
+    fail-unsafe bug: DepGuard reported a dependency as NOT AFFECTED when all it had
+    actually established was that it could not parse `^4.17.0`. An unparseable pin is
+    now an unresolved alert, matching the sibling SNAPSHOT_MALFORMED case below."""
     inp = {
         "manifest": [{"ecosystem": "npm", "name": "lodash",
                       "pinned_version": "^4.17.0", "purl": None}],
@@ -35,8 +42,10 @@ def test_unpinned_version_branches_to_bad_input():
     }
     traj = run_graph(inp, Snapshot(), system_variant="deterministic_script")  # validates on build
     assert "BAD_INPUT" in _error_codes(traj)
-    # retrieval still succeeded, so a verdict is still emitted (fallback, not affected)
-    assert len(traj["verdicts"]) == 1
+    assert traj["verdicts"] == [], "an unparseable pin must not yield a 'not affected' verdict"
+    assert traj["final_answer"]["verdicts_summary"] == {
+        "n_alerts": 1, "n_true_positive": 0, "n_false_positive": 0, "n_unresolved": 1,
+    }
 
 
 def test_corrupted_snapshot_branches_to_snapshot_malformed():

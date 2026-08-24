@@ -139,7 +139,8 @@
         "action": { "$ref": "#/$defs/planAction" },
         "alert_id": { "type": ["string", "null"], "description": "null = run-level control step (joins the single control group for plan-adherence, §4.1)" },
         "rationale": { "type": "string" },
-        "status": { "enum": ["planned", "executed", "skipped"] },
+        "status": { "enum": ["planned", "executed", "skipped", "failed"],
+                    "$comment": "v1.1.0 adds `failed`: the step ran a tool and got an error envelope, as distinct from `skipped` (never attempted). Kept separate so a fail-unsafe cannot hide — an undecidable containment check is a failed step that emits no verdict, not a silent `affected: false`." },
         "produced_verdict_for": { "type": ["string", "null"], "description": "which alert_id this step advanced to a verdict — makes action-advancement mechanically computable (§3.1)" }
       }
     },
