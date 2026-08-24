@@ -255,8 +255,8 @@ def format_markdown(result: dict) -> str:
         "",
         "## Per-arm range accuracy",
         "",
-        "| arm | range accuracy | correct | scored | wrong abstain | wrong range | latency (s) | LLM calls | cost |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+        "| arm | range accuracy | correct | scored | wrong abstain | wrong range | latency (s) | LLM calls | cost | fallbacks |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for name, arm in result["arms"].items():
         meter = arm.get("meter", {})
@@ -267,8 +267,19 @@ def format_markdown(result: dict) -> str:
         lines.append(
             f"| {name} | {cell} | {arm['n_correct']} | {arm['n_scored']} | "
             f"{arm['wrong_abstain']} | {arm['wrong_range']} | {arm['latency_s']} | "
-            f"{meter.get('calls', 0)} | ${meter.get('cost_usd', 0):.4f} |"
+            f"{meter.get('calls', 0)} | ${meter.get('cost_usd', 0):.4f} | "
+            f"{meter.get('fallbacks', 0)} |"
         )
+    offenders = {n: a.get("meter", {}).get("fallbacks", 0)
+                 for n, a in result["arms"].items() if a.get("meter", {}).get("fallbacks")}
+    if offenders:
+        lines += ["", f"> **Extractor fallbacks: {offenders}.** Those seeds failed twice "
+                      "and fell through to an abstain, which P5 scores WRONG on every "
+                      "decidable record — so the arm's accuracy is understated by an "
+                      "infrastructure failure, not a model failure. A clean result needs "
+                      "0; re-run or report the count. (Same class as the v0.1 planner-"
+                      "fallback counter: a number that could quietly be an artifact must "
+                      "be instrumented, not assumed away.)", ""]
     if result["repeats"] > 1:
         lines += ["", f"_LLM arm run {result['repeats']}x; the bracket is the min–max "
                       "spread across runs, not a confidence interval._"]
