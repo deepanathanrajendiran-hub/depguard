@@ -24,13 +24,20 @@ exactly. Nothing can beat a correct script here — this slice is the **control*
 
 | arm | correctness | groundedness | latency | cost |
 |---|---|---|---|---|
-| `deterministic_script` | 1.0000 | 1.0000 | 0.5 s | $0.00 |
-| `single_agent` (ReAct) | 0.5517 | 0.6207 | 1002 s | $0.114 |
-| `multi_agent` (planner→executor) | 1.0000 | 1.0000 | 147 s | $0.019 |
+| `deterministic_script` | 1.0000 | 1.0000 | 0.6 s | $0.00 |
+| `single_agent` (ReAct) | 0.7471 [0.6552–0.7931] | 0.8046 [0.7931–0.8276] | 782 s | $0.102 |
+| `multi_agent` (planner→executor) | 1.0000 [1.0000–1.0000] | 1.0000 | 114 s | $0.017 |
 
-`deterministic_script − multi_agent` = **+0.0000 on every metric — an identity, not a
-measurement.** See [why](#why-slice-1-ties) below; the old release reported it as a
+LLM rows are the mean of 3 runs with the min–max spread; the deterministic arm is
+bit-reproducible. `deterministic_script − multi_agent` = **+0.0000 on every metric — an
+identity, not a measurement.** See [why](#why-slice-1-ties) below; v0.1 reported it as a
 `[0, 0]` confidence interval, which flattered it.
+
+**v0.1's single-agent figure did not reproduce.** It shipped `correctness = 0.5517` from a
+single run. Three fresh runs give 0.7931 / 0.6552 / 0.7931 — the published number sits
+*outside* that entire range. Its one abandonment (`tp_axios`, 0 tool calls) did not recur,
+so the verdict-state divergence count went 1 → 0. That is the clearest argument in this repo
+for why `--repeats` exists, and it is an argument against the number I myself published.
 
 ### Slice 2 — the ranges are redacted. Only the prose survives.
 
@@ -87,10 +94,14 @@ its grammar doesn't cover. It is a good-faith baseline, not a straw man: it hand
 interleaved branch form ("Django 2.2 before 2.2.28, 3.2 before 3.2.13, and 4.0 before
 4.0.4") correctly, and two rounds of bug-fixing went into it *after* it was first measured.
 
-**The single agent skips evidence, not judgment.** On slice 1, on the 28 of 29 alerts where
-it answered, its affected/not-affected call was **correct every time**. It lost points by
-**skipping `crosscheck_second_source` on 22 of 29 runs**. Correctness and groundedness
-diverge in both directions — 5 trajectories right but ungrounded, 7 the inverse.
+**The single agent skips evidence, not judgment.** This is the one slice-1 finding that
+*did* reproduce, and it got stronger: across both measured runs its affected/not-affected
+call was correct on **every alert it answered** — 28/28 in v0.1, **29/29** now — and so was
+`withdrawn`. It loses points only on evidence it skipped: `crosscheck_second_source` went
+unrun on **12 of 29** alerts this time (22 of 29 in v0.1), taking `source_agreement` with it.
+
+Note the split: the *direction* of that finding is stable across runs, the *magnitude* is
+not. Anything quoted as a rate here should be read as one of a handful of samples.
 
 Across both slices the same shape: the LLM's mistakes are in the *safe* direction and cost
 precision, not safety. Scaffolding buys evidence discipline; it does not buy judgment.
