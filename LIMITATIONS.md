@@ -156,28 +156,38 @@ The trajectory harness recorded all three; only the third was noticed before shi
    alerts given): invariant to step count, monotone with quality, and it makes abandonment
    a loss rather than a win. The deterministic arm moves 0.125 → 1.0.
 
+## v0.1's single-agent number did not reproduce
+
+v0.1 shipped `single_agent correctness = 0.5517` from a **single run**. Three fresh runs
+under `--repeats 3` give **0.7931 / 0.6552 / 0.7931** (mean 0.7471). The published figure
+sits *outside* that entire range. Groundedness moved 0.6207 → 0.8046 [0.7931–0.8276]. The
+lone abandonment (`tp_axios`, 0 tool calls) did not recur, so the verdict-state divergence
+count went 1 → 0.
+
+Nothing about the arm changed to cause this — it is ordinary LLM run-to-run variance on a
+29-item set, which is exactly what an n=1 measurement cannot see. Treat every LLM figure in
+this repo as one of a handful of samples, and note that a 3-run min–max spread is still not
+a confidence interval: with n=3 it understates the true variance substantially.
+
 ## What the single-agent arm actually gets wrong
 
-Its failures are **evidence discipline, not security judgment**:
+This is the one slice-1 finding that **reproduced**, and it got stronger. Its failures are
+**evidence discipline, not security judgment**:
 
-- On the **28 of 29** alerts where it emitted a verdict, its actionable
-  affected/not-affected call is **correct on all 28**, and so is `withdrawn`. It never
-  misclassified a package.
-- It **skipped `crosscheck_second_source` on 22 of 29 runs.** On 12 that produced a wrong
-  `source_agreement` (`single_source` where gold said `agree`); the other 9 were right only
-  because gold happened to be `single_source` anyway. Where it *did* run the cross-check,
-  `source_agreement` was correct 7/7. It emitted `single_source` 24 times and `agree` 4,
-  against gold's 13/16.
-- 6 of those 12 (all npm) also carried a wrong `minimal_fixed_version`. A seventh alert,
-  `fp_urllib3`, has a wrong minimal fix in the raw data too, but it is PyPI — where
-  minimal-fix is not a scored field (§5 P2) — so it is scored correct and does not count.
-- Correctness and groundedness **diverge in both directions**: 5 trajectories scored
-  correct with groundedness 0.0 (`multi_tar`, `single_src_pillow`, `tp_lodash_29mw`,
-  `tp_prismjs`, `tp_ws` — the right answer, not entailed by the evidence it actually
-  gathered) and 7 the inverse. No aggregate accuracy number can show that.
-- The **1 verdict-flip vs multi_agent** is an **abandonment, not a misjudgment**: on
-  `tp_axios` the agent called 0 tools and emitted no verdict, which the flip matrix counts
-  as differing from multi's `affected = True`.
+- On every alert it answered, its actionable affected/not-affected call was **correct** —
+  28/28 in v0.1, **29/29** in the re-run — and so was `withdrawn`. It has never
+  misclassified a package in any measured run.
+- It skips the deps.dev cross-check. `crosscheck_second_source` went unrun on **12 of 29**
+  alerts in the re-run and **22 of 29** in v0.1, taking `source_agreement` down with it.
+  That 12-vs-22 gap is the point: the *direction* of this finding is stable across runs,
+  the *magnitude* is not, so any rate quoted here is one sample.
+- Correctness and groundedness **diverge in both directions** — in the re-run, 5
+  trajectories scored correct with groundedness 0.0 (the right answer, not entailed by the
+  evidence actually gathered) and 6 the inverse. No aggregate accuracy number can show that,
+  and it is the clearest argument for keeping per-trajectory rows.
+- v0.1's **1 verdict-flip vs multi_agent** was an **abandonment, not a misjudgment**: on
+  `tp_axios` the agent called 0 tools and emitted no verdict, which the matrix counts as
+  differing from multi's `affected = True`. It did not recur.
 
 ## Metric-scope caveat: the main-slice metrics measure instruction-following
 
