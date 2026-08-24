@@ -52,9 +52,9 @@ record, so the script's failure is an exception, not a contested number.
 
 The script's 6 correct answers are **only** the 6 seeds where the prose names no version at
 all and abstaining is the right answer. On the 34 records that do describe a range it scores
-**0/34**. The ordering is strict: the LLM wins 10 seeds the regex loses and loses none it
-wins; the regex likewise strictly dominates the script. 3 repeats, 0 extractor fallbacks,
-~$0.08 a run.
+**0/34**. The ordering is strict and holds in **every one of the 3 runs**: the LLM wins
+9–10 seeds the regex loses and loses **none** it wins, and the regex likewise never loses a
+seed the script gets. 0 extractor fallbacks, ~$0.08 a run.
 
 So: **a script is free, instant and unbeatable when the data is structured. The moment the
 same fact is only in prose, it drops to zero and the model is worth paying for.** That's the

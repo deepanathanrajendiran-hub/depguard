@@ -47,9 +47,10 @@ touches the correctness path.
 · `regex − script` +0.2500 [+0.1250, +0.4000]. All significant. 3 repeats, **0 extractor
 fallbacks**, ~$0.08 a run.
 
-The ordering is strict — the LLM wins 10 seeds the regex loses and loses none it wins. The
-script's 6 correct answers are only the seeds whose prose names no version at all; on the 34
-records that describe a range it scores **0/34**.
+The ordering is strict and holds in **every one of the 3 runs** — the LLM wins 9–10 seeds
+the regex loses and loses **none** it wins (verified per-run from `per_seed` in
+`results/prose_slice_partial.json`). The script's 6 correct answers are only the seeds whose
+prose names no version at all; on the 34 records that describe a range it scores **0/34**.
 
 **The headline:** a script is free, instant and unbeatable on structured data, and worth
 exactly zero the moment the same fact is only in prose. The `regex_baseline` exists so that
