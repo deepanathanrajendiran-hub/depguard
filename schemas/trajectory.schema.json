@@ -93,12 +93,14 @@
       "properties": {
         "verdicts_summary": {
           "type": "object",
-          "required": ["n_alerts", "n_true_positive", "n_false_positive"],
+          "required": ["n_alerts", "n_true_positive", "n_false_positive",
+          "n_unresolved"],
           "additionalProperties": false,
           "properties": {
             "n_alerts": { "type": "integer", "minimum": 0 },
             "n_true_positive": { "type": "integer", "minimum": 0 },
-            "n_false_positive": { "type": "integer", "minimum": 0 }
+            "n_false_positive": { "type": "integer", "minimum": 0 },
+            "n_unresolved": {"type": "integer", "minimum": 0, "$comment": "alerts the run emitted no verdict for (v1.1.0). Silence is not an all-clear: n_true_positive + n_false_positive + n_unresolved == n_alerts."}
           }
         },
         "per_alert": {

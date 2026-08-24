@@ -7,7 +7,7 @@
 ## Per-arm metrics (mean over the golden set)
 
 | arm | tool_selection | action_advancement | plan_adherence | groundedness | correctness | latency (s) | LLM calls | tokens | cost (USD) | fallbacks |
-|---|---|---|---|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | deterministic_script | 1.0000 | 0.1250 | 1.0000 | 1.0000 | 1.0000 | 0.53 | 0 | 0 | $0.0000 | 0 |
 | single_agent | 0.8213 | 0.1819 | 0.5259 | 0.6207 | 0.5517 | 1002.26 | 159 | 139,785 | $0.1142 | 0 |
 | multi_agent | 1.0000 | 0.1250 | 1.0000 | 1.0000 | 1.0000 | 147.48 | 29 | 21,567 | $0.0188 | 0 |

@@ -220,7 +220,8 @@ VALID_TRAJECTORY = {
         }
     ],
     "final_answer": {
-        "verdicts_summary": {"n_alerts": 1, "n_true_positive": 1, "n_false_positive": 0},
+        "verdicts_summary": {"n_alerts": 1, "n_true_positive": 1, "n_false_positive": 0,
+                             "n_unresolved": 0},
         "per_alert": [],
         "emitted_at": "2026-07-01T12:00:05Z",
     },

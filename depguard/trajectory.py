@@ -124,7 +124,14 @@ class TrajectoryBuilder:
 
     # -- build ------------------------------------------------------------- #
     def build(self) -> dict:
+        # FAIL-SAFE COUNTING (v1.1.0). The summary is derived from EMITTED verdicts
+        # only. The pre-1.1.0 formula `n_false_positive = n_alerts - n_tp` silently
+        # turned every unanswered alert into a dismissed false positive: the v0.1
+        # `single_agent` run on seed `tp_axios` abandoned with 0 tool calls and
+        # emitted `n_false_positive: 1` against a gold of `affected=True`. An alert
+        # the run never answered is now `n_unresolved`, never an all-clear.
         n_alerts = len(self.input.get("alerts", []))
+        n_verdicts = len(self._verdicts)
         n_tp = sum(1 for v in self._verdicts if v["affected"])
         traj = {
             "schema_version": "1.0.0",
@@ -147,7 +154,8 @@ class TrajectoryBuilder:
                 "verdicts_summary": {
                     "n_alerts": n_alerts,
                     "n_true_positive": n_tp,
-                    "n_false_positive": n_alerts - n_tp,
+                    "n_false_positive": n_verdicts - n_tp,
+                    "n_unresolved": n_alerts - n_verdicts,
                 },
                 "per_alert": [
                     {"alert_id": v["alert_id"], "affected": v["affected"],
