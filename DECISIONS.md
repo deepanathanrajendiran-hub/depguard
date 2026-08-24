@@ -241,7 +241,7 @@ One canonical Trajectory JSON object per run, persisted JSONL (`golden/trajector
   }],
   "evidence": [ /* OSV variant OR deps.dev variant, see §3.2 */ ],
   "verdicts": [ /* §3.3 */ ],
-  "final_answer": {"verdicts_summary": {"n_alerts": 0, "n_true_positive": 0, "n_false_positive": 0}, "per_alert": [], "emitted_at": "RFC3339"}
+  "final_answer": {"verdicts_summary": {"n_alerts": 0, "n_true_positive": 0, "n_false_positive": 0, "n_unresolved": 0}, "per_alert": [], "emitted_at": "RFC3339"}
 }
 ```
 
@@ -369,7 +369,7 @@ Every trajectory records `corpus_snapshot_id`; every Evidence row records `corpu
 |---|---|---|
 | OSV primary, semver-decidable curation, frozen snapshot | **MUST** | Mechanical verifier (Catch 1/2/4) |
 | 6 typed tools + uniform envelope + MCP server | **MUST** | Spec DoD; testable boundary |
-| Canonical trajectory schema + 4 metrics + 4-predicate verifier | **MUST** | Headline artifact |
+| Canonical trajectory schema + 4 metrics + 4-predicate verifier (+ P5 on the prose slice, §5.1) | **MUST** | Headline artifact |
 | deps.dev version-list grounding for minimal-fix | **MUST** | Genuine independence (Catch 3) |
 | 40–60 golden trajectories + gold sidecar + paired-bootstrap CIs | **MUST** | Spec DoD |
 | promptfoo merge-blocking gate, OTel tracing, injection rail, Cloud Run | **MUST** | Spec DoD |
