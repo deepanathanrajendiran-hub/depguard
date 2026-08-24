@@ -18,7 +18,7 @@ unredacted record by containment bitvector, running the SAME
 | arm | range accuracy | correct | scored | wrong abstain | wrong range | latency (s) | LLM calls | cost |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | deterministic_script | 0.1500 | 6 | 40 | 34 | 0 | 0.0 | 0 | $0.0000 |
-| regex_baseline | 0.4000 | 16 | 40 | 13 | 11 | 0.26 | 0 | $0.0000 |
+| regex_baseline | 0.4000 | 16 | 40 | 13 | 11 | 0.25 | 0 | $0.0000 |
 
 ## Pairwise deltas (paired bootstrap, 10k resamples, 95% CI)
 

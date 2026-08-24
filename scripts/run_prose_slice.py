@@ -73,19 +73,48 @@ def build_seeds(snapshot: Snapshot) -> list[dict]:
     return seeds
 
 
-def run_arm(seeds, extractor, *, pass_name=False) -> dict:
+def _checkpoint(runs: list[dict]) -> None:
+    """Persist after every LLM repeat. A 40-seed x N-repeat run is long enough that
+    losing it to a killed shell is a real cost, and a partial result is still evidence."""
+    path = REPO / "results" / "prose_slice_partial.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(
+        [{k: v for k, v in r.items() if k != "rows"} for r in runs], indent=2) + "\n")
+
+
+def _extract_one(seed, extractor, pass_name):
+    kwargs = {"name": seed["name"]} if pass_name else {}
+    try:
+        return extractor(prose_of(seed["record"]), seed["published"],
+                         seed["ecosystem"], **kwargs), None
+    except Exception as exc:  # an arm that crashes scores 0, it does not abort the run
+        return None, f"{type(exc).__name__}: {exc}"
+
+
+def run_arm(seeds, extractor, *, pass_name=False, progress=False, workers=1) -> dict:
+    """`workers` > 1 fans the extractor out across threads. The calls are I/O-bound on the
+    provider, and deepseek-v4-flash is a reasoning model that spends 10k+ reasoning tokens
+    (60-180 s) per seed, so a serial 40-seed x 3-repeat run takes hours. Scoring stays
+    single-threaded and seed order is preserved, so results are identical to a serial run."""
     rows = []
     started = time.perf_counter()
-    for seed in seeds:
-        prose = prose_of(seed["record"])
-        kwargs = {"name": seed["name"]} if pass_name else {}
-        try:
-            proposal = extractor(prose, seed["published"], seed["ecosystem"], **kwargs)
-        except Exception as exc:  # an arm that crashes scores 0, it does not abort the run
-            proposal = None
-            crash = f"{type(exc).__name__}: {exc}"
-        else:
-            crash = None
+    if workers > 1:
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            futures = [pool.submit(_extract_one, s, extractor, pass_name) for s in seeds]
+            outcomes = []
+            for i, fut in enumerate(futures):
+                outcomes.append(fut.result())
+                if progress:
+                    print(f"      [{i + 1}/{len(seeds)}] {seeds[i]['seed']}", flush=True)
+    else:
+        outcomes = []
+        for i, seed in enumerate(seeds):
+            if progress:
+                print(f"      [{i + 1}/{len(seeds)}] {seed['seed']}", flush=True)
+            outcomes.append(_extract_one(seed, extractor, pass_name))
+
+    for seed, (proposal, crash) in zip(seeds, outcomes):
         score = verify_range_reconstruction(
             proposal, ecosystem=seed["ecosystem"], name=seed["name"],
             true_record=seed["record"], published_versions=seed["published"],
@@ -124,6 +153,8 @@ def main() -> int:
     ap.add_argument("--repeats", type=int, default=1,
                     help="repeat the LLM arm N times and report the spread (default 1)")
     ap.add_argument("--no-llm", action="store_true", help="skip the LLM arm entirely")
+    ap.add_argument("--workers", type=int, default=8,
+                    help="concurrent extractor calls in the LLM arm (default 8)")
     args = ap.parse_args()
 
     import os
@@ -131,29 +162,31 @@ def main() -> int:
     seeds = build_seeds(snapshot)
     n_abstain = sum(1 for s in seeds if s["gold_abstain"])
     print(f"prose slice: {len(seeds)} seeds ({n_abstain} gold-abstain), "
-          f"snapshot {snapshot.snapshot_id}")
+          f"snapshot {snapshot.snapshot_id}", flush=True)
 
     arms: dict = {}
     METER.reset()
     arms["deterministic_script"] = run_arm(seeds, null_extractor)
     arms["deterministic_script"]["meter"] = METER.snapshot()
-    print(f"  deterministic_script : {arms['deterministic_script']['range_accuracy']:.4f}")
+    print(f"  deterministic_script : {arms['deterministic_script']['range_accuracy']:.4f}", flush=True)
 
     METER.reset()
     arms["regex_baseline"] = run_arm(seeds, regex_extractor)
     arms["regex_baseline"]["meter"] = METER.snapshot()
-    print(f"  regex_baseline       : {arms['regex_baseline']['range_accuracy']:.4f}")
+    print(f"  regex_baseline       : {arms['regex_baseline']['range_accuracy']:.4f}", flush=True)
 
     if not args.no_llm and os.environ.get("LLM_API_KEY"):
         runs = []
         for i in range(args.repeats):
             METER.reset()
-            run = run_arm(seeds, llm_extractor, pass_name=True)
+            run = run_arm(seeds, llm_extractor, pass_name=True, progress=True,
+                          workers=args.workers)
             run["meter"] = METER.snapshot()
             runs.append(run)
             print(f"  llm_extractor run {i + 1}/{args.repeats} : "
                   f"{run['range_accuracy']:.4f}  ({run['latency_s']}s, "
-                  f"${run['meter'].get('cost_usd', 0):.4f})")
+                  f"${run['meter'].get('cost_usd', 0):.4f})", flush=True)
+            _checkpoint(runs)
         best = max(range(len(runs)), key=lambda i: runs[i]["range_accuracy"])
         arms["llm_extractor"] = dict(
             runs[0],

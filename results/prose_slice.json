@@ -194,7 +194,7 @@
       "n_correct": 16,
       "wrong_abstain": 13,
       "wrong_range": 11,
-      "latency_s": 0.26,
+      "latency_s": 0.25,
       "meter": {
         "calls": 0,
         "prompt_tokens": 0,

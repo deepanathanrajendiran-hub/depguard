@@ -405,3 +405,53 @@ def test_expand_events_matches_oracle_intervals_on_dangling_introduced():
 def test_expand_events_open_ended_trailing_interval():
     pub = ["1.0.0", "2.0.0", "3.0.0"]
     assert expand_events([{"introduced": "2.0.0"}], pub, "npm") == ["2.0.0", "3.0.0"]
+
+
+# ===================================================================== #
+# Extractor output parsing — a formatting choice must not be scored as a wrong answer
+# ===================================================================== #
+
+def test_llm_parser_accepts_paired_event_objects():
+    """The model naturally emits `{"introduced": "0", "fixed": "4.3.6"}` — one object per
+    interval — rather than OSV's strict one-key-per-event form. Observed live from
+    deepseek-v4-flash on GHSA-24wv-mv5m-xv4h.
+
+    The first parser required len(event) == 1 and dropped these, turning a CORRECT
+    reconstruction into an empty proposal scored as wrong. That would have understated the
+    LLM arm for a formatting preference, which is exactly the kind of silent
+    measurement bug this repo exists to catch."""
+    from depguard.llm_extractor import _normalize_events
+
+    paired = [{"introduced": "0", "fixed": "4.3.6"},
+              {"introduced": "4.4.0", "fixed": "4.4.3"}]
+    assert _normalize_events(paired) == [
+        {"introduced": "0"}, {"fixed": "4.3.6"},
+        {"introduced": "4.4.0"}, {"fixed": "4.4.3"},
+    ]
+
+
+def test_llm_parser_still_accepts_strict_osv_form():
+    from depguard.llm_extractor import _normalize_events
+
+    strict = [{"introduced": "0"}, {"fixed": "4.3.6"}]
+    assert _normalize_events(strict) == strict
+
+
+def test_llm_parser_drops_unknown_keys_and_non_dicts():
+    from depguard.llm_extractor import _normalize_events
+
+    assert _normalize_events([{"bogus": "x"}, "nope", 7, {}]) == []
+    assert _normalize_events([{"introduced": "1.0", "nonsense": "y"}]) == [{"introduced": "1.0"}]
+
+
+def test_paired_form_scores_identically_to_strict_form():
+    """End to end: the two spellings of the same range must reach the same P5 verdict."""
+    from depguard.llm_extractor import _normalize_events
+
+    eco, aid, name = LODASH
+    strict = {"events": [{"introduced": "0"}, {"fixed": "4.17.21"}],
+              "versions": [], "abstain": False}
+    paired = {"events": _normalize_events([{"introduced": "0", "fixed": "4.17.21"}]),
+              "versions": [], "abstain": False}
+    assert _score(strict).passed is True
+    assert _score(paired).passed is True
