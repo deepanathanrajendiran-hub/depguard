@@ -41,20 +41,28 @@ record, so the script's failure is an exception, not a contested number.
 | arm | range accuracy | correct | wrong abstain | wrong range |
 |---|---|---|---|---|
 | `deterministic_script` | **0.1500** | 6 / 40 | 34 | 0 |
-| `regex_baseline` | **0.4000** | 16 / 40 | 13 | 11 |
-| `llm_extractor` | **0.6417** [0.6250–0.6500] | 26 / 40 | 2 | 12 |
+| `regex_baseline` | **0.4750** | 19 / 40 | 11 | 10 |
+| `llm_extractor` | **0.6417** [0.6250–0.6500] | 25.7 / 40 | 1.7 | 12.7 |
 
 | Δ | range accuracy, 95% CI |
 |---|---|
-| `llm_extractor − deterministic_script` | **+0.5000 [+0.3500, +0.6500]** * |
-| `llm_extractor − regex_baseline` | **+0.2500 [+0.1250, +0.4000]** * |
-| `regex_baseline − deterministic_script` | +0.2500 [+0.1250, +0.4000] * |
+| `llm_extractor − deterministic_script` | **+0.4917 [+0.3417, +0.6500]** * |
+| `llm_extractor − regex_baseline` | **+0.1667 [+0.0665, +0.2833]** * |
+| `regex_baseline − deterministic_script` | +0.3250 [+0.1750, +0.4750] * |
 
-The script's 6 correct answers are **only** the 6 seeds where the prose names no version at
-all and abstaining is the right answer. On the 34 records that do describe a range it scores
-**0/34**. The ordering is strict and holds in **every one of the 3 runs**: the LLM wins
-9–10 seeds the regex loses and loses **none** it wins, and the regex likewise never loses a
-seed the script gets. 0 extractor fallbacks, ~$0.08 a run.
+Accuracy and counts are means over 3 runs (hence the fractions); latency, calls and cost are
+totals over every run paid for; the bootstrap uses each seed's pass rate across runs, so the
+CI matches the mean beside it. 120 LLM calls, **0 extractor fallbacks**, $0.25 all in.
+
+The script's 6 correct answers are **only** the 6 seeds whose prose names no version at all,
+where abstaining is right. On the 34 records that do describe a range it scores **0/34**.
+The ordering is strict and holds in **every one of the 3 runs**: the LLM wins 6–7 seeds the
+regex loses and loses **none** it wins; the regex beats the script on 13 and loses none.
+
+An earlier version of this table read `regex 0.4000` and `llm − regex +0.2500`. That delta
+was inflated by two bugs in my own baseline — `"2.1.0 through 2.5.3"` was parsed as
+*excluding* 2.5.3, and the grammar could not read a `v`-prefixed version at all. Fixing the
+control cost the headline a third of its size. The corrected number is above.
 
 So: **a script is free, instant and unbeatable when the data is structured. The moment the
 same fact is only in prose, it drops to zero and the model is worth paying for.** That's the
@@ -74,10 +82,10 @@ live vulnerabilities. Three residual misses are pure boundary slips (`cross-spaw
 `hosted-git-info` 2.8.9), the exact inclusive/exclusive semantics the script gets right for
 free.
 
-**The regex baseline fails by giving up.** 13 of its 24 misses are abstentions — prose forms
+**The regex baseline fails by giving up.** 11 of its 21 misses are abstentions — prose forms
 its grammar doesn't cover. It is a good-faith baseline, not a straw man: it handles the
 interleaved branch form ("Django 2.2 before 2.2.28, 3.2 before 3.2.13, and 4.0 before
-4.0.4") correctly.
+4.0.4") correctly, and two rounds of bug-fixing went into it *after* it was first measured.
 
 **The single agent skips evidence, not judgment.** On slice 1, on the 28 of 29 alerts where
 it answered, its affected/not-affected call was **correct every time**. It lost points by

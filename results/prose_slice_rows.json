@@ -1771,5 +1771,1305 @@
       },
       "crash": null
     }
+  ],
+  "llm_extractor": [
+    {
+      "seed": "GHSA-248v-346w-9cwc::certifi",
+      "ecosystem": "PyPI",
+      "gold_abstain": false,
+      "status": "scored",
+      "passed": false,
+      "n_versions": 74,
+      "n_mismatch": 43,
+      "mismatches": [
+        [
+          "0.0.1",
+          false,
+          true
+        ],
+        [
+          "0.0.2",
+          false,
+          true
+        ],
+        [
+          "0.0.3",
+          false,
+          true
+        ],
+        [
+          "0.0.4",
+          false,
+          true
+        ],
+        [
+          "0.0.5",
+          false,
+          true
+        ],
+        [
+          "0.0.6",
+          false,
+          true
+        ],
+        [
+          "0.0.7",
+          false,
+          true
+        ],
+        [
+          "0.0.8",
+          false,
+          true
+        ]
+      ],
+      "proposal": {
+        "events": [
+          {
+            "introduced": "0"
+          },
+          {
+            "fixed": "2024.07.04"
+          }
+        ],
+        "versions": [],
+        "abstain": false
+      },
+      "crash": null
+    },
+    {
+      "seed": "GHSA-24wv-mv5m-xv4h::redis",
+      "ecosystem": "PyPI",
+      "gold_abstain": false,
+      "status": "scored",
+      "passed": false,
+      "n_versions": 168,
+      "n_mismatch": 83,
+      "mismatches": [
+        [
+          "0.6.0",
+          false,
+          true
+        ],
+        [
+          "0.6.1",
+          false,
+          true
+        ],
+        [
+          "1.34.0",
+          false,
+          true
+        ],
+        [
+          "1.34.1",
+          false,
+          true
+        ],
+        [
+          "2.0.0",
+          false,
+          true
+        ],
+        [
+          "2.2.0",
+          false,
+          true
+        ],
+        [
+          "2.2.2",
+          false,
+          true
+        ],
+        [
+          "2.2.4",
+          false,
+          true
+        ]
+      ],
+      "proposal": {
+        "events": [
+          {
+            "introduced": "0"
+          },
+          {
+            "fixed": "4.3.6"
+          },
+          {
+            "introduced": "4.4"
+          },
+          {
+            "fixed": "4.4.3"
+          },
+          {
+            "introduced": "4.5"
+          },
+          {
+            "fixed": "4.5.3"
+          }
+        ],
+        "versions": [],
+        "abstain": false
+      },
+      "crash": null
+    },
+    {
+      "seed": "GHSA-2gwj-7jmv-h26r::django",
+      "ecosystem": "PyPI",
+      "gold_abstain": false,
+      "status": "scored",
+      "passed": true,
+      "n_versions": 428,
+      "n_mismatch": 0,
+      "mismatches": [],
+      "proposal": {
+        "events": [
+          {
+            "introduced": "2.2"
+          },
+          {
+            "fixed": "2.2.28"
+          },
+          {
+            "introduced": "3.2"
+          },
+          {
+            "fixed": "3.2.13"
+          },
+          {
+            "introduced": "4.0"
+          },
+          {
+            "fixed": "4.0.4"
+          }
+        ],
+        "versions": [],
+        "abstain": false
+      },
+      "crash": null
+    },
+    {
+      "seed": "GHSA-4grg-w6v8-c28g::flask",
+      "ecosystem": "PyPI",
+      "gold_abstain": false,
+      "status": "scored",
+      "passed": true,
+      "n_versions": 64,
+      "n_mismatch": 0,
+      "mismatches": [],
+      "proposal": {
+        "events": [
+          {
+            "introduced": "3.1.0"
+          },
+          {
+            "last_affected": "3.1.0"
+          }
+        ],
+        "versions": [],
+        "abstain": false
+      },
+      "crash": null
+    },
+    {
+      "seed": "GHSA-56pw-mpj4-fxww::pillow",
+      "ecosystem": "PyPI",
+      "gold_abstain": false,
+      "status": "scored",
+      "passed": true,
+      "n_versions": 105,
+      "n_mismatch": 0,
+      "mismatches": [],
+      "proposal": {
+        "events": [
+          {
+            "introduced": "0"
+          },
+          {
+            "fixed": "10.0.1"
+          }
+        ],
+        "versions": [],
+        "abstain": false
+      },
+      "crash": null
+    },
+    {
+      "seed": "GHSA-57qw-cc2g-pv5p::lxml",
+      "ecosystem": "PyPI",
+      "gold_abstain": false,
+      "status": "scored",
+      "passed": true,
+      "n_versions": 127,
+      "n_mismatch": 0,
+      "mismatches": [],
+      "proposal": {
+        "events": [
+          {
+            "introduced": "0"
+          },
+          {
+            "fixed": "3.3.5"
+          }
+        ],
+        "versions": [],
+        "abstain": false
+      },
+      "crash": null
+    },
+    {
+      "seed": "GHSA-7q8x-38mc-p84f::mako",
+      "ecosystem": "PyPI",
+      "gold_abstain": false,
+      "status": "scored",
+      "passed": true,
+      "n_versions": 79,
+      "n_mismatch": 0,
+      "mismatches": [],
+      "proposal": {
+        "events": [
+          {
+            "introduced": "0"
+          },
+          {
+            "fixed": "0.3.4"
+          }
+        ],
+        "versions": [],
+        "abstain": false
+      },
+      "crash": null
+    },
+    {
+      "seed": "GHSA-cf7p-gm2m-833m::cryptography",
+      "ecosystem": "PyPI",
+      "gold_abstain": false,
+      "status": "scored",
+      "passed": false,
+      "n_versions": 157,
+      "n_mismatch": 110,
+      "mismatches": [
+        [
+          "0.1.0",
+          false,
+          true
+        ],
+        [
+          "0.2.0",
+          false,
+          true
+        ],
+        [
+          "0.2.1",
+          false,
+          true
+        ],
+        [
+          "0.2.2",
+          false,
+          true
+        ],
+        [
+          "0.3.0",
+          false,
+          true
+        ],
+        [
+          "0.4.0",
+          false,
+          true
+        ],
+        [
+          "0.5.0",
+          false,
+          true
+        ],
+        [
+          "0.5.1",
+          false,
+          true
+        ]
+      ],
+      "proposal": {
+        "events": [
+          {
+            "introduced": "0"
+          },
+          {
+            "fixed": "41.0.2"
+          }
+        ],
+        "versions": [],
+        "abstain": false
+      },
+      "crash": null
+    },
+    {
+      "seed": "GHSA-gmj6-6f8f-6699::jinja2",
+      "ecosystem": "PyPI",
+      "gold_abstain": true,
+      "status": "abstained",
+      "passed": true,
+      "n_versions": 0,
+      "n_mismatch": 0,
+      "mismatches": [],
+      "proposal": {
+        "events": [],
+        "versions": [],
+        "abstain": true
+      },
+      "crash": null
+    },
+    {
+      "seed": "GHSA-h4pw-wxh7-4vjj::python-jose",
+      "ecosystem": "PyPI",
+      "gold_abstain": false,
+      "status": "scored",
+      "passed": false,
+      "n_versions": 38,
+      "n_mismatch": 35,
+      "mismatches": [
+        [
+          "0.1.1",
+          true,
+          false
+        ],
+        [
+          "0.1.2",
+          true,
+          false
+        ],
+        [
+          "0.1.3",
+          true,
+          false
+        ],
+        [
+          "0.1.4",
+          true,
+          false
+        ],
+        [
+          "0.1.5",
+          true,
+          false
+        ],
+        [
+          "0.1.6",
+          true,
+          false
+        ],
+        [
+          "0.1.7",
+          true,
+          false
+        ],
+        [
+          "0.1.8",
+          true,
+          false
+        ]
+      ],
+      "proposal": {
+        "events": [
+          {
+            "introduced": "3.3.0"
+          },
+          {
+            "last_affected": "3.3.0"
+          }
+        ],
+        "versions": [],
+        "abstain": false
+      },
+      "crash": null
+    },
+    {
+      "seed": "GHSA-j7j6-7hfx-5522::waitress",
+      "ecosystem": "PyPI",
+      "gold_abstain": false,
+      "status": "scored",
+      "passed": true,
+      "n_versions": 52,
+      "n_mismatch": 0,
+      "mismatches": [],
+      "proposal": {
+        "events": [
+          {
+            "introduced": "0"
+          },
+          {
+            "last_affected": "1.3.1"
+          }
+        ],
+        "versions": [],
+        "abstain": false
+      },
+      "crash": null
+    },
+    {
+      "seed": "GHSA-p5w8-wqhj-9hhf::sqlparse",
+      "ecosystem": "PyPI",
+      "gold_abstain": false,
+      "status": "scored",
+      "passed": false,
+      "n_versions": 38,
+      "n_mismatch": 27,
+      "mismatches": [
+        [
+          "0.1.0",
+          false,
+          true
+        ],
+        [
+          "0.1.1",
+          false,
+          true
+        ],
+        [
+          "0.1.2",
+          false,
+          true
+        ],
+        [
+          "0.1.3",
+          false,
+          true
+        ],
+        [
+          "0.1.4",
+          false,
+          true
+        ],
+        [
+          "0.1.5",
+          false,
+          true
+        ],
+        [
+          "0.1.6",
+          false,
+          true
+        ],
+        [
+          "0.1.7",
+          false,
+          true
+        ]
+      ],
+      "proposal": {
+        "events": [
+          {
+            "introduced": "0"
+          },
+          {
+            "fixed": "0.4.2"
+          }
+        ],
+        "versions": [],
+        "abstain": false
+      },
+      "crash": null
+    },
+    {
+      "seed": "GHSA-pg2w-x9wp-vw92::requests",
+      "ecosystem": "PyPI",
+      "gold_abstain": false,
+      "status": "scored",
+      "passed": true,
+      "n_versions": 160,
+      "n_mismatch": 0,
+      "mismatches": [],
+      "proposal": {
+        "events": [
+          {
+            "introduced": "2.1.0"
+          },
+          {
+            "last_affected": "2.5.3"
+          }
+        ],
+        "versions": [],
+        "abstain": false
+      },
+      "crash": null
+    },
+    {
+      "seed": "GHSA-q34m-jh98-gwm2::werkzeug",
+      "ecosystem": "PyPI",
+      "gold_abstain": true,
+      "status": "abstained",
+      "passed": true,
+      "n_versions": 0,
+      "n_mismatch": 0,
+      "mismatches": [],
+      "proposal": {
+        "events": [],
+        "versions": [],
+        "abstain": true
+      },
+      "crash": null
+    },
+    {
+      "seed": "GHSA-v4w5-p2hg-8fh6::urllib3",
+      "ecosystem": "PyPI",
+      "gold_abstain": false,
+      "status": "scored",
+      "passed": true,
+      "n_versions": 104,
+      "n_mismatch": 0,
+      "mismatches": [],
+      "proposal": {
+        "events": [
+          {
+            "introduced": "1.17"
+          },
+          {
+            "last_affected": "1.18"
+          }
+        ],
+        "versions": [],
+        "abstain": false
+      },
+      "crash": null
+    },
+    {
+      "seed": "OSV-2022-1074::pillow",
+      "ecosystem": "PyPI",
+      "gold_abstain": true,
+      "status": "abstained",
+      "passed": true,
+      "n_versions": 0,
+      "n_mismatch": 0,
+      "mismatches": [],
+      "proposal": {
+        "events": [],
+        "versions": [],
+        "abstain": true
+      },
+      "crash": null
+    },
+    {
+      "seed": "PYSEC-2020-176::pyyaml",
+      "ecosystem": "PyPI",
+      "gold_abstain": false,
+      "status": "scored",
+      "passed": true,
+      "n_versions": 31,
+      "n_mismatch": 0,
+      "mismatches": [],
+      "proposal": {
+        "events": [
+          {
+            "introduced": "5.1"
+          },
+          {
+            "last_affected": "5.1.2"
+          }
+        ],
+        "versions": [],
+        "abstain": false
+      },
+      "crash": null
+    },
+    {
+      "seed": "PYSEC-2021-107::ansible",
+      "ecosystem": "PyPI",
+      "gold_abstain": false,
+      "status": "abstained",
+      "passed": false,
+      "n_versions": 0,
+      "n_mismatch": 0,
+      "mismatches": [],
+      "proposal": {
+        "events": [],
+        "versions": [],
+        "abstain": true
+      },
+      "crash": null
+    },
+    {
+      "seed": "PYSEC-2021-854::numpy",
+      "ecosystem": "PyPI",
+      "gold_abstain": false,
+      "status": "scored",
+      "passed": true,
+      "n_versions": 134,
+      "n_mismatch": 0,
+      "mismatches": [],
+      "proposal": {
+        "events": [
+          {
+            "introduced": "1.9.0"
+          },
+          {
+            "last_affected": "1.9.3"
+          }
+        ],
+        "versions": [],
+        "abstain": false
+      },
+      "crash": null
+    },
+    {
+      "seed": "PYSEC-2022-183::httpx",
+      "ecosystem": "PyPI",
+      "gold_abstain": false,
+      "status": "scored",
+      "passed": false,
+      "n_versions": 73,
+      "n_mismatch": 24,
+      "mismatches": [
+        [
+          "0.20.0",
+          false,
+          true
+        ],
+        [
+          "0.21.0",
+          false,
+          true
+        ],
+        [
+          "0.21.1",
+          false,
+          true
+        ],
+        [
+          "0.21.2",
+          false,
+          true
+        ],
+        [
+          "0.21.3",
+          false,
+          true
+        ],
+        [
+          "0.22.0",
+          false,
+          true
+        ],
+        [
+          "0.23.0",
+          false,
+          true
+        ],
+        [
+          "0.23.1",
+          false,
+          true
+        ]
+      ],
+      "proposal": {
+        "events": [
+          {
+            "introduced": "0"
+          },
+          {
+            "last_affected": "1.0.0.beta0"
+          }
+        ],
+        "versions": [],
+        "abstain": false
+      },
+      "crash": null
+    },
+    {
+      "seed": "PYSEC-2022-203::werkzeug",
+      "ecosystem": "PyPI",
+      "gold_abstain": false,
+      "status": "scored",
+      "passed": true,
+      "n_versions": 105,
+      "n_mismatch": 0,
+      "mismatches": [],
+      "proposal": {
+        "events": [
+          {
+            "introduced": "0"
+          },
+          {
+            "last_affected": "2.1.0"
+          }
+        ],
+        "versions": [],
+        "abstain": false
+      },
+      "crash": null
+    },
+    {
+      "seed": "PYSEC-2022-269::oauthlib",
+      "ecosystem": "PyPI",
+      "gold_abstain": false,
+      "status": "scored",
+      "passed": true,
+      "n_versions": 52,
+      "n_mismatch": 0,
+      "mismatches": [],
+      "proposal": {
+        "events": [
+          {
+            "introduced": "3.1.1"
+          },
+          {
+            "fixed": "3.2.1"
+          }
+        ],
+        "versions": [],
+        "abstain": false
+      },
+      "crash": null
+    },
+    {
+      "seed": "GHSA-2328-f5f3-gj25::node-forge",
+      "ecosystem": "npm",
+      "gold_abstain": false,
+      "status": "abstained",
+      "passed": false,
+      "n_versions": 0,
+      "n_mismatch": 0,
+      "mismatches": [],
+      "proposal": {
+        "events": [],
+        "versions": [],
+        "abstain": true
+      },
+      "crash": null
+    },
+    {
+      "seed": "GHSA-29mw-wpgm-hmr9::lodash",
+      "ecosystem": "npm",
+      "gold_abstain": false,
+      "status": "scored",
+      "passed": false,
+      "n_versions": 117,
+      "n_mismatch": 61,
+      "mismatches": [
+        [
+          "0.1.0",
+          false,
+          true
+        ],
+        [
+          "0.2.0",
+          false,
+          true
+        ],
+        [
+          "0.2.1",
+          false,
+          true
+        ],
+        [
+          "0.2.2",
+          false,
+          true
+        ],
+        [
+          "0.3.0",
+          false,
+          true
+        ],
+        [
+          "0.3.1",
+          false,
+          true
+        ],
+        [
+          "0.3.2",
+          false,
+          true
+        ],
+        [
+          "0.4.0",
+          false,
+          true
+        ]
+      ],
+      "proposal": {
+        "events": [
+          {
+            "introduced": "0"
+          },
+          {
+            "fixed": "4.17.21"
+          }
+        ],
+        "versions": [],
+        "abstain": false
+      },
+      "crash": null
+    },
+    {
+      "seed": "GHSA-2mhh-w6q8-5hxw::ws",
+      "ecosystem": "npm",
+      "gold_abstain": false,
+      "status": "scored",
+      "passed": true,
+      "n_versions": 179,
+      "n_mismatch": 0,
+      "mismatches": [],
+      "proposal": {
+        "events": [
+          {
+            "introduced": "0"
+          },
+          {
+            "fixed": "1.0.1"
+          }
+        ],
+        "versions": [],
+        "abstain": false
+      },
+      "crash": null
+    },
+    {
+      "seed": "GHSA-2p57-rm9w-gvfp::ip",
+      "ecosystem": "npm",
+      "gold_abstain": false,
+      "status": "scored",
+      "passed": true,
+      "n_versions": 26,
+      "n_mismatch": 0,
+      "mismatches": [],
+      "proposal": {
+        "events": [
+          {
+            "introduced": "0"
+          },
+          {
+            "last_affected": "2.0.1"
+          }
+        ],
+        "versions": [],
+        "abstain": false
+      },
+      "crash": null
+    },
+    {
+      "seed": "GHSA-2qvq-rjwj-gvw9::handlebars",
+      "ecosystem": "npm",
+      "gold_abstain": true,
+      "status": "abstained",
+      "passed": true,
+      "n_versions": 0,
+      "n_mismatch": 0,
+      "mismatches": [],
+      "proposal": {
+        "events": [],
+        "versions": [],
+        "abstain": true
+      },
+      "crash": null
+    },
+    {
+      "seed": "GHSA-2r2c-g63r-vccr::node-forge",
+      "ecosystem": "npm",
+      "gold_abstain": false,
+      "status": "scored",
+      "passed": true,
+      "n_versions": 134,
+      "n_mismatch": 0,
+      "mismatches": [],
+      "proposal": {
+        "events": [
+          {
+            "introduced": "0"
+          },
+          {
+            "fixed": "1.3.0"
+          }
+        ],
+        "versions": [],
+        "abstain": false
+      },
+      "crash": null
+    },
+    {
+      "seed": "GHSA-35jh-r3h4-6jhm::lodash",
+      "ecosystem": "npm",
+      "gold_abstain": false,
+      "status": "scored",
+      "passed": true,
+      "n_versions": 117,
+      "n_mismatch": 0,
+      "mismatches": [],
+      "proposal": {
+        "events": [
+          {
+            "introduced": "0"
+          },
+          {
+            "fixed": "4.17.21"
+          }
+        ],
+        "versions": [],
+        "abstain": false
+      },
+      "crash": null
+    },
+    {
+      "seed": "GHSA-3949-f494-cm99::prismjs",
+      "ecosystem": "npm",
+      "gold_abstain": false,
+      "status": "scored",
+      "passed": false,
+      "n_versions": 38,
+      "n_mismatch": 19,
+      "mismatches": [
+        [
+          "0.0.1",
+          false,
+          true
+        ],
+        [
+          "1.1.0",
+          false,
+          true
+        ],
+        [
+          "1.2.0",
+          false,
+          true
+        ],
+        [
+          "1.3.0",
+          false,
+          true
+        ],
+        [
+          "1.4.1",
+          false,
+          true
+        ],
+        [
+          "1.5.0",
+          false,
+          true
+        ],
+        [
+          "1.5.1",
+          false,
+          true
+        ],
+        [
+          "1.6.0",
+          false,
+          true
+        ]
+      ],
+      "proposal": {
+        "events": [
+          {
+            "introduced": "0"
+          },
+          {
+            "fixed": "1.27.0"
+          }
+        ],
+        "versions": [],
+        "abstain": false
+      },
+      "crash": null
+    },
+    {
+      "seed": "GHSA-394c-5j6w-4xmx::ua-parser-js",
+      "ecosystem": "npm",
+      "gold_abstain": false,
+      "status": "scored",
+      "passed": true,
+      "n_versions": 94,
+      "n_mismatch": 0,
+      "mismatches": [],
+      "proposal": {
+        "events": [
+          {
+            "introduced": "0"
+          },
+          {
+            "fixed": "0.7.23"
+          }
+        ],
+        "versions": [],
+        "abstain": false
+      },
+      "crash": null
+    },
+    {
+      "seed": "GHSA-3g43-6gmg-66jw::axios",
+      "ecosystem": "npm",
+      "gold_abstain": false,
+      "status": "scored",
+      "passed": false,
+      "n_versions": 142,
+      "n_mismatch": 44,
+      "mismatches": [
+        [
+          "0.1.0",
+          false,
+          true
+        ],
+        [
+          "0.2.0",
+          false,
+          true
+        ],
+        [
+          "0.2.1",
+          false,
+          true
+        ],
+        [
+          "0.2.2",
+          false,
+          true
+        ],
+        [
+          "0.3.0",
+          false,
+          true
+        ],
+        [
+          "0.3.1",
+          false,
+          true
+        ],
+        [
+          "0.4.0",
+          false,
+          true
+        ],
+        [
+          "0.4.1",
+          false,
+          true
+        ]
+      ],
+      "proposal": {
+        "events": [
+          {
+            "introduced": "0"
+          },
+          {
+            "last_affected": "1.15.0"
+          }
+        ],
+        "versions": [],
+        "abstain": false
+      },
+      "crash": null
+    },
+    {
+      "seed": "GHSA-3jfq-g458-7qm9::tar",
+      "ecosystem": "npm",
+      "gold_abstain": false,
+      "status": "scored",
+      "passed": true,
+      "n_versions": 150,
+      "n_mismatch": 0,
+      "mismatches": [],
+      "proposal": {
+        "events": [
+          {
+            "introduced": "0"
+          },
+          {
+            "fixed": "3.2.2"
+          },
+          {
+            "introduced": "4.0.0"
+          },
+          {
+            "fixed": "4.4.14"
+          },
+          {
+            "introduced": "5.0.0"
+          },
+          {
+            "fixed": "5.0.6"
+          },
+          {
+            "introduced": "6.0.0"
+          },
+          {
+            "fixed": "6.1.1"
+          }
+        ],
+        "versions": [],
+        "abstain": false
+      },
+      "crash": null
+    },
+    {
+      "seed": "GHSA-3w5v-p54c-f74x::ejs",
+      "ecosystem": "npm",
+      "gold_abstain": false,
+      "status": "scored",
+      "passed": false,
+      "n_versions": 79,
+      "n_mismatch": 2,
+      "mismatches": [
+        [
+          "2.5.3",
+          true,
+          false
+        ],
+        [
+          "2.5.4",
+          true,
+          false
+        ]
+      ],
+      "proposal": {
+        "events": [
+          {
+            "introduced": "0"
+          },
+          {
+            "fixed": "2.5.3"
+          }
+        ],
+        "versions": [],
+        "abstain": false
+      },
+      "crash": null
+    },
+    {
+      "seed": "GHSA-3xgq-45jj-v275::cross-spawn",
+      "ecosystem": "npm",
+      "gold_abstain": false,
+      "status": "scored",
+      "passed": false,
+      "n_versions": 58,
+      "n_mismatch": 1,
+      "mismatches": [
+        [
+          "6.0.6",
+          false,
+          true
+        ]
+      ],
+      "proposal": {
+        "events": [
+          {
+            "introduced": "0"
+          },
+          {
+            "fixed": "7.0.5"
+          }
+        ],
+        "versions": [],
+        "abstain": false
+      },
+      "crash": null
+    },
+    {
+      "seed": "GHSA-42xw-2xvc-qx8m::axios",
+      "ecosystem": "npm",
+      "gold_abstain": false,
+      "status": "scored",
+      "passed": true,
+      "n_versions": 142,
+      "n_mismatch": 0,
+      "mismatches": [],
+      "proposal": {
+        "events": [
+          {
+            "introduced": "0"
+          },
+          {
+            "fixed": "0.18.1"
+          }
+        ],
+        "versions": [],
+        "abstain": false
+      },
+      "crash": null
+    },
+    {
+      "seed": "GHSA-43f8-2h32-f4cj::hosted-git-info",
+      "ecosystem": "npm",
+      "gold_abstain": false,
+      "status": "scored",
+      "passed": false,
+      "n_versions": 77,
+      "n_mismatch": 1,
+      "mismatches": [
+        [
+          "2.8.9",
+          false,
+          true
+        ]
+      ],
+      "proposal": {
+        "events": [
+          {
+            "introduced": "0"
+          },
+          {
+            "fixed": "3.0.8"
+          }
+        ],
+        "versions": [],
+        "abstain": false
+      },
+      "crash": null
+    },
+    {
+      "seed": "GHSA-7fhm-mqm4-2wp7::minimist",
+      "ecosystem": "npm",
+      "gold_abstain": true,
+      "status": "abstained",
+      "passed": true,
+      "n_versions": 0,
+      "n_mismatch": 0,
+      "mismatches": [],
+      "proposal": {
+        "events": [],
+        "versions": [],
+        "abstain": true
+      },
+      "crash": null
+    },
+    {
+      "seed": "GHSA-9959-c6q6-6qp3::validator",
+      "ecosystem": "npm",
+      "gold_abstain": true,
+      "status": "abstained",
+      "passed": true,
+      "n_versions": 0,
+      "n_mismatch": 0,
+      "mismatches": [],
+      "proposal": {
+        "events": [],
+        "versions": [],
+        "abstain": true
+      },
+      "crash": null
+    },
+    {
+      "seed": "GHSA-crvj-3gj9-gm2p::qs",
+      "ecosystem": "npm",
+      "gold_abstain": false,
+      "status": "scored",
+      "passed": true,
+      "n_versions": 149,
+      "n_mismatch": 0,
+      "mismatches": [],
+      "proposal": {
+        "events": [
+          {
+            "introduced": "0"
+          },
+          {
+            "fixed": "1.0.0"
+          }
+        ],
+        "versions": [],
+        "abstain": false
+      },
+      "crash": null
+    }
   ]
 }

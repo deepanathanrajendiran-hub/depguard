@@ -40,17 +40,23 @@ touches the correctness path.
 | arm | range accuracy | correct | wrong abstain | wrong range |
 |---|---|---|---|---|
 | `deterministic_script` | **0.1500** | 6 / 40 | 34 | 0 |
-| `regex_baseline` | **0.4000** | 16 / 40 | 13 | 11 |
-| `llm_extractor` | **0.6417** [0.6250–0.6500] | 26 / 40 | 2 | 12 |
+| `regex_baseline` | **0.4750** | 19 / 40 | 11 | 10 |
+| `llm_extractor` | **0.6417** [0.6250–0.6500] | 25.7 / 40 | 1.7 | 12.7 |
 
-`llm − script` **+0.5000 [+0.3500, +0.6500]** · `llm − regex` **+0.2500 [+0.1250, +0.4000]**
-· `regex − script` +0.2500 [+0.1250, +0.4000]. All significant. 3 repeats, **0 extractor
-fallbacks**, ~$0.08 a run.
+`llm − script` **+0.4917 [+0.3417, +0.6500]** · `llm − regex` **+0.1667 [+0.0665, +0.2833]**
+· `regex − script` +0.3250 [+0.1750, +0.4750]. All significant. 3 repeats, 120 LLM calls,
+**0 extractor fallbacks**, $0.25 all in. Accuracy and counts are means over runs; latency,
+calls and cost are totals; the bootstrap uses each seed's pass rate across runs.
 
-The ordering is strict and holds in **every one of the 3 runs** — the LLM wins 9–10 seeds
-the regex loses and loses **none** it wins (verified per-run from `per_seed` in
-`results/prose_slice_partial.json`). The script's 6 correct answers are only the seeds whose
-prose names no version at all; on the 34 records that describe a range it scores **0/34**.
+The ordering is strict and holds in **every one of the 3 runs** — the LLM wins 6–7 seeds the
+regex loses and loses **none** it wins (verified per-run from `per_seed` in
+`results/prose_slice_partial.json`); the regex beats the script on 13 and loses none. The
+script's 6 correct answers are only the seeds whose prose names no version at all; on the 34
+records that describe a range it scores **0/34**.
+
+**These numbers replace an earlier set.** The first measurement read `regex 0.4000` and
+`llm − regex +0.2500`, both inflated by two defects in my own baseline (see below). Fixing
+the control cost the headline delta a third of its size.
 
 **The headline:** a script is free, instant and unbeatable on structured data, and worth
 exactly zero the moment the same fact is only in prose. The `regex_baseline` exists so that
@@ -94,6 +100,30 @@ exactly zero the moment the same fact is only in prose. The `regex_baseline` exi
    `{"introduced": "0", "fixed": "4.3.6"}`; the parser required one key per event and dropped
    them, turning correct reconstructions into empty proposals. Fixed before any number was
    reported.
+6. **The control was crippled by its own grammar, and it inflated the headline.** The regex
+   baseline put `"through"` in the same alternation as `"before"`, so `"requests 2.1.0
+   through 2.5.3"` was parsed as *excluding* 2.5.3 — both corpus seeds using that form failed
+   on exactly the boundary version. Separately its version pattern could not match a
+   `v`-prefixed release, so `"fixed in v1.27.0"` read as "no version mentioned" on 3 more
+   seeds, while `redact._VERSION_TOKEN` fires inside `v1.27.0` anyway — gold called those
+   seeds decidable and the control was scored against a token it could not see.
+   `regex_baseline` went **0.4000 → 0.4750** and the headline `llm − regex` delta fell from
+   +0.2500 to **+0.1667**. A baseline weakened by its own bugs flatters the arm it is
+   compared against, and it flattered mine.
+7. **The published LLM row mixed a 3-run mean with run-1 counts.** `dict(runs[0], ...)`
+   copied run 1's counts, latency, calls and cost and overlaid a mean accuracy, so the table
+   read `0.6417 … 26 | 40` when 26/40 = 0.65, and reported a third of the real spend — while
+   the CIs came from run 1's per-seed vector, making a delta printed beside the mean actually
+   a delta against run 1.
+8. **The fail-unsafe fix covered only one of two arms.** `arms/single_agent.py` still turned
+   an error envelope into `affected: false` and fed that fabricated `False` back to its own
+   ReAct policy, so the class of bug these notes claimed to have removed was still shipping
+   in one of the three ablation arms.
+
+Findings 6–8 came from an independent review of the branch, after the first set of numbers
+had already been written into this file. They are listed here rather than quietly corrected
+because "the harness catches what I would otherwise ship" is the entire claim of the project,
+and it only means anything if it applies to my own work.
 
 ## The eval gate's blind spot, and the fix
 
