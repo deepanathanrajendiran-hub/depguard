@@ -11,8 +11,10 @@ Run:  python scripts/run_ablation.py
 
 from __future__ import annotations
 
+import argparse
 import json
 import os
+import statistics
 import sys
 from pathlib import Path
 
@@ -25,9 +27,49 @@ from golden.seeds import SEED_INPUTS  # noqa: E402
 
 
 def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--repeats", type=int, default=1,
+                    help="repeat the LLM arms N times and report the spread. The "
+                         "deterministic arm is bit-reproducible, so it always runs once. "
+                         "n=1 makes every LLM claim an observation rather than a "
+                         "propensity, which is why v0.1's single-agent findings needed "
+                         "this flag.")
+    args = ap.parse_args()
+
     snap = Snapshot()
     arms = available_arms(os.environ)
     result = run_ablation(SEED_INPUTS, snap, arms=arms)
+
+    llm_arms = [a for a in arms if a != "deterministic_script"]
+    if args.repeats > 1 and llm_arms:
+        repeats = {a: [result["aggregates"][a]["correctness"]] for a in llm_arms}
+        ground = {a: [result["aggregates"][a]["groundedness"]] for a in llm_arms}
+        for i in range(args.repeats - 1):
+            print(f"  repeat {i + 2}/{args.repeats} ...", flush=True)
+            extra = run_ablation(SEED_INPUTS, snap, arms=llm_arms)
+            for a in llm_arms:
+                repeats[a].append(extra["aggregates"][a]["correctness"])
+                ground[a].append(extra["aggregates"][a]["groundedness"])
+        result["repeats"] = {
+            a: {
+                "n": args.repeats,
+                "correctness": repeats[a],
+                "correctness_mean": statistics.fmean(repeats[a]),
+                "correctness_min": min(repeats[a]),
+                "correctness_max": max(repeats[a]),
+                "groundedness": ground[a],
+                "groundedness_mean": statistics.fmean(ground[a]),
+                "groundedness_min": min(ground[a]),
+                "groundedness_max": max(ground[a]),
+            }
+            for a in llm_arms
+        }
+        print("  repeat spread:")
+        for a in llm_arms:
+            r = result["repeats"][a]
+            print(f"    {a}: correctness {r['correctness_mean']:.4f} "
+                  f"[{r['correctness_min']:.4f}-{r['correctness_max']:.4f}] "
+                  f"over {args.repeats} runs")
 
     outdir = REPO / "results"
     outdir.mkdir(exist_ok=True)
