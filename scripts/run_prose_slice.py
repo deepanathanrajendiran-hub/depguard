@@ -40,7 +40,7 @@ from depguard.redact import gold_abstains, prose_of  # noqa: E402
 from depguard.snapshot import Snapshot  # noqa: E402
 from depguard.stats import compare_arms  # noqa: E402
 from depguard.tools.external import resolve_published_versions  # noqa: E402
-from depguard.verifier import verify_range_reconstruction  # noqa: E402
+from depguard.verifier import RangeScore, verify_range_reconstruction  # noqa: E402
 
 OUT_JSON = REPO / "results" / "prose_slice.json"
 OUT_MD = REPO / "results" / "prose_slice.md"
@@ -115,10 +115,19 @@ def run_arm(seeds, extractor, *, pass_name=False, progress=False, workers=1) -> 
             outcomes.append(_extract_one(seed, extractor, pass_name))
 
     for seed, (proposal, crash) in zip(seeds, outcomes):
-        score = verify_range_reconstruction(
-            proposal, ecosystem=seed["ecosystem"], name=seed["name"],
-            true_record=seed["record"], published_versions=seed["published"],
-        )
+        # A CRASH IS NOT AN ABSTENTION. verify_range_reconstruction treats proposal=None
+        # as a deliberate abstain, which is scored CORRECT on a gold-abstain seed — so a
+        # transport error on one of those 6 seeds would have earned the arm a point. An
+        # arm that crashed did not decide anything; score it wrong outright.
+        if crash is not None:
+            score = RangeScore(status="crashed", passed=False,
+                               gold_abstain=seed["gold_abstain"],
+                               exclusion_reason=crash)
+        else:
+            score = verify_range_reconstruction(
+                proposal, ecosystem=seed["ecosystem"], name=seed["name"],
+                true_record=seed["record"], published_versions=seed["published"],
+            )
         rows.append({
             "seed": seed["seed"],
             "ecosystem": seed["ecosystem"],
@@ -145,6 +154,58 @@ def run_arm(seeds, extractor, *, pass_name=False, progress=False, workers=1) -> 
         "wrong_range": sum(1 for r in scored
                            if r["status"] == "scored" and not r["passed"]),
         "latency_s": round(time.perf_counter() - started, 2),
+    }
+
+
+def _aggregate_repeats(runs: list[dict]) -> dict:
+    """Combine N repeats into ONE internally consistent row.
+
+    The first version did `dict(runs[0], ...)` and then overlaid a mean accuracy. That
+    published a row whose accuracy column was a 3-run mean while its correct/scored,
+    latency, calls and cost columns were run 1 — the table read `0.6417 ... 26 | 40`, but
+    26/40 is 0.65, and the reported spend was a third of what was actually spent. Worse,
+    the paired-bootstrap CIs were computed from run 1's per-seed vector, so a delta printed
+    against the mean was really a delta against run 1. For a repo whose whole claim is
+    honest measurement, that is the wrong artifact to ship.
+
+    Now: accuracy is the mean over runs; per-seed scores are each seed's PASS RATE across
+    runs (so the bootstrap resamples the arm's expected per-seed behaviour, matching the
+    reported mean); counts are means; latency, calls, tokens and cost are SUMS over every
+    run actually paid for."""
+    order = runs[0]["seeds_scored"]
+    by_seed = [dict(zip(r["seeds_scored"], r["per_seed"])) for r in runs]
+    per_seed = [sum(d.get(s, 0.0) for d in by_seed) / len(runs) for s in order]
+    accs = [r["range_accuracy"] for r in runs]
+    meters = [r.get("meter", {}) for r in runs]
+
+    def total(key):
+        return sum(m.get(key, 0) for m in meters)
+
+    return {
+        "rows": runs[0]["rows"],
+        "rows_note": "per-seed rows are from repeat 1; per-run pass vectors for every "
+                     "repeat are in results/prose_slice_partial.json",
+        "per_seed": per_seed,
+        "seeds_scored": order,
+        "range_accuracy": sum(accs) / len(accs),
+        "range_accuracy_mean": sum(accs) / len(accs),
+        "range_accuracy_min": min(accs),
+        "range_accuracy_max": max(accs),
+        "repeats": accs,
+        "n_repeats": len(runs),
+        "repeat_runs": runs,
+        "n_scored": runs[0]["n_scored"],
+        "n_correct": sum(r["n_correct"] for r in runs) / len(runs),
+        "wrong_abstain": sum(r["wrong_abstain"] for r in runs) / len(runs),
+        "wrong_range": sum(r["wrong_range"] for r in runs) / len(runs),
+        "latency_s": round(sum(r["latency_s"] for r in runs), 2),
+        "meter": {
+            "calls": total("calls"), "prompt_tokens": total("prompt_tokens"),
+            "completion_tokens": total("completion_tokens"),
+            "total_tokens": total("total_tokens"),
+            "cost_usd": sum(m.get("cost_usd", 0.0) for m in meters),
+            "fallbacks": total("fallbacks"),
+        },
     }
 
 
@@ -187,27 +248,16 @@ def main() -> int:
                   f"{run['range_accuracy']:.4f}  ({run['latency_s']}s, "
                   f"${run['meter'].get('cost_usd', 0):.4f})", flush=True)
             _checkpoint(runs)
-        best = max(range(len(runs)), key=lambda i: runs[i]["range_accuracy"])
-        arms["llm_extractor"] = dict(
-            runs[0],
-            repeats=[r["range_accuracy"] for r in runs],
-            repeat_runs=runs,
-            range_accuracy_mean=sum(r["range_accuracy"] for r in runs) / len(runs),
-            range_accuracy_min=min(r["range_accuracy"] for r in runs),
-            range_accuracy_max=max(r["range_accuracy"] for r in runs),
-            best_run_index=best,
-        )
+        arms["llm_extractor"] = _aggregate_repeats(runs)
     elif not args.no_llm:
         print("  llm_extractor        : SKIPPED (LLM_API_KEY not set)")
 
     # Pairwise deltas on the shared seed order
-    order = arms["deterministic_script"]["seeds_scored"]
     comparisons = {}
     names = list(arms)
     for i, a in enumerate(names):
         for b in names[i + 1:]:
-            sa = _aligned(arms[a], order)
-            sb = _aligned(arms[b], order)
+            sa, sb = _aligned(arms[a], arms[b])
             comparisons[f"{a} - {b}"] = compare_arms(sa, sb)
 
     result = {
@@ -228,9 +278,19 @@ def main() -> int:
     return 0
 
 
-def _aligned(arm: dict, order: list[str]) -> list[float]:
-    by_seed = dict(zip(arm["seeds_scored"], arm["per_seed"]))
-    return [by_seed.get(s, 0.0) for s in order]
+def _aligned(arm_a: dict, arm_b: dict) -> tuple[list[float], list[float]]:
+    """Pair two arms on the seeds BOTH actually scored.
+
+    The first version padded a missing seed with 0.0 against an order taken from
+    `deterministic_script`. That arm always abstains and so never excludes anything, which
+    made the padding invisible — but any seed another arm excluded (e.g.
+    `no_scoreable_published_version`) was dropped from its own accuracy while counting as a
+    FAILURE in the paired delta, and the padding also defeated `compare_arms`'s
+    length-mismatch guard, which exists precisely to make that loud."""
+    a = dict(zip(arm_a["seeds_scored"], arm_a["per_seed"]))
+    b = dict(zip(arm_b["seeds_scored"], arm_b["per_seed"]))
+    shared = [s for s in arm_a["seeds_scored"] if s in b]
+    return [a[s] for s in shared], [b[s] for s in shared]
 
 
 def format_markdown(result: dict) -> str:
@@ -265,8 +325,8 @@ def format_markdown(result: dict) -> str:
         if "range_accuracy_min" in arm:
             cell += f" [{arm['range_accuracy_min']:.4f}–{arm['range_accuracy_max']:.4f}]"
         lines.append(
-            f"| {name} | {cell} | {arm['n_correct']} | {arm['n_scored']} | "
-            f"{arm['wrong_abstain']} | {arm['wrong_range']} | {arm['latency_s']} | "
+            f"| {name} | {cell} | {arm['n_correct']:g} | {arm['n_scored']} | "
+            f"{arm['wrong_abstain']:g} | {arm['wrong_range']:g} | {arm['latency_s']} | "
             f"{meter.get('calls', 0)} | ${meter.get('cost_usd', 0):.4f} | "
             f"{meter.get('fallbacks', 0)} |"
         )
@@ -281,8 +341,11 @@ def format_markdown(result: dict) -> str:
                       "fallback counter: a number that could quietly be an artifact must "
                       "be instrumented, not assumed away.)", ""]
     if result["repeats"] > 1:
-        lines += ["", f"_LLM arm run {result['repeats']}x; the bracket is the min–max "
-                      "spread across runs, not a confidence interval._"]
+        lines += ["", f"_LLM arm run {result['repeats']}x. The bracket is the min–max "
+                      "spread across runs, not a confidence interval. Accuracy and counts "
+                      "are means over runs; latency, calls and cost are TOTALS over every "
+                      "run actually paid for; the paired bootstrap uses each seed's pass "
+                      "rate across runs, so the CI matches the mean it is printed beside._"]
 
     lines += ["", "## Pairwise deltas (paired bootstrap, 10k resamples, 95% CI)", "",
               "| comparison | Δ range accuracy |", "| --- | --- |"]

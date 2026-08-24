@@ -145,6 +145,28 @@ class RangeScore:
     exclusion_reason: str | None = None
 
 
+
+def _scoreable_versions(true_record, ecosystem, name, published_versions):
+    """The (version, gold_bit) pairs this record can actually decide.
+
+    A version leaves the bitvector when the true record cannot resolve it, or when the
+    string is not parseable by the ecosystem comparator at all — the frozen npm and PyPI
+    lists carry artefacts like '1.3.2.win32-py2.4'. Neither side is scoreable there, so it
+    must not count against an arm."""
+    from depguard.comparators import VersionParseError
+    from depguard.oracle import RangeUnresolvableError, record_containment
+
+    out = []
+    for version in published_versions:
+        try:
+            out.append(
+                (version, record_containment(true_record, ecosystem, name, version).contained)
+            )
+        except (RangeUnresolvableError, VersionParseError):
+            continue
+    return out
+
+
 def verify_range_reconstruction(
     proposal: dict | None,
     *,
@@ -181,6 +203,19 @@ def verify_range_reconstruction(
 
     gold_abstain = gold_abstains(true_record)
 
+    # EXCLUSION IS DECIDED FIRST, for both arms alike. The abstain short-circuit used to
+    # return before the `n == 0` check below, so on a record where no published version is
+    # scoreable a GUESSING arm was excluded (dropped from the denominator) while an
+    # ABSTAINING arm was scored wrong. The arm that always abstains is
+    # `deterministic_script` — the control the whole comparison is anchored on — so the
+    # asymmetry ran against exactly the arm it must not.
+    scoreable = _scoreable_versions(true_record, ecosystem, name, published_versions)
+    if not scoreable and not gold_abstain:
+        return RangeScore(
+            status="excluded", passed=None, gold_abstain=False,
+            exclusion_reason="no_scoreable_published_version",
+        )
+
     if proposal is None or proposal.get("abstain"):
         return RangeScore(
             status="abstained", passed=gold_abstain, gold_abstain=gold_abstain,
@@ -197,15 +232,7 @@ def verify_range_reconstruction(
     )
     mismatches = []
     n = 0
-    for version in published_versions:
-        try:
-            gold_bit = record_containment(true_record, ecosystem, name, version).contained
-        except (RangeUnresolvableError, VersionParseError):
-            # Either the true record cannot decide this version, or the version string
-            # is not parseable by the ecosystem comparator at all (the frozen npm and
-            # PyPI lists carry artefacts like '1.3.2.win32-py2.4'). Not scoreable on
-            # either side, so it leaves the bitvector rather than counting against an arm.
-            continue
+    for version, gold_bit in scoreable:
         try:
             pred_bit = record_containment(
                 materialized, ecosystem, name, version

@@ -40,16 +40,29 @@ __all__ = ["null_extractor", "regex_extractor", "ABSTAIN"]
 ABSTAIN = {"events": [], "versions": [], "abstain": True}
 
 _V = r"\d+(?:\.\d+)+(?:[._-]?(?:a|b|c|rc|alpha|beta|dev|post)\.?\d*)?"
+# An optional `v` prefix is consumed but NOT captured, so "fixed in v1.27.0" yields the
+# version "1.27.0". Without this the baseline abstained on prose whose only version token
+# is v-prefixed — while `redact._VERSION_TOKEN` fires inside `v1.27.0` anyway (it matches
+# the substring `27.0`), so gold called the seed decidable and the control was scored
+# against a token it could not see. 3 corpus seeds hit this.
+_PV = rf"v?({_V})"
 
 # Ordered by specificity: the first pattern that matches a span wins, so the two-sided
-# branch form is tried before the one-sided "before X".
-_BRANCH = re.compile(rf"(?<![\w.])({_V})\s+(?:before|prior to|through)\s+({_V})", re.I)
-_BETWEEN = re.compile(rf"between\s+({_V})\s+and\s+({_V})", re.I)
-_RANGE_OP = re.compile(rf">=?\s*({_V})\s*(?:,|\s|and)+\s*<\s*({_V})", re.I)
-_BEFORE = re.compile(rf"(?:before|prior to|earlier than|older than|up to but not including)\s+({_V})", re.I)
-_FIXED_IN = re.compile(rf"(?:fixed|patched|resolved|corrected)\s+in\s+(?:version\s+)?({_V})", re.I)
-_THROUGH = re.compile(rf"(?:through|up to and including|<=)\s*({_V})", re.I)
-_AND_EARLIER = re.compile(rf"({_V})\s+(?:and\s+)?(?:earlier|below|and\s+prior|or\s+earlier)", re.I)
+# branch forms are tried before the one-sided "before X".
+#
+# `before` and `through` are NOT interchangeable and must not share an alternation:
+# "2.2 before 2.2.28" EXCLUDES 2.2.28, "2.1.0 through 2.5.3" INCLUDES 2.5.3. Conflating
+# them cost the baseline exactly the boundary version on the two corpus seeds that use the
+# inclusive form (requests 2.5.3, pyyaml 5.1.2).
+_BRANCH_EXCL = re.compile(rf"(?<![\w.])v?{_V}(?=\s+(?:before|prior to))".replace(_V, f"({_V})")
+                          + rf"\s+(?:before|prior to)\s+{_PV}", re.I)
+_BRANCH_INCL = re.compile(rf"(?<![\w.]){_PV}\s+(?:through|up to and including)\s+{_PV}", re.I)
+_BETWEEN = re.compile(rf"between\s+{_PV}\s+and\s+{_PV}", re.I)
+_RANGE_OP = re.compile(rf">=?\s*{_PV}\s*(?:,|\s|and)+\s*<\s*{_PV}", re.I)
+_BEFORE = re.compile(rf"(?:before|prior to|earlier than|older than|up to but not including)\s+{_PV}", re.I)
+_FIXED_IN = re.compile(rf"(?:fixed|patched|resolved|corrected)\s+in\s+(?:version\s+)?{_PV}", re.I)
+_THROUGH = re.compile(rf"(?:through|up to and including|<=)\s*{_PV}", re.I)
+_AND_EARLIER = re.compile(rf"{_PV}\s+(?:and\s+)?(?:earlier|below|and\s+prior|or\s+earlier)", re.I)
 
 
 def null_extractor(prose: str, published: list[str], ecosystem: str) -> dict:
@@ -74,7 +87,8 @@ def regex_extractor(prose: str, published: list[str], ecosystem: str) -> dict:
         consumed.append(match.span())
 
     # 1. two-sided branch forms first — "2.2 before 2.2.28, 3.2 before 3.2.13"
-    for pattern, inclusive in ((_BRANCH, False), (_BETWEEN, True), (_RANGE_OP, False)):
+    for pattern, inclusive in ((_BRANCH_EXCL, False), (_BRANCH_INCL, True),
+                               (_BETWEEN, True), (_RANGE_OP, False)):
         for m in pattern.finditer(text):
             if not free(m):
                 continue

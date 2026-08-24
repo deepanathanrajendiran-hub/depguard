@@ -313,8 +313,16 @@ class Pipeline:
         if record is None:
             self.builder._plan[step_index]["status"] = "skipped"
             return
+        if pa.get("undecidable"):
+            # Containment was never established, so `pa.get("contained", False)` below
+            # would feed the cross-check a fabricated False — and its `agreement` would be
+            # written into a deps.dev Evidence row on the trajectory. The verdict is
+            # suppressed elsewhere, but the evidence trail must not assert a
+            # source-agreement finding derived from an answer the arm never had.
+            self.builder._plan[step_index]["status"] = "skipped"
+            return
         osv_verdict = {
-            "contained": pa.get("contained", False),
+            "contained": pa["contained"],
             "advisory_id": record["id"],
             "aliases": record.get("aliases", []),
         }

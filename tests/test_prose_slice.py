@@ -455,3 +455,160 @@ def test_paired_form_scores_identically_to_strict_form():
               "versions": [], "abstain": False}
     assert _score(strict).passed is True
     assert _score(paired).passed is True
+
+
+# ===================================================================== #
+# Baseline grammar defects — a crippled control inflates the headline
+# ===================================================================== #
+
+def test_two_sided_through_is_inclusive():
+    """"requests 2.1.0 through 2.5.3" INCLUDES 2.5.3. The first grammar put "through" in
+    the same alternation as "before" and emitted `fixed: 2.5.3`, excluding it — so the
+    control lost exactly the boundary version on both corpus seeds that use this form
+    (requests 2.5.3, pyyaml 5.1.2), each failing with n_mismatch == 1.
+
+    A baseline weakened by its own bug inflates the llm - regex delta, which is the
+    headline. The one-sided `_THROUGH` pattern always had this right, so the module also
+    contradicted itself."""
+    out = regex_extractor("affects foo 2.1.0 through 2.5.3 only", [], "npm")
+    assert {"last_affected": "2.5.3"} in out["events"]
+    assert {"fixed": "2.5.3"} not in out["events"]
+    assert {"introduced": "2.1.0"} in out["events"]
+
+
+def test_two_sided_before_is_still_exclusive():
+    out = regex_extractor("affects foo 2.2 before 2.2.28", [], "npm")
+    assert {"fixed": "2.2.28"} in out["events"]
+    assert {"last_affected": "2.2.28"} not in out["events"]
+
+
+def test_grammar_reads_v_prefixed_versions():
+    """"fixed in v1.27.0" must not read as "no version mentioned". `redact._VERSION_TOKEN`
+    already fires inside `v1.27.0` (it matches the substring `27.0`), so gold labels such a
+    seed DECIDABLE while the baseline abstained — the control was being scored against a
+    token it could not see. 3 corpus seeds are affected (prismjs, node-forge, pillow)."""
+    assert has_version_token("This bug has been fixed in v1.27.0.")
+    out = regex_extractor("This bug has been fixed in v1.27.0.", [], "npm")
+    assert out["abstain"] is False
+    assert {"fixed": "1.27.0"} in out["events"], out["events"]
+
+
+def test_v_prefix_does_not_leak_into_the_version_string():
+    out = regex_extractor("all versions before v2.0.0 are affected", [], "npm")
+    assert {"fixed": "2.0.0"} in out["events"]
+
+
+@pytest.mark.parametrize("seed_eco,aid,name", [
+    ("PyPI", "GHSA-pg2w-x9wp-vw92", "requests"),
+    ("PyPI", "PYSEC-2020-176", "pyyaml"),
+])
+def test_through_seeds_now_pass_the_baseline(seed_eco, aid, name):
+    """End to end on the two real corpus seeds the defect cost."""
+    rec = _record(seed_eco, aid)
+    pub = _published(seed_eco, name)
+    r = verify_range_reconstruction(
+        regex_extractor(prose_of(rec), pub, seed_eco),
+        ecosystem=seed_eco, name=name, true_record=rec, published_versions=pub,
+    )
+    assert r.passed is True, f"{name}: {r.n_mismatch}/{r.n_versions} bits, {r.mismatches[:3]}"
+
+
+def test_meter_is_thread_safe():
+    """`--workers N` makes record_call genuinely concurrent, and the repo reports tokens
+    and cost as MEASURED figures — a lost update silently under-reports spend."""
+    from concurrent.futures import ThreadPoolExecutor
+    from types import SimpleNamespace
+
+    from depguard.llm_meter import LLMMeter
+
+    meter = LLMMeter()
+    resp = SimpleNamespace(usage_metadata={"input_tokens": 10, "output_tokens": 5})
+    with ThreadPoolExecutor(max_workers=16) as pool:
+        list(pool.map(lambda _: meter.record_call(resp), range(2000)))
+    assert meter.calls == 2000
+    assert meter.prompt_tokens == 20000
+    assert meter.completion_tokens == 10000
+
+
+def test_abstaining_and_guessing_face_the_same_denominator():
+    """An unscoreable record must be EXCLUDED for both arms, not excluded for the guesser
+    and a penalty for the abstainer. The abstain short-circuit used to run before the
+    exclusion check, so `deterministic_script` — which always abstains, and is the control
+    the whole comparison is anchored on — was the arm the asymmetry ran against."""
+    eco, aid, name = LODASH
+    rec = _record(eco, aid)
+    # no published version is scoreable => neither arm can be graded here
+    guesser = verify_range_reconstruction(
+        {"events": [{"introduced": "0"}, {"fixed": "1.0.0"}], "versions": [], "abstain": False},
+        ecosystem=eco, name=name, true_record=rec, published_versions=[],
+    )
+    abstainer = verify_range_reconstruction(
+        None, ecosystem=eco, name=name, true_record=rec, published_versions=[],
+    )
+    assert guesser.status == "excluded"
+    assert abstainer.status == "excluded", (
+        "the abstaining arm was graded on a record the guessing arm was excluded from"
+    )
+    assert guesser.passed is None and abstainer.passed is None
+
+
+def test_a_gold_abstain_record_is_still_scoreable_with_no_published_versions():
+    """Guard against over-reaching: abstention correctness does not depend on the
+    published list, so a gold-abstain seed must still be gradeable."""
+    eco, rec = next(
+        (p.parent.name, json.loads(p.read_text()))
+        for p in sorted((CORPUS / "osv").rglob("*.json"))
+        if gold_abstains(json.loads(p.read_text()))
+    )
+    name = rec["affected"][0]["package"]["name"]
+    r = verify_range_reconstruction(None, ecosystem=eco, name=name,
+                                    true_record=rec, published_versions=[])
+    assert r.status == "abstained" and r.passed is True
+
+
+def test_single_agent_also_refuses_to_dismiss_an_unresolvable_alert(monkeypatch):
+    """The fail-unsafe fix must cover BOTH arms. graph.py's Pipeline._exec_check was fixed,
+    but arms/single_agent.py carried the identical
+        data = result["data"] if result["ok"] else {}
+        pa["contained"] = bool(data.get("contained"))
+    so on an error envelope the ReAct arm still turned "I could not resolve this range"
+    into a shipped `affected: false` verdict — and fed that fabricated False back to its own
+    policy through _summary. single_agent is one of the three ablation arms, so leaving it
+    would mean the release notes claimed a bug class was removed while it still shipped."""
+    from depguard.arms import single_agent as sa
+    from depguard.arms.single_agent import canonical_policy, run_single_agent
+    from depguard.envelope import err
+    from golden.seeds import SEED_INPUTS
+
+    monkeypatch.setattr(
+        sa, "check_version_affected",
+        lambda *a, **k: err("RANGE_UNRESOLVABLE", "every matching entry is undecidable"),
+    )
+    traj = run_single_agent(SEED_INPUTS["tp_lodash"], SNAP, policy=canonical_policy)
+
+    dismissals = [v for v in traj["verdicts"] if v["affected"] is False]
+    assert not dismissals, (
+        "single_agent reported an unresolvable range as 'not affected': "
+        f"{[v['alert_id'] for v in dismissals]}"
+    )
+    assert traj["final_answer"]["verdicts_summary"]["n_false_positive"] == 0
+    assert traj["final_answer"]["verdicts_summary"]["n_unresolved"] == 1
+
+
+def test_undecidable_alert_produces_no_source_agreement_evidence(monkeypatch):
+    """The verdict was already suppressed, but `_exec_crosscheck` still ran and passed
+    `pa.get("contained", False)` into crosscheck_second_source — writing an `agreement`
+    derived from an answer the arm never had into a deps.dev Evidence row on the
+    trajectory. Suppressing the verdict while shipping the evidence is half a fix."""
+    from depguard import graph as graph_mod
+    from depguard.envelope import err
+    from depguard.graph import run_graph
+    from golden.seeds import SEED_INPUTS
+
+    monkeypatch.setattr(graph_mod, "check_version_affected",
+                        lambda *a, **k: err("RANGE_UNRESOLVABLE", "undecidable"))
+    traj = run_graph(SEED_INPUTS["tp_lodash"], SNAP, system_variant="deterministic_script")
+
+    assert "crosscheck_second_source" not in [c["tool_name"] for c in traj["tool_calls"]]
+    assert not [e for e in traj["evidence"] if e.get("source") == "deps.dev"
+                and e.get("observed_agreement")]

@@ -216,6 +216,13 @@ class _Executor:
                 self.builder.add_plan_step("emit_verdict", aid, _RATIONALE["emit_verdict"],
                                            status="skipped")
                 continue
+            if pa.get("undecidable"):
+                # containment unresolvable from the frozen evidence: `contained` was never
+                # set, so emitting here would ship a "not affected" the arm never
+                # established. Leave it unresolved (v1.1.0).
+                self.builder.add_plan_step("emit_verdict", aid, _RATIONALE["emit_verdict"],
+                                           status="skipped")
+                continue
             self.builder.add_verdict(assemble_verdict(aid, pa))
             self.builder.add_plan_step("emit_verdict", aid, _RATIONALE["emit_verdict"],
                                        status="executed", produced_verdict_for=aid)
@@ -281,7 +288,17 @@ class _Executor:
                        "version": a["pinned_version"], "osv_record": {"id": record["id"]}},
             result=result, source="local",
         )
-        data = result["data"] if result["ok"] else {}
+        if not result["ok"]:
+            # FAIL-SAFE (v1.1.0), matching graph.py::Pipeline._exec_check. This previously
+            # read `data = result["data"] if result["ok"] else {}` followed by
+            # `pa["contained"] = bool(data.get("contained"))`, so an ERROR envelope became
+            # `contained=False`: the arm answered "not affected" about a package whose
+            # range it could not resolve, and fed that fabricated False back to its own
+            # policy through `_summary`. An undecidable alert emits NO verdict.
+            pa["undecidable"] = result["error"]["code"]
+            self.builder.add_plan_step(action, aid, _RATIONALE[action], status="failed")
+            return
+        data = result["data"]
         pa["contained"] = bool(data.get("contained"))
         pa["withdrawn_ts"] = data.get("withdrawn_timestamp")
         self.builder.add_plan_step(action, aid, _RATIONALE[action], status="executed")
@@ -312,7 +329,12 @@ class _Executor:
         if record is None:
             self.builder.add_plan_step(action, aid, _RATIONALE[action], status="skipped")
             return
-        osv_verdict = {"contained": pa.get("contained", False),
+        if pa.get("undecidable"):
+            # See graph.py::_exec_crosscheck — never derive an agreement finding from a
+            # containment the arm never established.
+            self.builder.add_plan_step(action, aid, _RATIONALE[action], status="skipped")
+            return
+        osv_verdict = {"contained": pa["contained"],
                        "advisory_id": record["id"], "aliases": record.get("aliases", [])}
         result = crosscheck_second_source(a["ecosystem"], a["name"], a["pinned_version"],
                                           osv_verdict, snapshot=self.snapshot)
