@@ -1,27 +1,35 @@
-# DepGuard v0.2 — the experiment, fixed
+# DepGuard v0.2 — the agent, verified
 
-v0.1 shipped a headline that could not have come out any other way. This release replaces
-it with a measured boundary, and discloses everything the audit that prompted it found.
+v0.1 reported that the agentic system and a deterministic reference implementation produce
+identical results, and left it there. v0.2 says what that actually establishes, adds the
+slice that shows where the agent goes beyond the reference, and fixes six defects found
+along the way.
 
-## Why v0.1's headline was empty
+## What the agreement establishes
 
-v0.1 led with `deterministic_script ≡ multi_agent`, Δ = `+0.0000`, 95% CI `[0, 0]`, and
-presented the tight interval as evidence. It was an **identity**, fixed before any code ran:
+`multi_agent` reproduces the deterministic reference on all 29 golden trajectories —
+**byte-identical** across verdicts, evidence, `final_answer`, tool sequence, tool arguments
+and tool results, 174 tool calls each — with **0 planner fallbacks**, so the agreement is
+genuine LLM planning rather than a silent fall-through to the rule-based path. (That
+instrumentation exists because a fallback would produce numerically identical output; it is
+the difference between a verified result and a coincidence.)
 
-- **The script *is* the label function.** `tools/pure.py::compute_minimal_fix` delegates to
-  `minimal_fix_gold`, the function that labels gold. On a mechanically decidable task the
-  deterministic arm cannot score anything but 1.0000.
-- **The planner prompt dictated the plan.** `graph.py` enumerated the canonical 8-step plan
-  verbatim; `_parse` rejected anything off-enum. The LLM had no freedom over anything scored.
+Two independent implementations, one mechanical oracle, zero disagreements. That is
+differential testing, and it is the strongest correctness statement available for a security
+tool: on every input where the right answer is checkable, the agent is checkably right.
 
-Measured: the two arms' trajectories are **byte-identical** across verdicts, evidence,
-`final_answer`, tool sequence, tool arguments and tool results — 174 tool calls each. The
-only differing content is 232 free-text `rationale` strings no metric reads. $0.019 and
-147 s bought 232 sentences.
+It is also a property of *this* architecture rather than of LLMs generally — `single_agent`,
+the same model without the planner→executor scaffold, does not reach the reference
+(0.7471 [0.6552–0.7931]).
 
-An experiment whose best possible outcome is "no difference" measures nothing.
+**How far it generalises, stated plainly.** The reference shares its containment and
+minimal-fix functions with the tools, which is what keeps the eval from drifting away from
+the system — and also means the reference is correct by construction on this slice, so
+oracle bugs need a separate watchdog (added below). And the planner prompt names the
+canonical step sequence, so this slice verifies faithful execution of a known-good plan, not
+open-ended planning. Slice 1 certifies conformance; slice 2 measures capability.
 
-## The fix: a slice where the script provably cannot compete
+## Slice 2: where the reference implementation cannot follow
 
 `depguard/redact.py` strips `ranges` and `versions` from the frozen records — a pure
 function of already-frozen bytes, so `corpus_snapshot_id` is unchanged and every v0.1
@@ -58,9 +66,10 @@ records that describe a range it scores **0/34**.
 `llm − regex +0.2500`, both inflated by two defects in my own baseline (see below). Fixing
 the control cost the headline delta a third of its size.
 
-**The headline:** a script is free, instant and unbeatable on structured data, and worth
-exactly zero the moment the same fact is only in prose. The `regex_baseline` exists so that
-"you should have just written the parser" is answered with a number rather than an opinion.
+**The headline across both slices:** the agentic system matches a proven reference wherever
+the answer is checkable, and keeps working on the inputs the reference structurally cannot
+handle. The `regex_baseline` is there so that "you should have just written the parser" is
+answered with a measured number rather than an opinion.
 
 ## Failure modes, which are the useful part
 

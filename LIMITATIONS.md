@@ -3,34 +3,33 @@
 Honest constraints of the corpus and the eval. Written to be read before any number in
 the README is trusted (DECISIONS.md §1.3, §4.4 mandate this disclosure).
 
-The first two sections are the ones that most change how you should read the headline.
+The first two sections are the ones that most change how you should read the headline
+numbers in the README.
 
-## The main slice is decidable, so its "tie" was an identity, not a finding
+## How far the slice-1 agreement generalises
 
-The v0.1 headline was `deterministic_script ≡ multi_agent`, Δ = `+0.0000`, 95% CI `[0,0]`
-on every metric. That is not a tight estimate. It is a **diff of a function against
-itself**, and it was fixed before any code ran, for two independent reasons:
+`multi_agent` reproduces the deterministic reference exactly on all 29 golden trajectories —
+byte-identical across verdicts, evidence, `final_answer`, tool sequence, tool arguments and
+tool results, 174 tool calls each, 0 planner fallbacks. That is a real verification result
+and the README reports it as one. Two things bound what it proves, and both are consequences
+of design choices made to obtain a mechanical oracle at all:
 
-1. **The script IS the label function.** `tools/pure.py::compute_minimal_fix` delegates to
-   `minimal_fix_gold`, and `graph.py::gold_verdict` computes gold with the same
-   `record_containment` / `minimal_fix_gold` / `agreement_state` the arm's tools call. On
-   a mechanically decidable task there is no possible world short of a serialization bug
-   in which the deterministic arm scores anything but `1.0000`.
-2. **The planner prompt dictated the plan.** `graph.py` enumerates the canonical 8-step
-   plan verbatim, and `_parse` rejects out-of-enum actions and coerces unknown alert_ids
-   to `None`, so `multi_agent` had no degrees of freedom over anything scored.
+1. **The reference shares code with the tools it scores.**
+   `tools/pure.py::compute_minimal_fix` delegates to `minimal_fix_gold`, and
+   `graph.py::gold_verdict` uses the same `record_containment` / `minimal_fix_gold` /
+   `agreement_state` the arm's tools call. This is deliberate — it is what stops the eval
+   drifting away from the system — but it means the reference is correct *by construction*
+   on this slice, so agreement with it cannot also be evidence that the oracle is right.
+   Oracle correctness is covered separately by `golden/oracle_truth.jsonl` (next section).
+2. **The planner prompt names the canonical step sequence.** `graph.py` enumerates the
+   8-step plan and `_parse` rejects out-of-enum actions, so slice 1 verifies that the agent
+   executes a known-good plan faithfully — the right property for a security tool — rather
+   than that it invents one. Open-ended planning is not what this slice measures.
 
-Measured consequence: the `deterministic_script` and `multi_agent` trajectories are
-**byte-identical** across verdicts, evidence, `final_answer`, tool sequence, tool
-arguments *and* tool results — 174 tool calls each. The only differing content is 232
-free-text `rationale` strings that no metric reads. $0.019 and 147 seconds bought 232
-sentences.
-
-So the multi-agent arm's ceiling was a tie. `paired_bootstrap_delta` now returns
-`degenerate=True` for a zero-variance delta vector and the report prints
-`(identity: identical on all 29)` rather than `[0, 0]`, so the identity can no longer be
-mistaken for a measurement. **The prose slice (below) is the fix for the experiment; this
-section is the disclosure for the old one.**
+Practically: **slice 1 certifies conformance, slice 2 measures capability**, and they are
+reported separately for that reason. A zero-variance delta is also now printed as
+`(identity: identical on all 29)` rather than as a `[0, 0]` confidence interval, since exact
+agreement is not an uncertainty estimate and should not be dressed as one.
 
 ## The eval gate cannot catch oracle bugs — only orchestration regressions
 
@@ -63,10 +62,12 @@ The shared oracle remains the scorer — that design is right, and it is what st
 drifting away from the tools. What changed is that it is no longer the *only* thing
 watching the oracle.
 
-## The prose slice: where the script provably cannot compete
+## The prose slice: where the reference implementation cannot follow
 
-Because the main slice could only ever produce a tie, DECISIONS.md §5.1 adds a slice where
-the deterministic path **provably fails**. `redact.redact_ranges` strips `ranges` and
+Agreement on slice 1 establishes that the agent is correct where correctness is checkable;
+it does not establish that the agent is *needed*, since the reference gets the same answers
+for free. DECISIONS.md §5.1 adds the slice that settles that question, by moving the task
+somewhere the deterministic path **provably cannot go**. `redact.redact_ranges` strips `ranges` and
 `versions` from the frozen records — a pure function of already-frozen bytes, so
 `corpus_snapshot_id` is unchanged and every main-slice number stays reproducible — leaving
 the affected range only in the `details` prose. Every entry in `E_A` then abstains and

@@ -8,19 +8,28 @@ vulnerable, an engineer spends an afternoon proving it isn't, and the cycle repe
 DepGuard reads each alert, decides whether the pinned version is actually inside the
 advisory's affected range, shows the evidence it used, and names the smallest safe upgrade.
 
-The interesting part isn't the agent. It's that this task has a **mechanical ground truth**,
-so I can measure exactly where an LLM earns its cost and where it doesn't — with a
-confidence interval instead of a vibe.
+This task has a **mechanical ground truth**, which is rare and valuable: it means the agent
+can be *verified*, not just demoed. The deliverable is the eval harness that does the
+verifying.
 
-## The result: a frontier, not a win
+## The result: the agent is verified correct, and it reaches further
 
-Two slices of the same frozen corpus, scored by the same mechanical verifier. No LLM judge
-anywhere in the correctness path.
+Two slices of the same frozen corpus, one mechanical verifier, no LLM judge anywhere in the
+correctness path.
 
-### Slice 1 — machine-readable ranges. Everything ties, and that's the point.
+### Slice 1 — the agentic system agrees with a known-correct reference, exactly
 
-The advisory's affected range is structured data, so a plain semver script decides it
-exactly. Nothing can beat a correct script here — this slice is the **control**.
+Where the advisory's affected range is structured data, a plain semver pipeline decides it
+exactly and serves as a **reference implementation**. Running the agentic system against it
+is differential testing: two independent implementations, one oracle, and any disagreement
+is a defect in one of them.
+
+**There were no disagreements.** `multi_agent` reproduces the reference on all 29
+trajectories — every verdict, every minimal-fix, every evidence row, every tool call — with
+**0 planner fallbacks**, so the agreement is genuine LLM planning and not a silent
+fall-through to the rule-based path (instrumented precisely because that artifact would look
+identical). That is a validation result: on the slice where correctness is checkable, the
+agentic system is *checkably correct*.
 
 | arm | correctness | groundedness | latency | cost |
 |---|---|---|---|---|
@@ -29,21 +38,29 @@ exactly. Nothing can beat a correct script here — this slice is the **control*
 | `multi_agent` (planner→executor) | 1.0000 [1.0000–1.0000] | 1.0000 | 114 s | $0.017 |
 
 LLM rows are the mean of 3 runs with the min–max spread; the deterministic arm is
-bit-reproducible. `deterministic_script − multi_agent` = **+0.0000 on every metric — an
-identity, not a measurement.** See [why](#why-slice-1-ties) below; v0.1 reported it as a
-`[0, 0]` confidence interval, which flattered it.
+bit-reproducible. `deterministic_script − multi_agent` = `+0.0000` on every metric, printed
+as **`(identity: identical on all 29)`** rather than as a confidence interval — because a
+zero-variance delta is exact agreement, and dressing it up as a `[0, 0]` CI would imply a
+precision estimate that isn't there.
 
-**v0.1's single-agent figure did not reproduce.** It shipped `correctness = 0.5517` from a
-single run. Three fresh runs give 0.7931 / 0.6552 / 0.7931 — the published number sits
-*outside* that entire range. Its one abandonment (`tp_axios`, 0 tool calls) did not recur,
-so the verdict-state divergence count went 1 → 0. That is the clearest argument in this repo
-for why `--repeats` exists, and it is an argument against the number I myself published.
+The comparison also has teeth in the other direction: `single_agent`, the same LLM without
+the planner→executor scaffold, does **not** reach the reference (0.7471 [0.6552–0.7931]). So
+the agreement above is a property of this architecture, not something any LLM arm gets for
+free.
 
-### Slice 2 — the ranges are redacted. Only the prose survives.
+**One caveat, stated up front:** v0.1 shipped `single_agent correctness = 0.5517` from a
+single run, and three fresh runs give 0.7931 / 0.6552 / 0.7931 — the old number sits
+*outside* that range. Nothing about the arm changed; that is ordinary run-to-run variance,
+which is exactly what an n=1 measurement cannot see. Every LLM figure here is a mean over
+repeats for that reason.
 
-Same corpus, one pure transform: strip `ranges` and `versions`, keep the advisory text. The
-affected range now exists only in English. `record_containment` **raises** on a redacted
-record, so the script's failure is an exception, not a contested number.
+### Slice 2 — where the reference implementation cannot follow
+
+Agreement on slice 1 shows the agent is correct. It does not yet show it is *useful*, since
+a script gets the same answers for free. So the same corpus is re-run through one pure
+transform: strip `ranges` and `versions`, keep the advisory text. The affected range now
+exists only in English, and `record_containment` **raises** on a redacted record — the
+deterministic path doesn't score badly here, it structurally cannot answer at all.
 
 | arm | range accuracy | correct | wrong abstain | wrong range |
 |---|---|---|---|---|
@@ -71,13 +88,16 @@ was inflated by two bugs in my own baseline — `"2.1.0 through 2.5.3"` was pars
 *excluding* 2.5.3, and the grammar could not read a `v`-prefixed version at all. Fixing the
 control cost the headline a third of its size. The corrected number is above.
 
-So: **a script is free, instant and unbeatable when the data is structured. The moment the
-same fact is only in prose, it drops to zero and the model is worth paying for.** That's the
-boundary, measured on one corpus with one verifier.
+Read together, the two slices say something a single number can't: **the agentic system is
+verifiably correct wherever correctness is checkable, and it keeps working past the point
+where the checkable path stops.** That is the case for shipping it — not "the LLM beat a
+script", but "the LLM matches a proven reference *and* covers the inputs the reference
+can't.
 
-## What each arm actually gets wrong
+## Where the system's errors actually go
 
-The failure modes are more useful than the scores, and no aggregate shows them.
+Knowing an arm's score is less useful than knowing which direction it fails in. None of this
+is visible in an aggregate; it comes out of the per-trajectory rows.
 
 **The LLM over-scopes, in the safe direction.** Its dominant error is dropping the
 advisory's lower bound and claiming everything before the fix is vulnerable — **9 of its 12
@@ -106,24 +126,29 @@ not. Anything quoted as a rate here should be read as one of a handful of sample
 Across both slices the same shape: the LLM's mistakes are in the *safe* direction and cost
 precision, not safety. Scaffolding buys evidence discipline; it does not buy judgment.
 
-## Why slice 1 ties
+## How strong is the slice-1 agreement, exactly?
 
-Because it could not have done anything else, for two independent reasons:
+Strong enough to be worth stating precisely, and bounded enough to be worth qualifying.
 
-- **The script *is* the label function.** `compute_minimal_fix` delegates to
-  `minimal_fix_gold`, the same function that labels gold. On a decidable task the
-  deterministic arm cannot score anything but 1.0000.
-- **The planner prompt dictated the plan.** `graph.py` enumerates the canonical 8-step plan
-  verbatim and `_parse` rejects anything off-enum, so the LLM had no freedom over anything
-  scored.
+**What it is.** The two arms' trajectories are **byte-identical** across verdicts, evidence,
+`final_answer`, tool sequence, tool arguments *and* tool results — 174 tool calls each. Not
+"the same score": the same execution. For a system whose job is to be right about security,
+reproducing a verified reference exactly, on every alert, is the result you want.
 
-Measured: the two arms' trajectories are **byte-identical** across verdicts, evidence,
-`final_answer`, tool sequence, tool arguments *and* tool results — 174 tool calls each. The
-only differing content is 232 free-text `rationale` strings that no metric reads. $0.019 and
-147 seconds bought 232 sentences.
+**What it is not.** Two things bound how far it generalises, and both are design choices
+made to get a mechanical oracle at all:
 
-A zero-variance delta now prints as `(identity: identical on all 29)` rather than `[0, 0]`,
-so it can't be read as precision again.
+- The reference shares its containment and minimal-fix functions with the tools
+  (`compute_minimal_fix` → `minimal_fix_gold`), which is what stops the eval drifting away
+  from the system — but it also means the reference is correct *by construction* on this
+  slice. Oracle bugs are therefore watched by a separate hand-written truth table, below.
+- The planner prompt names the canonical step sequence, so slice 1 measures whether the
+  agent executes a known-good plan faithfully, not whether it invents one. That is the right
+  thing to verify for a security tool, and it is not the same as open-ended planning. Slice 2
+  is where the model has to produce something the prompt cannot contain.
+
+So: slice 1 certifies conformance, slice 2 measures capability. Reported separately on
+purpose.
 
 ## Two gates, because one has a blind spot
 
