@@ -1,0 +1,7 @@
+{
+  "capture_date": "2026-07-01",
+  "corpus_snapshot_id": "depguard-corpus-2026-07-01-dddddddddddd",
+  "curation_ruleset_version": "curation-1.3.0-fixture",
+  "depsdev_capture_window": {"start": "2026-07-01", "end": "2026-07-01"},
+  "counts": {"total_records": 1}
+}

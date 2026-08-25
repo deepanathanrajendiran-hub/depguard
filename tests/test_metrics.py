@@ -15,7 +15,6 @@ sys.path.insert(0, str(REPO))
 
 from depguard.graph import build_gold, run_graph  # noqa: E402
 from depguard.metrics import (  # noqa: E402
-    action_advancement,
     correctness,
     groundedness,
     plan_adherence,
@@ -62,9 +61,9 @@ def test_missing_verdict_penalizes_correctness_and_groundedness():
     traj = run_single_agent(inp, SNAP, policy=only_a1)
     assert len(traj["verdicts"]) == 1  # a2 never got a verdict
     # denominator is the 2 gold verdicts, so at most 1/2 can be correct/grounded
-    assert correctness(traj, gold)["score"] == 0.5
+    assert correctness(traj, gold, SNAP)["score"] == 0.5
     assert groundedness(traj)["score"] == 0.5
-    assert any("a2" in f for f in correctness(traj, gold)["fails"])
+    assert any("a2" in f for f in correctness(traj, gold, SNAP)["fails"])
 
 
 # --------------------------- tool-selection ------------------------------- #
@@ -107,16 +106,10 @@ def _plan(*steps):
     return out
 
 
-def test_action_advancement_counts_only_new_verdicts():
-    traj = {"plan": _plan(
-        ("plan", None, "executed", None),
-        ("emit_verdict", "a1", "executed", "a1"),
-        ("emit_verdict", "a1", "executed", "a1"),  # redundant repeat — must not count
-    )}
-    r = action_advancement(traj)
-    assert r["advancing"] == 1
-    assert r["executed"] == 3
-    assert any("redundant" in f for f in r["fails"])
+# `action_advancement` was retired in v1.1.0 — it was anti-correlated with correctness
+# (r = -0.172) because on a one-alert corpus it reduced to 1/n_executed_steps and
+# rewarded quitting early. Its replacement, `verdict_yield`, is covered end to end by
+# tests/test_verdict_yield.py.
 
 
 # --------------------------- plan-adherence ------------------------------- #
@@ -168,7 +161,7 @@ def test_plan_adherence_within_alert_swap_scores_below_one():
 def test_groundedness_and_correctness_perfect_on_deterministic_arm():
     traj, gold = _real("multi_tar")  # the multi-affected witness case
     assert groundedness(traj)["score"] == 1.0
-    assert correctness(traj, gold)["score"] == 1.0
+    assert correctness(traj, gold, SNAP)["score"] == 1.0
 
 
 def test_groundedness_flags_verdict_unsupported_by_evidence():
@@ -182,5 +175,5 @@ def test_groundedness_flags_verdict_unsupported_by_evidence():
 def test_correctness_flags_wrong_verdict_vs_gold():
     traj, gold = _real("tp_lodash")
     traj["verdicts"][0]["minimal_fixed_version"] = "9.9.9"  # npm → scored field
-    r = correctness(traj, gold)
+    r = correctness(traj, gold, SNAP)
     assert r["score"] < 1.0

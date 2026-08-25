@@ -41,7 +41,7 @@ def run_arm(snap, variant):
     out = []
     for name, inp in SEED_INPUTS.items():
         traj = run_graph(inp, snap, system_variant=variant)
-        out.append((name, score_trajectory(traj, build_gold(inp, snap))))
+        out.append((name, score_trajectory(traj, build_gold(inp, snap), snap)))
     return out
 
 
@@ -56,10 +56,11 @@ def main() -> int:
             "corpus_snapshot_id": snap.snapshot_id,
             "n_trajectories": len(per),
             "deterministic_script": {"aggregate": agg},
-            "note": "Honest first-run numbers — never rounded up. action_advancement is "
-                    "the structural ratio of verdict-producing steps to all executed "
-                    "steps (§4.1.2); it is not an error. NO ablation/comparison numbers "
-                    "here — those arrive in D8–D9 (out of v0.1 D7 scope).",
+            "note": "Honest first-run numbers — never rounded up. verdict_yield is the "
+                    "fraction of given alerts that received a verdict (§4.1.2, v1.1.0); "
+                    "it replaced action_advancement, which was anti-correlated with "
+                    "correctness because it reduced to 1/n_executed_steps on a one-alert "
+                    "corpus. NO ablation/comparison numbers here — see results/.",
         }, indent=2) + "\n")
         print("wrote baseline:", {k: round(v, 4) for k, v in agg.items()})
         return 0

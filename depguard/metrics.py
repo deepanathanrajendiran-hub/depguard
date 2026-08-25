@@ -1,5 +1,13 @@
 """The four mechanical trajectory metrics (DECISIONS.md §4.1) + correctness.
 
+UNDECIDABLE ALERTS ARE TREATED DIFFERENTLY BY DIFFERENT METRICS, on purpose:
+`correctness` EXCLUDES them (the oracle cannot decide the alert, so it is not the arm's
+fault); `groundedness` still divides by the full alert set, so an unanswered alert counts
+as ungrounded (the arm gathered no evidence entailing a verdict, which IS about the arm);
+and `plan_adherence` scores executed steps only, so a step marked `failed` earns no credit.
+Three questions, three answers — "could the oracle decide this?", "did the arm support what
+it said?", "did the arm follow the plan?" — and they are not required to agree.
+
 Each metric returns `(score ∈ [0,1], fails: list[str])` per trajectory. Nothing here
 is an LLM judgment — every number is recomputed from the trajectory + its gold
 sidecar (and, for groundedness, the cited Evidence rows only). Aggregate across the
@@ -16,7 +24,6 @@ from depguard.oracle import RangeUnresolvableError, record_containment
 from depguard.tools.pure import minimal_fix_gold
 
 _SCHEMAS = Path(__file__).resolve().parent.parent / "schemas"
-_MINFIX_ECOSYSTEMS = frozenset({"npm", "crates.io", "Go"})
 
 
 def _tool_key_args() -> dict:
@@ -76,22 +83,26 @@ def tool_selection(trajectory: dict, gold: dict) -> dict:
 # 2. ACTION-ADVANCEMENT (§4.1.2)
 # --------------------------------------------------------------------------- #
 
-def action_advancement(trajectory: dict) -> dict:
-    """|executed steps that advanced a previously-unverdicted alert| / |executed
-    steps|. A redundant repeat (an already-verdicted alert) does not count."""
-    executed = [s for s in trajectory["plan"] if s["status"] == "executed"]
-    verdicted: set = set()
-    advancing = 0
-    fails = []
-    for s in executed:
-        pvf = s.get("produced_verdict_for")
-        if pvf is not None and pvf not in verdicted:
-            advancing += 1
-            verdicted.add(pvf)
-        elif pvf is not None:
-            fails.append(f"redundant advance for already-verdicted {pvf}")
-    score = advancing / len(executed) if executed else 0.0
-    return {"score": score, "advancing": advancing, "executed": len(executed), "fails": fails}
+def verdict_yield(trajectory: dict) -> dict:
+    """|distinct alerts given a verdict| / |alerts given| (§4.1.2, v1.1.0).
+
+    Replaces `action_advancement`, which was |steps advancing a new alert| / |executed
+    steps|. On a one-alert-per-trajectory corpus that numerator is always 0 or 1, so the
+    old metric reduced to `1 / n_executed_steps` and scored an arm HIGHER for doing less
+    work. On the shipped v0.1 `single_agent` rows it was ANTI-correlated with correctness
+    (r = -0.172): its nine 4-step runs took the experiment's best value, 0.2500, while
+    being 3-of-9 correct, and its six full 7-step runs took the worst value, 0.1429, while
+    being 6-of-6 correct — which is how results/ablation_v01.md came to mark the
+    deterministic arm "significantly worse" than an arm that got 13 of 29 alerts wrong.
+
+    `verdict_yield` is a coverage metric, not an efficiency one: it is invariant to step
+    count and makes abandonment (the `tp_axios` shape) visible as a loss."""
+    alert_ids = {a["alert_id"] for a in trajectory["input"]["alerts"]}
+    answered = {v["alert_id"] for v in trajectory["verdicts"]} & alert_ids
+    fails = [f"{aid}: no verdict emitted" for aid in sorted(alert_ids - answered)]
+    score = len(answered) / len(alert_ids) if alert_ids else 1.0
+    return {"score": score, "answered": len(answered), "alerts": len(alert_ids),
+            "fails": fails}
 
 
 # --------------------------------------------------------------------------- #
@@ -224,33 +235,91 @@ def groundedness(trajectory: dict) -> dict:
     return {"score": score, "fails": fails}
 
 
-def correctness(trajectory: dict, gold: dict) -> dict:
-    """Fraction of GOLD verdicts (one per alert, §3.3) exactly matching the emitted verdict
-    on the verifier-scored fields (affected, withdrawn, source_agreement always;
-    minimal_fixed_version only on minimal-fix ecosystems, §5 P2). Denominator is the gold
-    set, so an alert with NO emitted verdict counts as wrong — never silently excluded
-    (that would let an arm inflate this metric by skipping hard alerts). Separate from
+_PROBE_VERDICT = {
+    "alert_id": None, "affected": False, "minimal_fixed_version": None,
+    "withdrawn": False, "cvss3_score": None, "evidence_ids": [],
+    "source_agreement": "single_source", "reconciliation_note": "",
+}
+
+
+def _verify_alert(verify_verdict, alert: dict, verdict: dict | None, snapshot):
+    """Score one alert with the §5 verifier, sourcing the frozen evidence the verifier
+    needs (OSV record, published versions, deps.dev observation) from the snapshot.
+
+    `verdict=None` (the arm emitted nothing) is still passed through the verifier with a
+    neutral probe, because EXCLUSION is a property of the gold side alone — it must be
+    decided identically whether or not the arm answered. `verify_verdict` checks
+    exclusion before reading any verdict field, so the probe never reaches a predicate:
+    `correctness` returns on `verdict is None` as soon as the alert is known scoreable.
+    """
+    from depguard.agreement import observe_from_extract
+    from depguard.graph import _find_record
+    from depguard.tools.external import osv_query_package, resolve_published_versions
+    from depguard.verifier import VerdictScore
+
+    eco, name, version = alert["ecosystem"], alert["name"], alert["pinned_version"]
+    q = osv_query_package(eco, name, version, snapshot=snapshot)
+    record = _find_record(q["data"]["advisories"] if q["ok"] else [], alert["advisory_id"])
+    if record is None:
+        return VerdictScore(status="excluded", exclusion_reason="advisory_not_in_snapshot",
+                            predicates={}, correct=None, agreement_metric_eligible=False)
+    pub = resolve_published_versions(eco, name, snapshot=snapshot)
+    published = pub["data"]["versions"] if pub["ok"] else []
+    return verify_verdict(
+        verdict if verdict is not None else dict(_PROBE_VERDICT, alert_id=alert["alert_id"]),
+        ecosystem=eco,
+        name=name,
+        pinned_version=version,
+        osv_record=record,
+        published_versions=published,
+        depsdev=observe_from_extract(snapshot.read_extract(eco, name), version),
+    )
+
+def correctness(trajectory: dict, gold: dict, snapshot) -> dict:
+    """Fraction of SCOREABLE gold verdicts (one per alert, §3.3) that pass all four
+    §5 predicates, as judged by `depguard.verifier.verify_verdict` — the same scorer
+    DECISIONS.md §5 defines. Before v1.1.0 this was a private field-equality lookalike
+    that never called the verifier, so neither the P4 non-empty-`reconciliation_note`
+    rule nor the exclusion path was ever enforced on a published number.
+
+    Denominator is the GOLD set, so an alert with NO emitted verdict counts as wrong —
+    never silently excluded (that would let an arm inflate this metric by skipping hard
+    alerts). The one exception is an alert the oracle itself cannot score (empty E_A
+    after the membership filter, or unresolvable ranges): `verify_verdict` returns
+    `status="excluded"` and the alert leaves the denominator entirely, because "not
+    decidable from the frozen evidence" is not a failure of the arm. Separate from
     groundedness (§4.1.4)."""
+    from depguard.verifier import verify_verdict
+
     gold_verdicts = gold["gold_verdicts"]
     v_by_alert = {v["alert_id"]: v for v in trajectory["verdicts"]}
-    alert_eco = {a["alert_id"]: a["ecosystem"] for a in trajectory["input"]["alerts"]}
+    alerts = {a["alert_id"]: a for a in trajectory["input"]["alerts"]}
     correct = 0
+    scored = 0
     fails = []
     for g in gold_verdicts:
         aid = g["alert_id"]
+        alert = alerts.get(aid)
+        if alert is None:  # gold references an alert not in the input — malformed pair
+            fails.append(f"{aid}: gold verdict has no matching alert in the input")
+            scored += 1
+            continue
         v = v_by_alert.get(aid)
+        result = _verify_alert(verify_verdict, alert, v, snapshot)
+        if result.status == "excluded":
+            fails.append(f"{aid}: excluded ({result.exclusion_reason}) — not scoreable")
+            continue
+        scored += 1
         if v is None:
             fails.append(f"{aid}: no verdict emitted (expected one)")
             continue
-        fields = ["affected", "withdrawn", "source_agreement"]
-        if alert_eco.get(aid) in _MINFIX_ECOSYSTEMS:
-            fields.append("minimal_fixed_version")
-        if all(v.get(f) == g.get(f) for f in fields):
+        if result.correct:
             correct += 1
         else:
-            diff = {f: (v.get(f), g.get(f)) for f in fields if v.get(f) != g.get(f)}
-            fails.append(f"{aid}: {diff}")
-    score = correct / len(gold_verdicts) if gold_verdicts else 1.0
+            missed = {n: (p.actual, p.gold) for n, p in result.predicates.items()
+                      if p.passed is False}
+            fails.append(f"{aid}: {missed}")
+    score = correct / scored if scored else 1.0
     return {"score": score, "fails": fails}
 
 
@@ -258,17 +327,20 @@ def correctness(trajectory: dict, gold: dict) -> dict:
 # aggregation
 # --------------------------------------------------------------------------- #
 
-METRICS = ("tool_selection", "action_advancement", "plan_adherence",
+METRICS = ("tool_selection", "verdict_yield", "plan_adherence",
            "groundedness", "correctness")
 
 
-def score_trajectory(trajectory: dict, gold: dict) -> dict:
+def score_trajectory(trajectory: dict, gold: dict, snapshot) -> dict:
+    """`snapshot` is required (v1.1.0): `correctness` now routes through the §5
+    verifier, which needs the frozen OSV record, published-version list and deps.dev
+    observation for each alert. Both call sites already hold a Snapshot."""
     return {
         "tool_selection": tool_selection(trajectory, gold),
-        "action_advancement": action_advancement(trajectory),
+        "verdict_yield": verdict_yield(trajectory),
         "plan_adherence": plan_adherence(trajectory, gold),
         "groundedness": groundedness(trajectory),
-        "correctness": correctness(trajectory, gold),
+        "correctness": correctness(trajectory, gold, snapshot),
     }
 
 

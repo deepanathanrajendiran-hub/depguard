@@ -9,11 +9,18 @@ WRONG reason; counting it means a fallback > 0 gets a footnote, never silence.
 Global mutable state is acceptable here: arm runs are strictly sequential in the ablation
 harness, and scripted (keyless) test policies never touch the LLM, so the meter stays at 0.
 
+THREAD SAFETY (v1.2.0). `scripts/run_prose_slice.py --workers N` fans the extractor out
+over a thread pool, so `record_call` is now genuinely concurrent. `self.calls += 1` is a
+non-atomic read-modify-write, and the repo reports tokens and cost as MEASURED figures — a
+lost update would silently under-report spend. Mutations are therefore taken under a lock.
+
 Pricing is DeepSeek's published rate; it is an external constant (not a measurement) and is
 stated in the report so a reader can re-derive cost from the measured token counts.
 """
 
 from __future__ import annotations
+
+import threading
 
 # DeepSeek published pricing, USD per 1M tokens (verify/adjust in one place if it changes).
 PRICE_PER_MTOK = {"input": 0.27, "output": 1.10}
@@ -21,23 +28,29 @@ PRICE_PER_MTOK = {"input": 0.27, "output": 1.10}
 
 class LLMMeter:
     def __init__(self) -> None:
+        self._lock = threading.Lock()
         self.reset()
 
     def reset(self) -> None:
-        self.calls = 0
-        self.prompt_tokens = 0
-        self.completion_tokens = 0
-        self.fallbacks = 0
+        with self._lock:
+            self.calls = 0
+            self.prompt_tokens = 0
+            self.completion_tokens = 0
+            self.fallbacks = 0
 
     def record_call(self, response) -> None:
-        """Count one LLM call and accumulate its token usage from a langchain AIMessage."""
-        self.calls += 1
+        """Count one LLM call and accumulate its token usage from a langchain AIMessage.
+
+        Called concurrently when the prose-slice harness runs with --workers > 1."""
         prompt, completion = _usage(response)
-        self.prompt_tokens += prompt
-        self.completion_tokens += completion
+        with self._lock:
+            self.calls += 1
+            self.prompt_tokens += prompt
+            self.completion_tokens += completion
 
     def record_fallback(self) -> None:
-        self.fallbacks += 1
+        with self._lock:
+            self.fallbacks += 1
 
     @property
     def total_tokens(self) -> int:

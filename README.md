@@ -4,109 +4,209 @@
 [![eval-gate](https://github.com/deepanathanrajendiran-hub/depguard/actions/workflows/eval-gate.yml/badge.svg?branch=main)](https://github.com/deepanathanrajendiran-hub/depguard/actions/workflows/eval-gate.yml)
 
 Most dependency-vulnerability alerts are false alarms. A scanner flags a pinned version as
-vulnerable, an engineer spends an afternoon proving it isn't, and the cycle repeats. DepGuard
-reads each alert and decides whether the pinned version is actually inside the advisory's
-affected range, shows the advisory evidence it used, and names the smallest safe upgrade. Every
-verdict is checked by a mechanical verifier, so I can report how often each system gets it right
-with a confidence interval instead of a vibe.
+vulnerable, an engineer spends an afternoon proving it isn't, and the cycle repeats.
+DepGuard reads each alert, decides whether the pinned version is actually inside the
+advisory's affected range, shows the evidence it used, and names the smallest safe upgrade.
 
-## What I measured
+This task has a **mechanical ground truth**, which is rare and valuable: it means the agent
+can be *verified*, not just demoed. The deliverable is the eval harness that does the
+verifying.
 
-Triage over a frozen advisory corpus is mechanically decidable: a plain semver-containment
-pipeline solves it with no LLM at all. That makes it a good place to ask a question people
-usually hand-wave, which is whether an agent actually beats the deterministic version and how
-you'd prove it either way.
+## The result: the agent is verified correct, and it reaches further
 
-I ran three arms over the same 29 golden trajectories (a frozen npm + PyPI micro-corpus), scored
-by the same 4-predicate verifier with no LLM judge anywhere in the correctness path. LLM arms use
-DeepSeek `deepseek-v4-flash` at temperature 0; CIs are a 10,000-sample paired bootstrap.
+Two slices of the same frozen corpus, one mechanical verifier, no LLM judge anywhere in the
+correctness path.
 
-| arm | correctness | groundedness | tool-selection | latency | cost | LLM calls |
-|---|---|---|---|---|---|---|
-| `deterministic_script` | 1.0000 | 1.0000 | 1.0000 | 0.5 s | $0.00 | 0 |
-| `single_agent` (ReAct) | 0.5517 | 0.6207 | 0.8213 | 1002 s | $0.114 | 159 |
-| `multi_agent` (planner→executor) | 1.0000 | 1.0000 | 1.0000 | 147 s | $0.019 | 29 |
+### Slice 1 — the agentic system agrees with a known-correct reference, exactly
 
-Pairwise deltas, 95% CI, straight from [`results/ablation_v01.json`](results/ablation_v01.json):
+Where the advisory's affected range is structured data, a plain semver pipeline decides it
+exactly and serves as a **reference implementation**. Running the agentic system against it
+is differential testing: two independent implementations, one oracle, and any disagreement
+is a defect in one of them.
 
-| Δ | correctness | groundedness | tool-selection |
-|---|---|---|---|
-| `script − multi_agent` | +0.0000 [0, 0] | +0.0000 [0, 0] | +0.0000 [0, 0] |
-| `multi_agent − single_agent` | +0.448 [0.276, 0.621] | +0.379 [0.207, 0.552] | +0.179 [0.116, 0.261] |
+**There were no disagreements.** `multi_agent` reproduces the reference on all 29
+trajectories — every verdict, every minimal-fix, every evidence row, every tool call — with
+**0 planner fallbacks**, so the agreement is genuine LLM planning and not a silent
+fall-through to the rule-based path (instrumented precisely because that artifact would look
+identical). That is a validation result: on the slice where correctness is checkable, the
+agentic system is *checkably correct*.
 
-A few things stand out.
+| arm | correctness | groundedness | latency | cost |
+|---|---|---|---|---|
+| `deterministic_script` | 1.0000 | 1.0000 | 0.6 s | $0.00 |
+| `single_agent` (ReAct) | 0.7471 [0.6552–0.7931] | 0.8046 [0.7931–0.8276] | 782 s | $0.102 |
+| `multi_agent` (planner→executor) | 1.0000 [1.0000–1.0000] | 1.0000 | 114 s | $0.017 |
 
-The multi-agent system ties the script exactly. Every delta is 0.0000 with a CI of [0, 0]. The
-interval is that tight because both arms produce identical verdicts on a decidable task, so every
-per-trajectory difference is zero and the bootstrap has nothing to spread. The LLM planner buys
-no accuracy here, and it costs $0.019 and 147 seconds per run against free and half a second.
+LLM rows are the mean of 3 runs with the min–max spread; the deterministic arm is
+bit-reproducible. `deterministic_script − multi_agent` = `+0.0000` on every metric, printed
+as **`(identity: identical on all 29)`** rather than as a confidence interval — because a
+zero-variance delta is exact agreement, and dressing it up as a `[0, 0]` CI would imply a
+precision estimate that isn't there.
 
-The tie is real, not an accident of plumbing. A planner that fails to produce a valid plan can
-quietly fall back to the deterministic one and post a fake 1.0, so I count those fallbacks and
-stamp them into the trajectory's `model_route`. There were zero across all 29 multi-agent runs.
+The comparison also has teeth in the other direction: `single_agent`, the same LLM without
+the planner→executor scaffold, does **not** reach the reference (0.7471 [0.6552–0.7931]). So
+the agreement above is a property of this architecture, not something any LLM arm gets for
+free.
 
-The single agent is the more interesting result. It's worse everywhere, but not because it gets
-the security call wrong: on the 28 alerts where it returned a verdict, its affected/not-affected
-judgment was correct every time. It loses points on evidence it skipped: on 12 alerts it dropped
-the deps.dev cross-check, so `source_agreement` fell to `single_source`, and 6 of those also got
-the minimal fix wrong; on one more it gave up without answering. So the scaffolding buys
-completeness, not better judgment.
+**One caveat, stated up front:** v0.1 shipped `single_agent correctness = 0.5517` from a
+single run, and three fresh runs give 0.7931 / 0.6552 / 0.7931 — the old number sits
+*outside* that range. Nothing about the arm changed; that is ordinary run-to-run variance,
+which is exactly what an n=1 measurement cannot see. Every LLM figure here is a mean over
+repeats for that reason.
 
-If there's a headline, it's the harness that can state all of this with a CI, not the agent.
-Every number above comes from [`results/`](results/) (metrics and CIs in the JSON, latency in the
-[report](results/ablation_v01.md), raw trajectories in [`results/trajectories/`](results/trajectories/)).
-Read [LIMITATIONS.md](LIMITATIONS.md) before you trust any of it. Short version: on a decidable
-task these metrics partly measure whether the agent follows a scaffolded prompt, and the two LLM
-rows are a single run, not a bit-reproducible one.
+### Slice 2 — where the reference implementation cannot follow
 
-## The gate
+Agreement on slice 1 shows the agent is correct. It does not yet show it is *useful*, since
+a script gets the same answers for free. So the same corpus is re-run through one pure
+transform: strip `ranges` and `versions`, keep the advisory text. The affected range now
+exists only in English, and `record_containment` **raises** on a redacted record — the
+deterministic path doesn't score badly here, it structurally cannot answer at all.
 
-A merge-blocking CI job (`scripts/run_eval.py`, `.github/workflows/eval-gate.yml`) re-scores the
-deterministic arm on every push and fails the build if correctness or groundedness slips below the
-committed baseline. Deleting one step from the planner drops correctness to 0.45 and groundedness
-to 0.14, and CI goes red with a gold-vs-actual trajectory diff. To reproduce, delete the
-`cross_check_source` step from `deterministic_plan` in `depguard/graph.py` and run
-`python scripts/run_eval.py check`.
-<!-- TODO: add docs/img/red-ci.gif once recorded from a real PR run -->
+| arm | range accuracy | correct | wrong abstain | wrong range |
+|---|---|---|---|---|
+| `deterministic_script` | **0.1500** | 6 / 40 | 34 | 0 |
+| `regex_baseline` | **0.4750** | 19 / 40 | 11 | 10 |
+| `llm_extractor` | **0.6417** [0.6250–0.6500] | 25.7 / 40 | 1.7 | 12.7 |
 
-## Tracing
+| Δ | range accuracy, 95% CI |
+|---|---|
+| `llm_extractor − deterministic_script` | **+0.4917 [+0.3417, +0.6500]** * |
+| `llm_extractor − regex_baseline` | **+0.1667 [+0.0665, +0.2833]** * |
+| `regex_baseline − deterministic_script` | +0.3250 [+0.1750, +0.4750] * |
 
-Each trajectory is replayed as OpenTelemetry GenAI spans that line up 1:1 with the tool calls, and
-exported to Langfuse when the keys are set (`depguard/otel.py`). You get a `depguard.triage` root
-span with one `execute_tool` child per call, tagged with the standard `gen_ai.*` attributes.
-<!-- TODO: add docs/img/langfuse-trace.png once captured (see docs/DEPLOY.md) -->
+Accuracy and counts are means over 3 runs (hence the fractions); latency, calls and cost are
+totals over every run paid for; the bootstrap uses each seed's pass rate across runs, so the
+CI matches the mean beside it. 120 LLM calls, **0 extractor fallbacks**, $0.25 all in.
 
-## Quickstart
+The script's 6 correct answers are **only** the 6 seeds whose prose names no version at all,
+where abstaining is right. On the 34 records that do describe a range it scores **0/34**.
+The ordering is strict and holds in **every one of the 3 runs**: the LLM wins 6–7 seeds the
+regex loses and loses **none** it wins; the regex beats the script on 13 and loses none.
+
+An earlier version of this table read `regex 0.4000` and `llm − regex +0.2500`. That delta
+was inflated by two bugs in my own baseline — `"2.1.0 through 2.5.3"` was parsed as
+*excluding* 2.5.3, and the grammar could not read a `v`-prefixed version at all. Fixing the
+control cost the headline a third of its size. The corrected number is above.
+
+Read together, the two slices say something a single number can't: **the agentic system is
+verifiably correct wherever correctness is checkable, and it keeps working past the point
+where the checkable path stops.** That is the case for shipping it — not "the LLM beat a
+script", but "the LLM matches a proven reference *and* covers the inputs the reference
+can't.
+
+## Where the system's errors actually go
+
+Knowing an arm's score is less useful than knowing which direction it fails in. None of this
+is visible in an aggregate; it comes out of the per-trajectory rows.
+
+**The LLM over-scopes, in the safe direction.** Its dominant error is dropping the
+advisory's lower bound and claiming everything before the fix is vulnerable — **9 of its 12
+range errors propose `introduced: "0"`** where the advisory scoped the flaw to a branch
+(`cryptography` 40.0.0, `redis` 4.2.0, `lodash` 4.0.0, `prismjs` 1.14.0…). Counting by
+direction, **10 of 12 over-claim which versions are affected and only 2 under-claim** — it
+produces false positives, which is the thing DepGuard exists to reduce, rather than missing
+live vulnerabilities. Three residual misses are pure boundary slips (`cross-spawn` 6.0.6,
+`hosted-git-info` 2.8.9), the exact inclusive/exclusive semantics the script gets right for
+free.
+
+**The regex baseline fails by giving up.** 11 of its 21 misses are abstentions — prose forms
+its grammar doesn't cover. It is a good-faith baseline, not a straw man: it handles the
+interleaved branch form ("Django 2.2 before 2.2.28, 3.2 before 3.2.13, and 4.0 before
+4.0.4") correctly, and two rounds of bug-fixing went into it *after* it was first measured.
+
+**The single agent skips evidence, not judgment.** This is the one slice-1 finding that
+*did* reproduce, and it got stronger: across both measured runs its affected/not-affected
+call was correct on **every alert it answered** — 28/28 in v0.1, **29/29** now — and so was
+`withdrawn`. It loses points only on evidence it skipped: `crosscheck_second_source` went
+unrun on **12 of 29** alerts this time (22 of 29 in v0.1), taking `source_agreement` with it.
+
+Note the split: the *direction* of that finding is stable across runs, the *magnitude* is
+not. Anything quoted as a rate here should be read as one of a handful of samples.
+
+Across both slices the same shape: the LLM's mistakes are in the *safe* direction and cost
+precision, not safety. Scaffolding buys evidence discipline; it does not buy judgment.
+
+## How strong is the slice-1 agreement, exactly?
+
+Strong enough to be worth stating precisely, and bounded enough to be worth qualifying.
+
+**What it is.** The two arms' trajectories are **byte-identical** across verdicts, evidence,
+`final_answer`, tool sequence, tool arguments *and* tool results — 174 tool calls each. Not
+"the same score": the same execution. For a system whose job is to be right about security,
+reproducing a verified reference exactly, on every alert, is the result you want.
+
+**What it is not.** Two things bound how far it generalises, and both are design choices
+made to get a mechanical oracle at all:
+
+- The reference shares its containment and minimal-fix functions with the tools
+  (`compute_minimal_fix` → `minimal_fix_gold`), which is what stops the eval drifting away
+  from the system — but it also means the reference is correct *by construction* on this
+  slice. Oracle bugs are therefore watched by a separate hand-written truth table, below.
+- The planner prompt names the canonical step sequence, so slice 1 measures whether the
+  agent executes a known-good plan faithfully, not whether it invents one. That is the right
+  thing to verify for a security tool, and it is not the same as open-ended planning. Slice 2
+  is where the model has to produce something the prompt cannot contain.
+
+So: slice 1 certifies conformance, slice 2 measures capability. Reported separately on
+purpose.
+
+## Two gates, because one has a blind spot
+
+**The eval gate** re-scores the deterministic arm on every push and blocks the merge if
+correctness or groundedness slips. Delete one planner step and it goes red with a
+gold-vs-actual diff.
+
+**It cannot catch oracle bugs, and here's the proof.** It recomputes gold with the same
+functions the tools call, so prediction and label move together. Invert one line in
+`oracle.py` — make a `fixed` event close inclusive, i.e. "the patched release is still
+vulnerable" — and **13 of 29 golden verdicts flip**, including the lodash 4.17.21 case this
+README leads with, while **`correctness` stays at 1.0000**. The gate goes red only via one
+incidental groundedness row on a seed that isn't among the 13. It caught that by luck.
+
+So `golden/oracle_truth.jsonl` runs as a **separate CI step**: 87 rows derived by hand from
+the OSV spec, never by running the oracle, weighted toward boundaries. Under that injected
+bug, 16 of 87 fail.
+
+    eval gate           → orchestration regressions
+    oracle truth table  → oracle bugs
+
+## Reproduce
 
 ```bash
 pip install -e .
 
-# 1. CLI: triage a manifest against the frozen corpus (no key, no network)
-depguard-triage examples/package.json
-#   AFFECTED      alert-0-GHSA-35jh-r3h4-6jhm   GHSA-35jh-r3h4-6jhm → fix 4.17.21
-#   AFFECTED      alert-2-GHSA-3xgq-45jj-v275   GHSA-3xgq-45jj-v275 → fix 7.0.5
-#   not affected  alert-3-GHSA-2328-f5f3-gj25
-#   # 4 of 7 alert(s) actually affected
-# (or point it at your own package.json — out-of-corpus deps fall back to a canned demo lockfile)
+# keyless — the deterministic and regex arms need no API key
+python scripts/run_eval.py check
+python -m pytest tests/test_oracle_truth.py -q
+python scripts/run_prose_slice.py --no-llm
 
-# 2. Web demo: paste a package.json, watch verdicts stream in
-pip install -e ".[demo]" && uvicorn depguard.webapp:app --port 8080   # http://localhost:8080
-
-# 3. Reproduce the ablation (the LLM arms need a DeepSeek key; the script arm doesn't)
-python scripts/run_ablation.py
+# the LLM arms need a DeepSeek key; --repeats reports a spread, not one observation
+python scripts/run_ablation.py --repeats 3
+python scripts/run_prose_slice.py --repeats 3 --workers 8
 ```
 
-Cloud Run and the Langfuse capture steps are in [docs/DEPLOY.md](docs/DEPLOY.md).
+Every number above is in [`results/`](results/): aggregates and CIs in the JSON, raw
+trajectories in [`results/trajectories/`](results/trajectories/), per-seed prose rows in
+`results/prose_slice_rows.json`.
 
-## MCP server
+Read [LIMITATIONS.md](LIMITATIONS.md) before trusting any of it — it leads with the two
+things that most change how the tables above should be read.
 
-The six tools are also a stdio MCP server that any client can install:
+## Quickstart
 
 ```bash
+# CLI: triage a manifest against the frozen corpus (no key, no network)
+depguard-triage examples/package.json
+
+# Web demo: paste a package.json, watch verdicts stream in
+pip install -e ".[demo]" && uvicorn depguard.webapp:app --port 8080
+
+# MCP: the six tools, in any stock client
 claude mcp add depguard -- depguard-mcp
 ```
 
-Claude Desktop config and the full tool list are in [docs/MCP.md](docs/MCP.md).
+Claude Desktop config in [docs/MCP.md](docs/MCP.md); Cloud Run and Langfuse capture in
+[docs/DEPLOY.md](docs/DEPLOY.md).
 
 ## How it works
 
@@ -116,33 +216,27 @@ manifest + scanner alerts
    planner ── retriever ── tool_worker ── verifier ──► one Verdict per alert
   (rule or LLM)   │            │             │          affected? · minimal fix · evidence
                   └──── six typed {ok,data,error} tools ────┘
-                        (the same code labels gold and scores predictions)
 ```
 
-For each alert DepGuard answers three things: is the pinned version actually in the advisory's
-affected range, what's the authoritative advisory plus the exact range-event evidence, and what's
-the smallest published version that clears it (grounded in the deps.dev version list, never
-invented). The containment and minimal-fix logic a tool uses is the same module that labels the
-gold answers and that the verifier scores against, so the eval can't quietly drift away from the
-tools.
+For each alert DepGuard answers three things: is the pinned version actually in the
+advisory's affected range, what's the authoritative advisory plus the exact range-event
+evidence, and what's the smallest published version that clears it — grounded in the
+deps.dev version list, never invented.
 
 Ground truth is a committed OSV + deps.dev snapshot
-(`corpus_snapshot_id = depguard-corpus-2026-07-01-c6f3471a2245`) stamped on every evidence row;
-the verifier refuses to score across a snapshot mismatch, and nothing in the tool layer touches
-the network. One thing I'm upfront about: the 71–90% scanner false-positive figures you see quoted
+(`corpus_snapshot_id = depguard-corpus-2026-07-01-c6f3471a2245`) stamped on every evidence
+row; the verifier refuses to score across a snapshot mismatch, and nothing in the tool layer
+touches the network. The prose slice is a pure transform of those same frozen bytes, so the
+snapshot id is unchanged and slice 1 stays exactly reproducible.
+
+One caveat worth stating plainly: the 71–90% scanner false-positive figures usually quoted
 are mostly about call-graph reachability, which DepGuard doesn't attempt. This handles the
-version-range-containment slice, which is the part with a mechanical ground truth. The design is
-frozen in [DECISIONS.md](DECISIONS.md).
-
-## Limitations
-
-Read [LIMITATIONS.md](LIMITATIONS.md) first. It covers the degenerate CIs, the single LLM run, the
-instruction-following-under-scaffolding caveat, the zero genuine source-disagreements in the
-corpus, the npm+PyPI scope, and the reachability caveat above.
+version-range-containment slice — the part with a mechanical ground truth. The design is
+frozen in [DECISIONS.md](DECISIONS.md); P5 is §5.1.
 
 ## License and data
 
-Code is MIT. OSV records are CC0-1.0 or CC-BY-4.0 (GHSA-origin records keep their attribution);
-deps.dev-derived rows are CC-BY-4.0 with per-row provenance. The corpus is a frozen snapshot, so
-verdicts reflect the snapshot date rather than live advisory data. See `NOTICE/ATTRIBUTION.md`
-(generated by the freeze job) and DECISIONS.md §1.7.
+Code is MIT. OSV records are CC0-1.0 or CC-BY-4.0 (GHSA-origin records keep their
+attribution); deps.dev-derived rows are CC-BY-4.0 with per-row provenance. The corpus is a
+frozen snapshot, so verdicts reflect the snapshot date rather than live advisory data. See
+`NOTICE/ATTRIBUTION.md` and DECISIONS.md §1.7.

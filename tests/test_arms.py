@@ -74,7 +74,7 @@ def test_script_arm_scores_correct_by_construction(name, inp, snap):
     CORRECT and GROUNDED by construction (~100%). This is a D9 finding, asserted here."""
     traj = run_script_arm(inp, snap)
     gold = build_gold(inp, snap)
-    assert correctness(traj, gold)["score"] == 1.0
+    assert correctness(traj, gold, snap)["score"] == 1.0
     assert groundedness(traj)["score"] == 1.0
 
 
@@ -107,7 +107,7 @@ def test_single_agent_canonical_scores_correct(name, inp, snap):
     also CORRECT and GROUNDED by construction (it collects the same evidence)."""
     traj = run_single_agent(inp, snap, policy=canonical_policy)
     gold = build_gold(inp, snap)
-    assert correctness(traj, gold)["score"] == 1.0
+    assert correctness(traj, gold, snap)["score"] == 1.0
     assert groundedness(traj)["score"] == 1.0
 
 
@@ -191,5 +191,5 @@ def test_single_agent_lazy_policy_valid_and_scoreable(name, inp, snap):
     # missing cross_check ⇒ no cross_check action in the plan
     assert "cross_check_source" not in [s["action"] for s in traj["plan"]]
     # metrics still compute (scores are numbers in [0,1])
-    for fn in (correctness(traj, gold), groundedness(traj), tool_selection(traj, gold)):
+    for fn in (correctness(traj, gold, snap), groundedness(traj), tool_selection(traj, gold)):
         assert 0.0 <= fn["score"] <= 1.0

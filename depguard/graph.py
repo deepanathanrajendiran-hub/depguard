@@ -267,7 +267,19 @@ class Pipeline:
                        "version": a["pinned_version"], "osv_record": {"id": record["id"]}},
             result=result, source="local",
         )
-        data = result["data"] if result["ok"] else {}
+        if not result["ok"]:
+            # FAIL-SAFE (v1.1.0). This previously read
+            #   data = result["data"] if result["ok"] else {}
+            #   pa["contained"] = bool(data.get("contained"))
+            # so an ERROR envelope — RANGE_UNRESOLVABLE above all — silently became
+            # `contained=False`: the arm answered "not affected" about a package whose
+            # range it could not resolve. Same fail-unsafe class as the shipped tp_axios
+            # summary, where absence of an answer became an all-clear. An undecidable
+            # alert must produce NO verdict, so it surfaces as n_unresolved instead.
+            pa["undecidable"] = result["error"]["code"]
+            self.builder._plan[step_index]["status"] = "failed"
+            return
+        data = result["data"]
         pa["contained"] = bool(data.get("contained"))
         pa["withdrawn_ts"] = data.get("withdrawn_timestamp")
         self.builder.mark_executed(step_index)
@@ -301,8 +313,16 @@ class Pipeline:
         if record is None:
             self.builder._plan[step_index]["status"] = "skipped"
             return
+        if pa.get("undecidable"):
+            # Containment was never established, so `pa.get("contained", False)` below
+            # would feed the cross-check a fabricated False — and its `agreement` would be
+            # written into a deps.dev Evidence row on the trajectory. The verdict is
+            # suppressed elsewhere, but the evidence trail must not assert a
+            # source-agreement finding derived from an answer the arm never had.
+            self.builder._plan[step_index]["status"] = "skipped"
+            return
         osv_verdict = {
-            "contained": pa.get("contained", False),
+            "contained": pa["contained"],
             "advisory_id": record["id"],
             "aliases": record.get("aliases", []),
         }
@@ -329,9 +349,17 @@ class Pipeline:
             if step["action"] != "emit_verdict":
                 continue
             aid = step["alert_id"]
-            if self.per_alert.get(aid, {}).get("record") is None:
+            pa = self.per_alert.get(aid, {})
+            if pa.get("record") is None:
                 # retrieval failed / advisory absent → nothing to verdict (a branch);
                 # skip rather than emit an evidence-less verdict (§3.3 minItems 1).
+                self.builder._plan[i]["status"] = "skipped"
+                continue
+            if pa.get("undecidable"):
+                # Containment could not be resolved from the frozen evidence. Emitting
+                # here would assert a verdict the evidence does not support — and since
+                # `contained` was never set, that verdict would read "not affected".
+                # Leave it unresolved (v1.1.0).
                 self.builder._plan[i]["status"] = "skipped"
                 continue
             self._emit_verdict(aid)

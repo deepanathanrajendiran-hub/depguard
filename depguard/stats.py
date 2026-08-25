@@ -37,14 +37,35 @@ def paired_bootstrap_delta(
 ) -> dict:
     """Bootstrap the mean of paired per-trajectory deltas.
 
-    Returns {observed, ci_lo, ci_hi, n, n_boot, alpha, significant}. `significant` is True
-    iff the (1−alpha) percentile interval of the resampled mean excludes 0 (i.e. ci_lo > 0
-    OR ci_hi < 0). Empty input ⇒ a degenerate all-None result, not an error."""
+    Returns {observed, ci_lo, ci_hi, n, n_boot, alpha, significant, degenerate}.
+    `significant` is True iff the (1−alpha) percentile interval of the resampled mean
+    excludes 0 (i.e. ci_lo > 0 OR ci_hi < 0). Empty input ⇒ a degenerate all-None
+    result, not an error.
+
+    `degenerate` is True when the delta vector has ZERO VARIANCE — every trajectory
+    produced the same delta. Resampling a constant can only return that constant, so
+    the interval collapses onto it and says nothing about sampling uncertainty. It is a
+    RENDERING flag and deliberately does NOT change `significant`: a constant non-zero
+    delta is a real, maximally consistent effect and must still read as significant.
+    What it guards against is the v0.1 report printing
+    `deterministic_script − multi_agent = +0.0000 [0, 0]` on every metric, where the
+    tight interval invited readers to see a precise estimate rather than an identity —
+    both arms scored a constant 1.0 on all 29 trajectories. Callers must label a
+    degenerate result rather than typeset it as a hypothesis test; see
+    `ablation._fmt_ci`."""
     n = len(deltas)
     if n == 0:
-        return {"observed": None, "ci_lo": None, "ci_hi": None,
-                "n": 0, "n_boot": n_boot, "alpha": alpha, "significant": False}
+        return {"observed": None, "ci_lo": None, "ci_hi": None, "n": 0,
+                "n_boot": n_boot, "alpha": alpha, "significant": False,
+                "degenerate": True}
+    degenerate = min(deltas) == max(deltas)
     observed = sum(deltas) / n
+    if degenerate:
+        # Resampling a constant is a no-op; skip 10k pointless draws. The interval is
+        # exactly [c, c], which is what the general path would compute anyway.
+        return {"observed": observed, "ci_lo": observed, "ci_hi": observed, "n": n,
+                "n_boot": n_boot, "alpha": alpha,
+                "significant": observed != 0.0, "degenerate": True}
     rng = random.Random(seed)
     means = []
     for _ in range(n_boot):
@@ -57,7 +78,8 @@ def paired_bootstrap_delta(
     ci_hi = _percentile(means, 1.0 - alpha / 2.0)
     significant = ci_lo > 0.0 or ci_hi < 0.0
     return {"observed": observed, "ci_lo": ci_lo, "ci_hi": ci_hi,
-            "n": n, "n_boot": n_boot, "alpha": alpha, "significant": significant}
+            "n": n, "n_boot": n_boot, "alpha": alpha, "significant": significant,
+            "degenerate": False}
 
 
 def compare_arms(

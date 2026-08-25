@@ -25,5 +25,14 @@ jobs:
           python-version: "3.12"
       - name: Install
         run: pip install -e ".[dev]"
-      - name: Golden-trajectory eval gate
+      # Deliberately a SEPARATE step from the gate below, because the two catch
+      # disjoint bug classes and conflating them is what hid the hole. The gate
+      # recomputes gold with the same functions the tools call, so an oracle sign flip
+      # moves prediction and label together and correctness stays pinned at 1.0000
+      # (measured: inverting the `fixed` bound flips 13 of 29 golden verdicts, incl.
+      # the lodash 4.17.21 headline case, while correctness never moves). This table
+      # is hand-derived from the OSV spec and is the only thing watching the oracle.
+      - name: Oracle truth table (independent of the shared oracle)
+        run: python -m pytest tests/test_oracle_truth.py -q
+      - name: Golden-trajectory eval gate (orchestration regressions)
         run: python scripts/run_eval.py check

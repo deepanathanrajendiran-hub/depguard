@@ -10,7 +10,7 @@
   "arms_pending": [],
   "metrics": [
     "tool_selection",
-    "action_advancement",
+    "verdict_yield",
     "plan_adherence",
     "groundedness",
     "correctness"
@@ -18,21 +18,21 @@
   "aggregates": {
     "deterministic_script": {
       "tool_selection": 1.0,
-      "action_advancement": 0.125,
+      "verdict_yield": 1.0,
       "plan_adherence": 1.0,
       "groundedness": 1.0,
       "correctness": 1.0
     },
     "single_agent": {
-      "tool_selection": 0.8213166144200627,
-      "action_advancement": 0.18185550082101806,
-      "plan_adherence": 0.5258620689655172,
-      "groundedness": 0.6206896551724138,
-      "correctness": 0.5517241379310345
+      "tool_selection": 0.896969696969697,
+      "verdict_yield": 1.0,
+      "plan_adherence": 0.5402298850574713,
+      "groundedness": 0.8275862068965517,
+      "correctness": 0.7931034482758621
     },
     "multi_agent": {
       "tool_selection": 1.0,
-      "action_advancement": 0.125,
+      "verdict_yield": 1.0,
       "plan_adherence": 1.0,
       "groundedness": 1.0,
       "correctness": 1.0
@@ -41,49 +41,54 @@
   "pairwise_ci": {
     "deterministic_script__vs__single_agent": {
       "tool_selection": {
-        "observed": 0.17868338557993732,
-        "ci_lo": 0.11598746081504703,
-        "ci_hi": 0.26123301985370945,
+        "observed": 0.10303030303030304,
+        "ci_lo": 0.05538140020898643,
+        "ci_hi": 0.15465517241379306,
         "n": 29,
         "n_boot": 10000,
         "alpha": 0.05,
-        "significant": true
+        "significant": true,
+        "degenerate": false
       },
-      "action_advancement": {
-        "observed": -0.05685550082101806,
-        "ci_lo": -0.07655993431855501,
-        "ci_hi": -0.036319786535303905,
+      "verdict_yield": {
+        "observed": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
         "n": 29,
         "n_boot": 10000,
         "alpha": 0.05,
-        "significant": true
+        "significant": false,
+        "degenerate": true
       },
       "plan_adherence": {
-        "observed": 0.47413793103448276,
-        "ci_lo": 0.4367816091954023,
-        "ci_hi": 0.5229885057471264,
+        "observed": 0.4597701149425287,
+        "ci_lo": 0.4425287356321838,
+        "ci_hi": 0.47701149425287354,
         "n": 29,
         "n_boot": 10000,
         "alpha": 0.05,
-        "significant": true
+        "significant": true,
+        "degenerate": false
       },
       "groundedness": {
-        "observed": 0.3793103448275862,
-        "ci_lo": 0.20689655172413793,
-        "ci_hi": 0.5517241379310345,
+        "observed": 0.1724137931034483,
+        "ci_lo": 0.034482758620689655,
+        "ci_hi": 0.3103448275862069,
         "n": 29,
         "n_boot": 10000,
         "alpha": 0.05,
-        "significant": true
+        "significant": true,
+        "degenerate": false
       },
       "correctness": {
-        "observed": 0.4482758620689655,
-        "ci_lo": 0.27586206896551724,
-        "ci_hi": 0.6206896551724138,
+        "observed": 0.20689655172413793,
+        "ci_lo": 0.06896551724137931,
+        "ci_hi": 0.3793103448275862,
         "n": 29,
         "n_boot": 10000,
         "alpha": 0.05,
-        "significant": true
+        "significant": true,
+        "degenerate": false
       }
     },
     "deterministic_script__vs__multi_agent": {
@@ -94,16 +99,18 @@
         "n": 29,
         "n_boot": 10000,
         "alpha": 0.05,
-        "significant": false
+        "significant": false,
+        "degenerate": true
       },
-      "action_advancement": {
+      "verdict_yield": {
         "observed": 0.0,
         "ci_lo": 0.0,
         "ci_hi": 0.0,
         "n": 29,
         "n_boot": 10000,
         "alpha": 0.05,
-        "significant": false
+        "significant": false,
+        "degenerate": true
       },
       "plan_adherence": {
         "observed": 0.0,
@@ -112,7 +119,8 @@
         "n": 29,
         "n_boot": 10000,
         "alpha": 0.05,
-        "significant": false
+        "significant": false,
+        "degenerate": true
       },
       "groundedness": {
         "observed": 0.0,
@@ -121,7 +129,8 @@
         "n": 29,
         "n_boot": 10000,
         "alpha": 0.05,
-        "significant": false
+        "significant": false,
+        "degenerate": true
       },
       "correctness": {
         "observed": 0.0,
@@ -130,75 +139,81 @@
         "n": 29,
         "n_boot": 10000,
         "alpha": 0.05,
-        "significant": false
+        "significant": false,
+        "degenerate": true
       }
     },
     "single_agent__vs__multi_agent": {
       "tool_selection": {
-        "observed": -0.17868338557993732,
-        "ci_lo": -0.26123301985370945,
-        "ci_hi": -0.11598746081504703,
+        "observed": -0.10303030303030304,
+        "ci_lo": -0.15465517241379312,
+        "ci_hi": -0.05538140020898644,
         "n": 29,
         "n_boot": 10000,
         "alpha": 0.05,
-        "significant": true
+        "significant": true,
+        "degenerate": false
       },
-      "action_advancement": {
-        "observed": 0.05685550082101806,
-        "ci_lo": 0.03631978653530376,
-        "ci_hi": 0.07655993431855501,
+      "verdict_yield": {
+        "observed": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
         "n": 29,
         "n_boot": 10000,
         "alpha": 0.05,
-        "significant": true
+        "significant": false,
+        "degenerate": true
       },
       "plan_adherence": {
-        "observed": -0.47413793103448276,
-        "ci_lo": -0.5229885057471264,
-        "ci_hi": -0.4367816091954023,
+        "observed": -0.4597701149425287,
+        "ci_lo": -0.47701149425287354,
+        "ci_hi": -0.4425287356321838,
         "n": 29,
         "n_boot": 10000,
         "alpha": 0.05,
-        "significant": true
+        "significant": true,
+        "degenerate": false
       },
       "groundedness": {
-        "observed": -0.3793103448275862,
-        "ci_lo": -0.5517241379310345,
-        "ci_hi": -0.20689655172413793,
+        "observed": -0.1724137931034483,
+        "ci_lo": -0.3103448275862069,
+        "ci_hi": -0.034482758620689655,
         "n": 29,
         "n_boot": 10000,
         "alpha": 0.05,
-        "significant": true
+        "significant": true,
+        "degenerate": false
       },
       "correctness": {
-        "observed": -0.4482758620689655,
-        "ci_lo": -0.6206896551724138,
-        "ci_hi": -0.27586206896551724,
+        "observed": -0.20689655172413793,
+        "ci_lo": -0.3793103448275862,
+        "ci_hi": -0.06896551724137931,
         "n": 29,
         "n_boot": 10000,
         "alpha": 0.05,
-        "significant": true
+        "significant": true,
+        "degenerate": false
       }
     }
   },
   "verdict_flip_matrix": {
     "deterministic_script": {
       "deterministic_script": 0,
-      "single_agent": 1,
+      "single_agent": 0,
       "multi_agent": 0
     },
     "single_agent": {
-      "deterministic_script": 1,
+      "deterministic_script": 0,
       "single_agent": 0,
-      "multi_agent": 1
+      "multi_agent": 0
     },
     "multi_agent": {
       "deterministic_script": 0,
-      "single_agent": 1,
+      "single_agent": 0,
       "multi_agent": 0
     }
   },
-  "flip_count_multi_vs_single": 1,
+  "flip_count_multi_vs_single": 0,
   "llm_usage": {
     "deterministic_script": {
       "calls": 0,
@@ -209,19 +224,19 @@
       "fallbacks": 0
     },
     "single_agent": {
-      "calls": 159,
-      "prompt_tokens": 47661,
-      "completion_tokens": 92124,
-      "total_tokens": 139785,
-      "cost_usd": 0.11420487000000001,
+      "calls": 175,
+      "prompt_tokens": 67652,
+      "completion_tokens": 75846,
+      "total_tokens": 143498,
+      "cost_usd": 0.10169664000000002,
       "fallbacks": 0
     },
     "multi_agent": {
       "calls": 29,
-      "prompt_tokens": 5910,
-      "completion_tokens": 15657,
-      "total_tokens": 21567,
-      "cost_usd": 0.018818400000000002,
+      "prompt_tokens": 8201,
+      "completion_tokens": 13435,
+      "total_tokens": 21636,
+      "cost_usd": 0.01699277,
       "fallbacks": 0
     }
   },
@@ -229,5 +244,45 @@
     "deterministic_script": 0,
     "single_agent": 0,
     "multi_agent": 0
+  },
+  "repeats": {
+    "single_agent": {
+      "n": 3,
+      "correctness": [
+        0.7931034482758621,
+        0.6551724137931034,
+        0.7931034482758621
+      ],
+      "correctness_mean": 0.7471264367816092,
+      "correctness_min": 0.6551724137931034,
+      "correctness_max": 0.7931034482758621,
+      "groundedness": [
+        0.8275862068965517,
+        0.7931034482758621,
+        0.7931034482758621
+      ],
+      "groundedness_mean": 0.8045977011494253,
+      "groundedness_min": 0.7931034482758621,
+      "groundedness_max": 0.8275862068965517
+    },
+    "multi_agent": {
+      "n": 3,
+      "correctness": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "correctness_mean": 1.0,
+      "correctness_min": 1.0,
+      "correctness_max": 1.0,
+      "groundedness": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "groundedness_mean": 1.0,
+      "groundedness_min": 1.0,
+      "groundedness_max": 1.0
+    }
   }
 }

@@ -97,7 +97,7 @@ def run_ablation(seed_inputs: dict, snapshot, arms: list[str] | None = None) -> 
         t0 = time.perf_counter()
         for n in names:
             traj = runner(seed_inputs[n], snapshot)
-            sc = score_trajectory(traj, golds[n])
+            sc = score_trajectory(traj, golds[n], snapshot)
             arm_trajs[n] = traj
             rows.append({"seed": n, **{m: sc[m]["score"] for m in METRICS}})
             for m in METRICS:
@@ -154,6 +154,11 @@ def run_ablation(seed_inputs: dict, snapshot, arms: list[str] | None = None) -> 
 def _fmt_ci(ci: dict) -> str:
     if ci["observed"] is None:
         return "n/a"
+    if ci.get("degenerate"):
+        # A zero-variance delta vector is an identity, not an estimate: printing
+        # `+0.0000 [0, 0]` invites the reader to treat a tautology as a tight CI.
+        what = "identical" if ci["observed"] == 0.0 else "constant"
+        return f"{ci['observed']:+.4f} (identity: {what} on all {ci['n']})"
     star = " *" if ci["significant"] else ""
     return f"{ci['observed']:+.4f} [{ci['ci_lo']:+.4f}, {ci['ci_hi']:+.4f}]{star}"
 
@@ -173,6 +178,23 @@ def format_markdown(result: dict) -> str:
         lines.append(
             f"- **arms pending (require `LLM_API_KEY`): {', '.join(pending)}** — "
             "re-run `python scripts/run_ablation.py` with a DeepSeek key to fill these in.")
+    reps = result.get("repeats")
+    if reps:
+        lines += ["", "## LLM-arm repeat spread", "",
+                  "_The table below is a SINGLE run. LLM APIs are not bit-reproducible even "
+                  "at temperature 0, so an n=1 figure is an observation, not a propensity. "
+                  "These are the same arms re-run end to end._",
+                  "",
+                  "| arm | runs | correctness (mean) | min | max | groundedness (mean) | min | max |",
+                  "| --- | --- | --- | --- | --- | --- | --- | --- |"]
+        for arm, r in reps.items():
+            lines.append(
+                f"| {arm} | {r['n']} | {r['correctness_mean']:.4f} | "
+                f"{r['correctness_min']:.4f} | {r['correctness_max']:.4f} | "
+                f"{r['groundedness_mean']:.4f} | {r['groundedness_min']:.4f} | "
+                f"{r['groundedness_max']:.4f} |")
+        lines += ["", "_A min-max spread over a handful of runs is not a confidence "
+                      "interval and understates the true variance._"]
     lines += ["", "## Per-arm metrics (mean over the golden set)", ""]
     from depguard.llm_meter import PRICE_PER_MTOK
     cols = result["metrics"]
@@ -202,15 +224,28 @@ def format_markdown(result: dict) -> str:
     else:
         lines.append("_pending — only one arm ran; no pairwise comparison possible yet._")
 
-    lines += ["", "## Verdict-flip matrix (alerts whose actionable `affected` differs)", ""]
+    lines += ["",
+              "## Verdict-state divergence matrix",
+              "",
+              "_Counts alerts whose verdict STATE differs. Emitting no verdict is its own "
+              "state, so an abandonment counts here without either arm having made a "
+              "differing security judgement — read the footnote before calling a non-zero "
+              "cell a disagreement._",
+              ""]
     lines.append("| A ⧵ B | " + " | ".join(arms) + " |")
     lines.append("|" + "---|" * (len(arms) + 1))
     for a in arms:
         row = [a] + [str(result["verdict_flip_matrix"][a][b]) for b in arms]
         lines.append("| " + " | ".join(row) + " |")
     fc = result["flip_count_multi_vs_single"]
-    lines += ["", f"**Flip count (multi_agent vs single_agent): "
+    lines += ["", f"**Divergence count (multi_agent vs single_agent): "
               f"{'pending — LLM arms not run' if fc is None else fc}**", ""]
+    if fc:
+        lines += ["> Check the per-seed rows before reading this as a differing security "
+                  "call. In v0.1 the single divergence was `tp_axios`, where single_agent "
+                  "called 0 tools and emitted no verdict at all — an abandonment, not a "
+                  "misjudgement. On all 28 alerts where it DID answer, its "
+                  "affected/not-affected call matched gold.", ""]
 
     fallbacks = result.get("planner_fallbacks", {})
     offenders = {a: c for a, c in fallbacks.items() if c}

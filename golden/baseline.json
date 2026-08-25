@@ -4,11 +4,11 @@
   "deterministic_script": {
     "aggregate": {
       "tool_selection": 1.0,
-      "action_advancement": 0.125,
+      "verdict_yield": 1.0,
       "plan_adherence": 1.0,
       "groundedness": 1.0,
       "correctness": 1.0
     }
   },
-  "note": "Honest first-run numbers \u2014 never rounded up. action_advancement is the structural ratio of verdict-producing steps to all executed steps (\u00a74.1.2); it is not an error. NO ablation/comparison numbers here \u2014 those arrive in D8\u2013D9 (out of v0.1 D7 scope)."
+  "note": "Honest first-run numbers \u2014 never rounded up. verdict_yield is the fraction of given alerts that received a verdict (\u00a74.1.2, v1.1.0); it replaced action_advancement, which was anti-correlated with correctness because it reduced to 1/n_executed_steps on a one-alert corpus. NO ablation/comparison numbers here \u2014 see results/."
 }
