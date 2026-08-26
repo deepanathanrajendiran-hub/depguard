@@ -20,6 +20,8 @@ freeze-time and test-time agree. The id is a strict one-way input to `SNAPSHOT.l
 
 from __future__ import annotations
 
+import urllib.parse
+
 import hashlib
 import json
 from pathlib import Path
@@ -49,3 +51,19 @@ def compute_snapshot_id(
 def load_snapshot_lock(corpus_dir: str | Path) -> dict:
     """Parse `corpus/SNAPSHOT.lock` (JSON)."""
     return json.loads((Path(corpus_dir) / "SNAPSHOT.lock").read_text())
+
+
+def extract_filename(name: str) -> str:
+    """Filesystem-safe stem for a package's deps.dev extract.
+
+    Package names are not always path-safe. Go module paths contain slashes
+    (`github.com/dgrijalva/jwt-go`) and npm scoped packages start with `@scope/`, either of
+    which would silently turn a flat extract directory into a nested tree — or, as it did
+    when crates.io and Go were added in v0.3, fail outright with FileNotFoundError.
+
+    Percent-encoding every reserved character keeps the layout flat and one-file-per-package
+    for any ecosystem. It is deliberately a no-op for every name already in the corpus
+    (`lodash`, `python-jose`, `time` all encode to themselves), so adopting it moved no
+    existing file and changed no existing byte.
+    """
+    return urllib.parse.quote(name, safe="")

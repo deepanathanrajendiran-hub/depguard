@@ -7,8 +7,11 @@ Gold is labeled by running the oracle — these inputs never carry expected answ
 """
 
 
+_PURL_TYPE = {"npm": "npm", "PyPI": "pypi", "crates.io": "cargo", "Go": "golang"}
+
+
 def _case(eco, name, version, advisory, sid):
-    system = "pypi" if eco == "PyPI" else eco
+    system = _PURL_TYPE[eco]
     return {
         "manifest": [
             {"ecosystem": eco, "name": name, "pinned_version": version,
@@ -82,4 +85,40 @@ SEED_INPUTS = {
     # a third withdrawn-contained case, PyPI side.
     "withdrawn_pyjose": _case("PyPI", "python-jose", "0.6.1", "GHSA-h4pw-wxh7-4vjj",
                               "withdrawn_pyjose"),
+    # ---------------------------------------------------------------- #
+    # crates.io (v0.3) — MINIMAL-FIX scoring tier
+    # ---------------------------------------------------------------- #
+    # verifier.py has declared {npm, crates.io, Go} as the minimal-fix tier since v0.1
+    # while crates.io and Go carried ZERO alerts, so two of the three tiers the verifier
+    # claims to score were never exercised. P2 now runs on all three.
+    #
+    # tokio [1.8.0, 1.8.1) is a ONE-VERSION window: the sharpest possible boundary pair,
+    # where the true positive and the false positive are adjacent releases.
+    "tp_tokio": _case("crates.io", "tokio", "1.8.0", "GHSA-2grh-hm3w-w7hv", "tp_tokio"),
+    "fp_tokio": _case("crates.io", "tokio", "1.8.1", "GHSA-2grh-hm3w-w7hv", "fp_tokio"),
+    # bounded range, mid-interval pin → affected, minimal fix = 0.6.14.
+    "tp_smallvec": _case("crates.io", "smallvec", "0.6.13", "GHSA-43w2-9j62-hq99",
+                         "tp_smallvec"),
+    # open LOWER bound [0, 0.14.10): the pin IS the fix → already safe.
+    "fp_hyper": _case("crates.io", "hyper", "0.14.10", "GHSA-5h46-h7hh-c6x9", "fp_hyper"),
+    # RUSTSEC-2020-0071: EIGHT interleaved intervals whose bounds are prereleases
+    # ("0.2.7-0"). Exercises E_A OR-aggregation over many ranges at once, and a non-GHSA
+    # advisory id (the CC0 provenance branch).
+    "multi_time": _case("crates.io", "time", "0.2.22", "RUSTSEC-2020-0071", "multi_time"),
+    # ---------------------------------------------------------------- #
+    # Go (v0.3) — MINIMAL-FIX scoring tier, plus v-prefix and pseudo-versions
+    # ---------------------------------------------------------------- #
+    # gin: lower bound is a PSEUDO-VERSION (1.3.1-0.20190301021747-ccb9e902956d), and
+    # every version carries a `v` prefix the Go comparator strips.
+    "tp_gin": _case("Go", "github.com/gin-gonic/gin", "v1.9.0", "GHSA-2c4m-59x9-fr2g",
+                    "tp_gin"),
+    "fp_gin": _case("Go", "github.com/gin-gonic/gin", "v1.9.1", "GHSA-2c4m-59x9-fr2g",
+                    "fp_gin"),
+    # jwt-go: `last_affected: 3.2.0` INCLUSIVE (not `fixed`), on a pin carrying Go's
+    # `+incompatible` build metadata — which semver must ignore for ordering.
+    "lastaff_jwtgo": _case("Go", "github.com/dgrijalva/jwt-go", "v3.2.0+incompatible",
+                           "GHSA-w73w-5m7g-f7qc", "lastaff_jwtgo"),
+    # x/crypto: the UPPER bound is a pseudo-version, and so is the pin.
+    "tp_xcrypto": _case("Go", "golang.org/x/crypto", "v0.0.0-20200622213623-75b288015ac9",
+                        "GHSA-3vm4-22fp-5rfm", "tp_xcrypto"),
 }

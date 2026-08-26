@@ -10,6 +10,8 @@ Records tagged CC-BY-4.0 originate from the GitHub Advisory Database (GHSA id, G
 - `GHSA-248v-346w-9cwc` (PyPI) — https://github.com/advisories/GHSA-248v-346w-9cwc
 - `GHSA-24wv-mv5m-xv4h` (PyPI) — https://github.com/advisories/GHSA-24wv-mv5m-xv4h
 - `GHSA-29mw-wpgm-hmr9` (npm) — https://github.com/advisories/GHSA-29mw-wpgm-hmr9
+- `GHSA-2c4m-59x9-fr2g` (Go) — https://github.com/advisories/GHSA-2c4m-59x9-fr2g
+- `GHSA-2grh-hm3w-w7hv` (crates.io) — https://github.com/advisories/GHSA-2grh-hm3w-w7hv
 - `GHSA-2gwj-7jmv-h26r` (PyPI) — https://github.com/advisories/GHSA-2gwj-7jmv-h26r
 - `GHSA-2mhh-w6q8-5hxw` (npm) — https://github.com/advisories/GHSA-2mhh-w6q8-5hxw
 - `GHSA-2p57-rm9w-gvfp` (npm) — https://github.com/advisories/GHSA-2p57-rm9w-gvfp
@@ -20,13 +22,16 @@ Records tagged CC-BY-4.0 originate from the GitHub Advisory Database (GHSA id, G
 - `GHSA-394c-5j6w-4xmx` (npm) — https://github.com/advisories/GHSA-394c-5j6w-4xmx
 - `GHSA-3g43-6gmg-66jw` (npm) — https://github.com/advisories/GHSA-3g43-6gmg-66jw
 - `GHSA-3jfq-g458-7qm9` (npm) — https://github.com/advisories/GHSA-3jfq-g458-7qm9
+- `GHSA-3vm4-22fp-5rfm` (Go) — https://github.com/advisories/GHSA-3vm4-22fp-5rfm
 - `GHSA-3w5v-p54c-f74x` (npm) — https://github.com/advisories/GHSA-3w5v-p54c-f74x
 - `GHSA-3xgq-45jj-v275` (npm) — https://github.com/advisories/GHSA-3xgq-45jj-v275
 - `GHSA-42xw-2xvc-qx8m` (npm) — https://github.com/advisories/GHSA-42xw-2xvc-qx8m
 - `GHSA-43f8-2h32-f4cj` (npm) — https://github.com/advisories/GHSA-43f8-2h32-f4cj
+- `GHSA-43w2-9j62-hq99` (crates.io) — https://github.com/advisories/GHSA-43w2-9j62-hq99
 - `GHSA-4grg-w6v8-c28g` (PyPI) — https://github.com/advisories/GHSA-4grg-w6v8-c28g
 - `GHSA-56pw-mpj4-fxww` (PyPI) — https://github.com/advisories/GHSA-56pw-mpj4-fxww
 - `GHSA-57qw-cc2g-pv5p` (PyPI) — https://github.com/advisories/GHSA-57qw-cc2g-pv5p
+- `GHSA-5h46-h7hh-c6x9` (crates.io) — https://github.com/advisories/GHSA-5h46-h7hh-c6x9
 - `GHSA-7fhm-mqm4-2wp7` (npm) — https://github.com/advisories/GHSA-7fhm-mqm4-2wp7
 - `GHSA-7q8x-38mc-p84f` (PyPI) — https://github.com/advisories/GHSA-7q8x-38mc-p84f
 - `GHSA-9959-c6q6-6qp3` (npm) — https://github.com/advisories/GHSA-9959-c6q6-6qp3
@@ -38,16 +43,24 @@ Records tagged CC-BY-4.0 originate from the GitHub Advisory Database (GHSA id, G
 - `GHSA-p5w8-wqhj-9hhf` (PyPI) — https://github.com/advisories/GHSA-p5w8-wqhj-9hhf
 - `GHSA-pg2w-x9wp-vw92` (PyPI) — https://github.com/advisories/GHSA-pg2w-x9wp-vw92
 - `GHSA-q34m-jh98-gwm2` (PyPI) — https://github.com/advisories/GHSA-q34m-jh98-gwm2
+- `GHSA-r6v5-fh4h-64xc` (crates.io) — https://github.com/advisories/GHSA-r6v5-fh4h-64xc
 - `GHSA-v4w5-p2hg-8fh6` (PyPI) — https://github.com/advisories/GHSA-v4w5-p2hg-8fh6
+- `GHSA-w73w-5m7g-f7qc` (Go) — https://github.com/advisories/GHSA-w73w-5m7g-f7qc
+- `GO-2020-0017` (Go) — https://github.com/advisories/GHSA-w73w-5m7g-f7qc
 - `PYSEC-2020-176` (PyPI) — https://github.com/advisories/GHSA-3pqx-4fqf-j49f
 - `PYSEC-2021-854` (PyPI) — https://github.com/advisories/GHSA-6p56-wp2h-9hxr
 - `PYSEC-2022-183` (PyPI) — https://github.com/advisories/GHSA-h8pj-cxx2-jfg2
 - `PYSEC-2022-269` (PyPI) — https://github.com/advisories/GHSA-3pgj-pg6c-r5p7
+- `RUSTSEC-2020-0071` (crates.io) — https://github.com/advisories/GHSA-wcg3-cvx6-7396
 
 ## deps.dev derived extract (CC-BY-4.0)
 
 Published-version lists and `(version → advisory-key)` tables are a derived non-substantial extract of deps.dev (Open Source Insights), Google LLC, used under CC-BY-4.0. Source endpoints:
 
+- go/github.com/dgrijalva/jwt-go — https://api.deps.dev/v3/systems/go/packages/github.com%2Fdgrijalva%2Fjwt-go
+- go/github.com/dgrijalva/jwt-go/v4 — https://api.deps.dev/v3/systems/go/packages/github.com%2Fdgrijalva%2Fjwt-go%2Fv4
+- go/github.com/gin-gonic/gin — https://api.deps.dev/v3/systems/go/packages/github.com%2Fgin-gonic%2Fgin
+- go/golang.org/x/crypto — https://api.deps.dev/v3/systems/go/packages/golang.org%2Fx%2Fcrypto
 - pypi/ansible — https://api.deps.dev/v3/systems/pypi/packages/ansible
 - pypi/certifi — https://api.deps.dev/v3/systems/pypi/packages/certifi
 - pypi/cryptography — https://api.deps.dev/v3/systems/pypi/packages/cryptography
@@ -69,6 +82,10 @@ Published-version lists and `(version → advisory-key)` tables are a derived no
 - pypi/urllib3 — https://api.deps.dev/v3/systems/pypi/packages/urllib3
 - pypi/waitress — https://api.deps.dev/v3/systems/pypi/packages/waitress
 - pypi/werkzeug — https://api.deps.dev/v3/systems/pypi/packages/werkzeug
+- cargo/hyper — https://api.deps.dev/v3/systems/cargo/packages/hyper
+- cargo/smallvec — https://api.deps.dev/v3/systems/cargo/packages/smallvec
+- cargo/time — https://api.deps.dev/v3/systems/cargo/packages/time
+- cargo/tokio — https://api.deps.dev/v3/systems/cargo/packages/tokio
 - npm/acorn — https://api.deps.dev/v3/systems/npm/packages/acorn
 - npm/axios — https://api.deps.dev/v3/systems/npm/packages/axios
 - npm/cross-spawn — https://api.deps.dev/v3/systems/npm/packages/cross-spawn

@@ -1,6 +1,6 @@
 {
-  "corpus_snapshot_id": "depguard-corpus-2026-07-01-c6f3471a2245",
-  "n_trajectories": 29,
+  "corpus_snapshot_id": "depguard-corpus-2026-07-01-fdd6db1be17a",
+  "n_trajectories": 38,
   "deterministic_script": {
     "aggregate": {
       "tool_selection": 1.0,

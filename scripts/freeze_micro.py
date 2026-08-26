@@ -34,7 +34,7 @@ REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO))
 
 from depguard.comparators import VersionParseError, get_comparator  # noqa: E402
-from depguard.corpus_snapshot import compute_snapshot_id  # noqa: E402
+from depguard.corpus_snapshot import compute_snapshot_id, extract_filename  # noqa: E402
 
 # --------------------------------------------------------------------------- #
 # frozen freeze parameters
@@ -48,9 +48,12 @@ OSV_DIR = CORPUS / "osv"
 EXTRACT_DIR = CORPUS / "depsdev_extract"
 ATTRIBUTION = REPO / "NOTICE" / "ATTRIBUTION.md"
 
-SYSTEM = {"npm": "npm", "PyPI": "pypi"}
+SYSTEM = {"npm": "npm", "PyPI": "pypi", "crates.io": "cargo", "Go": "go"}
 MINFIX = {"npm", "crates.io", "Go"}
-CORPUS_ECOS = {"npm", "PyPI"}
+# v0.3: crates.io and Go join the corpus. They were declared minimal-fix scoring
+# ecosystems in verifier.py from the start but carried ZERO alerts, so two of the three
+# tiers the verifier claims to score were never exercised by a single test.
+CORPUS_ECOS = {"npm", "PyPI", "crates.io", "Go"}
 MAX_KEYED_VERSIONS = 30  # cap per-version advisory-key GETs per package
 
 # The frozen advisory-id list — hand-picked for diversity, each mechanically
@@ -105,6 +108,18 @@ FREEZE_IDS = [
     "PYSEC-2021-107",       # ansible (CVE alias only)
     "OSV-2022-1074",        # pillow (no aliases at all — clean single_source)
     "PYSEC-2022-203",       # werkzeug (CVE alias only)
+    # ---- crates.io (v0.3): a MINFIX-tier ecosystem that previously had no alerts ----
+    "GHSA-r6v5-fh4h-64xc",  # time — bounded [0.3.6, 0.3.47)
+    "GHSA-43w2-9j62-hq99",  # smallvec — bounded [0.6.3, 0.6.14)
+    "GHSA-2grh-hm3w-w7hv",  # tokio — one-version window [1.8.0, 1.8.1), sharp FP/TP material
+    "GHSA-5h46-h7hh-c6x9",  # hyper — open lower bound [0, 0.14.10)
+    "RUSTSEC-2020-0071",    # time — 8 interleaved intervals w/ prerelease bounds ("0.2.7-0"),
+                            # and a non-GHSA id, so it also exercises the CC0 provenance branch
+    # ---- Go (v0.3): the other MINFIX ecosystem, plus v-prefix + pseudo-versions ----
+    "GHSA-2c4m-59x9-fr2g",  # gin — pseudo-version LOWER bound
+    "GHSA-w73w-5m7g-f7qc",  # jwt-go — last_affected 3.2.0 (inclusive, no fix available)
+    "GHSA-3vm4-22fp-5rfm",  # x/crypto — pseudo-version UPPER bound
+    "GO-2020-0017",         # jwt-go — open-ended (introduced only) + non-GHSA id
 ]
 
 
@@ -349,7 +364,7 @@ def main() -> int:
             },
         }
         (EXTRACT_DIR / system).mkdir(parents=True, exist_ok=True)
-        (EXTRACT_DIR / system / f"{name}.json").write_bytes(_canonical(extract))
+        (EXTRACT_DIR / system / f"{extract_filename(name)}.json").write_bytes(_canonical(extract))
         window_start = window_start or CAPTURE_DATE
         window_end = CAPTURE_DATE
         print(f"  {system}/{name}: {len(pubs)} versions, {len(akbv)} keyed")

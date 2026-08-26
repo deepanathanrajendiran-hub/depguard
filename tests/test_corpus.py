@@ -29,7 +29,10 @@ OSV_DIR = CORPUS / "osv"
 EXTRACT_DIR = CORPUS / "depsdev_extract"
 ATTRIBUTION = REPO / "NOTICE" / "ATTRIBUTION.md"
 
-CORPUS_ECOSYSTEMS = {"npm", "PyPI"}  # v0.1 micro-corpus (editorial note 3)
+# v0.3: crates.io and Go joined the corpus. verifier.py had declared {npm, crates.io, Go}
+# as the minimal-fix scoring tier since v0.1 while two of those three carried zero alerts,
+# so the tier was asserted by the code and exercised by nothing.
+CORPUS_ECOSYSTEMS = {"npm", "PyPI", "crates.io", "Go"}
 
 
 # --------------------------------------------------------------------------- #
@@ -126,7 +129,7 @@ def test_every_record_parses_and_passes_curation():
             )
 
 
-def test_every_record_ecosystem_is_npm_or_pypi():
+def test_every_record_ecosystem_is_a_corpus_ecosystem():
     for path, rec in _load_records():
         ecos = {
             (e.get("package") or {}).get("ecosystem")
@@ -261,13 +264,17 @@ def test_at_least_one_cc0_and_one_ccby_record_exercise_both_branches():
 # --------------------------------------------------------------------------- #
 
 def test_extract_exists_for_every_corpus_package():
-    system = {"npm": "npm", "PyPI": "pypi"}
+    from depguard.corpus_snapshot import extract_filename
+
+    system = {"npm": "npm", "PyPI": "pypi", "crates.io": "cargo", "Go": "go"}
     for path, rec in _load_records():
         dir_eco = path.parent.name
         sysname = system[dir_eco]
         for e in _surviving_entries(rec, dir_eco):
             name = (e["package"]["name"])
-            f = EXTRACT_DIR / sysname / f"{name}.json"
+            # Go module paths and npm scoped names contain slashes; the extract layout is
+            # flat and percent-encodes them (see corpus_snapshot.extract_filename).
+            f = EXTRACT_DIR / sysname / f"{extract_filename(name)}.json"
             assert f.is_file(), f"missing deps.dev extract for {sysname}/{name}"
 
 

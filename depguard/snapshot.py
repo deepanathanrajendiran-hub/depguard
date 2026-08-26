@@ -74,7 +74,10 @@ class Snapshot:
     def read_extract(self, ecosystem: str, name: str) -> dict | None:
         """The deps.dev derived extract for (ecosystem, name), or None if the package
         is simply not in the corpus (NOT_FOUND). Corrupt file ⇒ raises."""
-        path = self.corpus_dir / "depsdev_extract" / self.system_for(ecosystem) / f"{name}.json"
+        from depguard.corpus_snapshot import extract_filename
+
+        path = (self.corpus_dir / "depsdev_extract" / self.system_for(ecosystem)
+                / f"{extract_filename(name)}.json")
         if not path.is_file():
             return None
         try:

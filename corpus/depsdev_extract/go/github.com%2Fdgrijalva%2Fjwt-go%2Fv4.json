@@ -1,0 +1,34 @@
+{
+  "_provenance": {
+    "license": "CC-BY-4.0",
+    "note": "derived non-substantial extract (§1.7b) — never raw responses",
+    "source": "deps.dev",
+    "source_url": "https://api.deps.dev/v3/systems/go/packages/github.com%2Fdgrijalva%2Fjwt-go%2Fv4"
+  },
+  "advisory_keys_by_version": {
+    "v4.0.0-20200107205605-c66185887605": [
+      "GHSA-w73w-5m7g-f7qc",
+      "GO-2020-0017"
+    ],
+    "v4.0.0-preview1.0.20200107205605-c66185887605": []
+  },
+  "captured_at": "2026-07-01",
+  "default_version": "v4.0.0-preview1",
+  "name": "github.com/dgrijalva/jwt-go/v4",
+  "system": "go",
+  "versions": [
+    "v4.0.0-20190408195427-0df22ee6e086",
+    "v4.0.0-20190408202314-32acca36b99f",
+    "v4.0.0-20190408214815-ec0a89a131e3",
+    "v4.0.0-20190410170817-8222805572f2",
+    "v4.0.0-20190410173124-05bb760ffa38",
+    "v4.0.0-20190521221207-07e10bec2a34",
+    "v4.0.0-20200106221549-f309977b61e3",
+    "v4.0.0-20200107000637-df476e6729a3",
+    "v4.0.0-20200107001534-122d9923da71",
+    "v4.0.0-20200107012205-a58974ee87a6",
+    "v4.0.0-20200107205605-c66185887605",
+    "v4.0.0-preview1",
+    "v4.0.0-preview1.0.20200107205605-c66185887605"
+  ]
+}
