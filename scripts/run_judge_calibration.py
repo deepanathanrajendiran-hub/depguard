@@ -25,7 +25,9 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO))
 
-from depguard.judge import USE_JUDGE_THRESHOLD, agreement_stats, judge_note  # noqa: E402
+from depguard.judge import (  # noqa: E402
+    USE_JUDGE_THRESHOLD, agreement_stats, judge_is_usable, judge_note,
+)
 from depguard.llm_meter import METER  # noqa: E402
 
 AUDIT = REPO / "golden" / "judge_audit.jsonl"
@@ -68,7 +70,8 @@ def main() -> int:
          "trap": r.get("why", "").startswith("TRAP"), "reason": v["reason"]}
         for r, v in zip(rows, verdicts)
     ]
-    usable = stats["kappa_quadratic"] >= USE_JUDGE_THRESHOLD
+    trap_deltas = {c["id"]: c["delta"] for c in per_case if c["trap"]}
+    usable, failures = judge_is_usable(stats, trap_deltas)
 
     print(f"\n  n scored          {stats['n']}/{len(rows)}  (unscored: {stats['unscored']})")
     print(f"  exact agreement   {stats['exact']:.4f}")
@@ -76,6 +79,8 @@ def main() -> int:
     print(f"  quadratic kappa   {stats['kappa_quadratic']:.4f}  "
           f"(threshold {USE_JUDGE_THRESHOLD})")
     print(f"\n  JUDGE USABLE: {usable}")
+    for f in failures:
+        print(f"    GATE FAILED — {f}")
 
     traps = [c for c in per_case if c["trap"]]
     if traps:
@@ -94,6 +99,7 @@ def main() -> int:
         "threshold": USE_JUDGE_THRESHOLD,
         "stats": stats,
         "judge_usable": usable,
+        "gate_failures": failures,
         "per_case": per_case,
         "meter": METER.snapshot(),
         "scope": "narrative clarity of reconciliation notes ONLY; never verdict correctness "

@@ -173,3 +173,63 @@ def test_rubric_forbids_correctness_scoring_in_its_own_text():
     assert "not judge whether the underlying" in RUBRIC.lower() or \
            "do not judge" in RUBRIC.lower()
     assert "correct" in RUBRIC.lower()
+
+
+# ===================================================================== #
+# The trap gate — kappa alone shipped a judge with a known failure
+# ===================================================================== #
+
+def test_a_high_kappa_cannot_override_a_blown_trap():
+    """The measured case, pinned. The first calibration run scored kappa 0.8366 — well
+    over the 0.60 threshold — while giving the `confident_but_wrong` note 5 out of 5. Its
+    own stated reason was that the note "clearly states both sources agree ... no action is
+    needed", which is fluent, well-structured and false.
+
+    A single aggregate averages that away. If kappa alone were the gate, a judge with a
+    reproducible failure on fluent falsehood would have shipped looking like a measurement.
+    """
+    from depguard.judge import judge_is_usable
+
+    usable, failures = judge_is_usable(
+        {"kappa_quadratic": 0.8366},
+        {"confident_but_wrong": 3, "correctness_flavoured": 0, "wrong_package": 1},
+    )
+    assert usable is False
+    assert any("confident_but_wrong" in f for f in failures)
+
+
+def test_clean_traps_and_good_kappa_pass():
+    from depguard.judge import judge_is_usable
+
+    usable, failures = judge_is_usable(
+        {"kappa_quadratic": 0.75}, {"a": 0, "b": 1, "c": -1})
+    assert usable is True and failures == []
+
+
+def test_low_kappa_fails_even_with_clean_traps():
+    from depguard.judge import judge_is_usable
+
+    usable, failures = judge_is_usable({"kappa_quadratic": 0.31}, {"a": 0})
+    assert usable is False and any("kappa" in f for f in failures)
+
+
+def test_an_unscored_trap_is_a_failure_not_a_pass():
+    """A judge that declines to score the very case designed to catch it must not thereby
+    pass the gate."""
+    from depguard.judge import judge_is_usable
+
+    usable, failures = judge_is_usable({"kappa_quadratic": 0.9}, {"a": None})
+    assert usable is False
+
+
+def test_the_committed_calibration_records_the_gate_outcome():
+    """The shipped result must carry the honest verdict, not just the flattering number."""
+    path = REPO / "results" / "judge_calibration.json"
+    if not path.is_file():
+        pytest.skip("calibration not run yet")
+    d = json.loads(path.read_text())
+    assert d["stats"]["kappa_quadratic"] >= USE_JUDGE_THRESHOLD, "guard: kappa did pass"
+    assert d["judge_usable"] is False, (
+        "the judge blew a trap; the recorded verdict must say so despite the kappa"
+    )
+    assert d["gate_failures"], "a failing gate must record why"

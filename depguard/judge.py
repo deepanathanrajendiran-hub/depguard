@@ -28,12 +28,25 @@ import json
 import os
 import re
 
-__all__ = ["RUBRIC", "LEVELS", "judge_note", "USE_JUDGE_THRESHOLD", "agreement_stats"]
+__all__ = ["RUBRIC", "LEVELS", "judge_note", "USE_JUDGE_THRESHOLD",
+           "MAX_TRAP_DELTA", "agreement_stats", "judge_is_usable"]
 
-#: Minimum quadratic-weighted kappa against the human audit set for the judge to be
-#: considered usable. 0.60 is the conventional "moderate-to-substantial" boundary; it is a
-#: threshold chosen in advance, not fitted to the result.
+#: Minimum quadratic-weighted kappa against the human audit set. 0.60 is the conventional
+#: "moderate-to-substantial" boundary; chosen in advance, not fitted to the result.
 USE_JUDGE_THRESHOLD = 0.60
+
+#: Kappa alone is NOT sufficient, and the first calibration run proved it. The judge scored
+#: kappa 0.8366 — comfortably over the threshold — while giving the `confident_but_wrong`
+#: trap 5 out of 5. That note is fluent, well-structured and factually false: it denies a
+#: disagreement that exists. The judge's own stated reason was "the note clearly states both
+#: sources agree ... no action is needed."
+#:
+#: It cannot do better, and that is the finding. §4.3 forbids giving a clarity judge the
+#: ground truth, so it has no way to separate "clearly explains the situation" from "clearly
+#: explains a FABRICATED situation" — fluent falsehood reads as clarity. An aggregate score
+#: averages that failure away, which is exactly why the traps are gated SEPARATELY: a judge
+#: that blows one is not usable as a standalone quality signal, whatever its kappa.
+MAX_TRAP_DELTA = 1
 
 LEVELS = {
     1: "useless — says a conflict exists but nothing an engineer could act on",
@@ -134,3 +147,23 @@ def agreement_stats(human: list[int], judge: list[int]) -> dict:
     kappa = 1.0 - (num / den) if den else 1.0
     return {"n": n, "exact": exact, "within_1": within,
             "kappa_quadratic": kappa, "unscored": len(human) - n}
+
+
+def judge_is_usable(stats: dict, trap_deltas: dict[str, int | None]) -> tuple[bool, list[str]]:
+    """Two gates, both of which must pass. Returns (usable, reasons_it_failed).
+
+    Aggregate agreement is necessary and not sufficient: the first run cleared kappa 0.60
+    by a wide margin while scoring a fluent falsehood 5/5. Averaging that into a single
+    number is how a judge with a known, reproducible failure mode gets shipped as a
+    measurement, so each trap is checked on its own.
+    """
+    failures = []
+    if stats.get("kappa_quadratic", 0.0) < USE_JUDGE_THRESHOLD:
+        failures.append(
+            f"kappa {stats.get('kappa_quadratic', 0.0):.4f} < {USE_JUDGE_THRESHOLD}")
+    for name, delta in sorted(trap_deltas.items()):
+        if delta is None:
+            failures.append(f"trap {name}: judge produced no score")
+        elif abs(delta) > MAX_TRAP_DELTA:
+            failures.append(f"trap {name}: off by {delta:+d} (max {MAX_TRAP_DELTA})")
+    return (not failures), failures
