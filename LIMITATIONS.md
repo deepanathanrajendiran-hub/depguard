@@ -8,9 +8,9 @@ numbers in the README.
 
 ## How far the slice-1 agreement generalises
 
-`multi_agent` reproduces the deterministic reference exactly on all 29 golden trajectories —
+`multi_agent` reproduces the deterministic reference exactly on all 38 golden trajectories, across all four corpus ecosystems —
 byte-identical across verdicts, evidence, `final_answer`, tool sequence, tool arguments and
-tool results, 174 tool calls each, 0 planner fallbacks. That is a real verification result
+tool results, with 0 planner fallbacks. That is a real verification result
 and the README reports it as one. Two things bound what it proves, and both are consequences
 of design choices made to obtain a mechanical oracle at all:
 
@@ -192,7 +192,7 @@ place on real data: an alias merge made two sources disagree about whether a pat
 release is safe, which is precisely the hazard a second source exists to surface. A scanner
 keyed off deps.dev alone would flag lodash 4.17.21; a tool keyed off OSV alone would not.
 
-**Still true, and still the main caveat:** one disagreement in 38 seeds is thin, and the
+**Still true, and still the main caveat:** one disagreement in 38 golden seeds is thin, and the
 structural reason for that has not changed. deps.dev's `advisoryKeys[]` are ingested from
 the GitHub Advisory Database, which is published in OSV format, so the cross-check largely
 compares two re-servings of the same GHSA record and near-tautologically agrees. The
@@ -268,11 +268,10 @@ it is applied to my own work.
 
 ## v0.1's single-agent number did not reproduce
 
-v0.1 shipped `single_agent correctness = 0.5517` from a **single run**. Three fresh runs
-under `--repeats 3` give **0.7931 / 0.6552 / 0.7931** (mean 0.7471). The published figure
-sits *outside* that entire range. Groundedness moved 0.6207 → 0.8046 [0.7931–0.8276]. The
-lone abandonment (`tp_axios`, 0 tool calls) did not recur, so the verdict-state divergence
-count went 1 → 0.
+v0.1 shipped `single_agent correctness = 0.5517` from a **single run**. It has not reproduced
+in either of two later three-run measurements — the most recent gives **0.6842
+[0.6053–0.7368]** on the expanded corpus. The lone abandonment (`tp_axios`, 0 tool calls) did
+not recur either, so the verdict-state divergence count went 1 → 0.
 
 Nothing about the arm changed to cause this — it is ordinary LLM run-to-run variance on a
 29-item set, which is exactly what an n=1 measurement cannot see. Treat every LLM figure in
@@ -311,7 +310,7 @@ cannot contain the answer.
 
 ## Corpus utilisation
 
-- The golden set exercises **33 of the 49** committed advisories.
+- The golden set exercises **33 of the 49** committed advisories; the prose slice covers all 49.
 - **All three declared minimal-fix ecosystems now carry alerts.** `verifier.py` has
   declared `{npm, crates.io, Go}` as the minimal-fix scoring tier since v0.1 while
   crates.io and Go had **zero** — two of the three tiers the verifier claims to score were
