@@ -287,3 +287,36 @@ def test_extract_shape_is_derived_not_raw():
         assert required <= set(ext), f"{f} missing derived fields {required - set(ext)}"
         assert isinstance(ext["versions"], list) and ext["versions"]
         assert isinstance(ext["advisory_keys_by_version"], dict)
+
+
+def test_the_corpus_now_contains_one_genuine_source_disagreement():
+    """v0.1 through v0.2 reported ZERO genuine source-disagreements, and the P4 `disagree`
+    branch was exercised only by a synthetic fixture. Re-freezing for v0.3 produced a real
+    one, from real upstream drift rather than edited data (which DECISIONS.md §1.3
+    forbids).
+
+    Mechanism: between 2025-08-12 and 2026-07-08 OSV added `GHSA-r5fr-rjxr-66jc` and
+    `CVE-2026-4800` as aliases of GHSA-35jh-r3h4-6jhm. The affected RANGES did not change
+    and the deps.dev extract is byte-identical to v0.1's. But deps.dev lists
+    GHSA-r5fr-rjxr-66jc at lodash 4.17.21, and OSV now treats it as the same
+    vulnerability — so after alias resolution the second source asserts that the PATCHED
+    release is vulnerable while OSV's range says it is the fix.
+
+    That is exactly the hazard the cross-check exists to catch, and it lands on `seed_01`,
+    the case the README leads with. `affected` is unchanged (OSV containment governs
+    actionability); only `source_agreement` moves, and P4 then requires a non-empty
+    reconciliation note."""
+    rec = json.loads((OSV_DIR / "npm" / "GHSA-35jh-r3h4-6jhm.json").read_text())
+    assert "GHSA-r5fr-rjxr-66jc" in rec.get("aliases", []), (
+        "the alias that creates the disagreement is gone — upstream drifted again; "
+        "re-check whether seed_01 is still a disagree case before trusting the docs"
+    )
+    gold = json.loads(
+        (REPO / "golden" / "expected" / "seed_01.jsonl").read_text().strip().splitlines()[0]
+    )
+    verdict = gold["gold_verdicts"][0]
+    assert verdict["source_agreement"] == "disagree"
+    assert verdict["reconciliation_note"], "P4 requires a note on disagree (§3.3)"
+    assert verdict["affected"] is False, (
+        "the disagreement must not change actionability — OSV containment governs that"
+    )

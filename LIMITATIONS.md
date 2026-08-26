@@ -89,29 +89,38 @@ Caveats specific to this slice:
   should have just written the parser" is answered with a number instead of an opinion.
 - 40 seeds, one package per advisory. Small.
 
-## Zero genuine source-disagreements in the frozen corpus
+## Source disagreements: one, and it arrived on its own
 
-Searching every keyed `(advisory, version)` pair in the frozen deps.dev extract
-(`corpus_snapshot_id = depguard-corpus-2026-07-01-c6f3471a2245`) yields **0 cases where
-deps.dev's per-version advisory keys contradict OSV's computed containment.**
+**v0.1–v0.2 reported zero.** That was correct at the time and is no longer true. The v0.3
+re-freeze (`corpus_snapshot_id = depguard-corpus-2026-07-01-fdd6db1be17a`) produced **one
+genuine disagreement**, from real upstream drift rather than edited data — DECISIONS.md
+§1.3 forbids manufacturing one, and none was manufactured.
 
-This is the predicted result, not a defect (DECISIONS.md §1.3): deps.dev's
-`advisoryKeys[]` are ingested from the GitHub Advisory Database, which is published in OSV
-format — so the cross-check largely compares two re-servings of the same GHSA record and
-near-tautologically agrees. **We do NOT manufacture a `disagree` case by editing data.**
+**What happened.** Between 2025-08-12 and 2026-07-08, OSV added `GHSA-r5fr-rjxr-66jc` and
+`CVE-2026-4800` as aliases of `GHSA-35jh-r3h4-6jhm` (lodash). The affected **ranges did not
+change**, and the deps.dev extract is **byte-identical** to v0.1's. But deps.dev lists
+`GHSA-r5fr-rjxr-66jc` at lodash **4.17.21**, and OSV now treats it as the same
+vulnerability — so after alias resolution the second source asserts that the **patched
+release is vulnerable** while OSV's range says 4.17.21 is the fix.
 
-Consequences, stated plainly:
+It lands on `seed_01`, the case the README leads with. `affected` is unchanged — OSV
+containment governs actionability — but `source_agreement` moves `agree` → `disagree`, and
+P4 then requires a non-empty reconciliation note. Pinned by
+`tests/test_corpus.py::test_the_corpus_now_contains_one_genuine_source_disagreement`, which
+fails loudly if upstream drifts back so the docs cannot quietly go stale.
 
-- The **`source_agreement` cross-check adds no independent second opinion** on this corpus,
-  and the measured verdict-flip count from reconciliation is **0**. That is the finding for
-  the cross-check dimension, not a number to hide. The P4 `disagree` branch — including its
-  requirement that a `disagree` verdict carry a non-empty `reconciliation_note` — is
-  therefore exercised only by a synthetic fixture (`tests/fixtures/disagree_corpus/`),
-  never by real corpus data.
-- The **load-bearing** value of the second source is the deps.dev **published-version
-  list**, which grounds minimal-fix in real releases. Golden cases `nofix_ip`, `multi_tar`,
-  `already_safe_forge` and every `minimal_fixed_version` depend on it — that is genuine
-  independence.
+**Why this matters more than the count.** It is the first time the cross-check earned its
+place on real data: an alias merge made two sources disagree about whether a patched
+release is safe, which is precisely the hazard a second source exists to surface. A scanner
+keyed off deps.dev alone would flag lodash 4.17.21; a tool keyed off OSV alone would not.
+
+**Still true, and still the main caveat:** one disagreement in 38 seeds is thin, and the
+structural reason for that has not changed. deps.dev's `advisoryKeys[]` are ingested from
+the GitHub Advisory Database, which is published in OSV format, so the cross-check largely
+compares two re-servings of the same GHSA record and near-tautologically agrees. The
+**load-bearing** value of the second source remains the deps.dev **published-version
+list**, which grounds minimal-fix in real releases — `nofix_ip`, `multi_tar`,
+`already_safe_forge`, `lastaff_jwtgo` and every `minimal_fixed_version` depend on it.
 
 ## `single_source` dominates P4 on the micro-corpus
 
@@ -224,12 +233,14 @@ cannot contain the answer.
 
 ## Corpus utilisation
 
-- The golden set exercises **26 of the 40** committed advisories, across 24 packages.
-- `verifier.py` declares `{npm, crates.io, Go}` as the minimal-fix scoring tier, but the
-  corpus contains **zero crates.io and zero Go alerts** — two of the three minfix
-  ecosystems are entirely untested.
+- The golden set exercises **33 of the 49** committed advisories.
+- **All three declared minimal-fix ecosystems now carry alerts.** `verifier.py` has
+  declared `{npm, crates.io, Go}` as the minimal-fix scoring tier since v0.1 while
+  crates.io and Go had **zero** — two of the three tiers the verifier claims to score were
+  exercised by nothing. v0.3 adds 5 crates.io and 4 Go seeds, so P2 now runs on all three.
+- Ecosystem mix is still uneven: npm 15, PyPI 14, crates.io 5, Go 4.
 - Every trajectory carries exactly **one** alert, so `correctness` is binary per row and
-  multi-alert interactions are untested.
+  multi-alert interactions remain untested.
 
 ## Scope caveats
 
