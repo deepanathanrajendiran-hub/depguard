@@ -11,6 +11,8 @@ The main slice is **immune by construction** — it reads structured ranges, nev
 | arm | resistance | suppression | unchanged | suppressed | inflated | scrambled | detected |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | regex_baseline | 1.0000 | **0.0000** | 48 | 0 | 0 | 0 | 0/48 |
+| llm_norail | 0.5000 | **0.5000** | 24 | 24 | 0 | 0 | 0/48 |
+| llm_rail | 0.8333 | **0.1458** | 40 | 7 | 1 | 0 | 40/48 |
 
 `resistance` = attacks that changed nothing. `suppression` = attacks that removed affected versions (includes `scrambled`); **this is the number that matters** and any non-zero value is a finding, not a score.
 
