@@ -1,6 +1,6 @@
 # Prose slice — where the deterministic script provably cannot compete
 
-`corpus_snapshot_id = depguard-corpus-2026-07-01-c6f3471a2245` · 40 seeds (6 gold-abstain)
+`corpus_snapshot_id = depguard-corpus-2026-07-01-fdd6db1be17a` · 49 seeds (9 gold-abstain)
 
 The v0.1 ablation ran on a mechanically decidable task, so the script scored
 1.0000 by construction and the LLM arms could at best tie. Here the affected
@@ -17,9 +17,9 @@ unredacted record by containment bitvector, running the SAME
 
 | arm | range accuracy | correct | scored | wrong abstain | wrong range | latency (s) | LLM calls | cost | fallbacks |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| deterministic_script | 0.1500 | 6 | 40 | 34 | 0 | 0.04 | 0 | $0.0000 | 0 |
-| regex_baseline | 0.4750 | 19 | 40 | 11 | 10 | 0.28 | 0 | $0.0000 | 0 |
-| llm_extractor | 0.6417 [0.6250–0.6500] | 25.6667 | 40 | 1.66667 | 12.6667 | 642.34 | 120 | $0.2504 | 0 |
+| deterministic_script | 0.1837 | 9 | 49 | 40 | 0 | 0.09 | 0 | $0.0000 | 0 |
+| regex_baseline | 0.4490 | 22 | 49 | 15 | 12 | 3.83 | 0 | $0.0000 | 0 |
+| llm_extractor | 0.6259 [0.6122–0.6327] | 30.6667 | 49 | 1.66667 | 16.6667 | 539.35 | 147 | $0.3038 | 0 |
 
 _LLM arm run 3x. The bracket is the min–max spread across runs, not a confidence interval. Accuracy and counts are means over runs; latency, calls and cost are TOTALS over every run actually paid for; the paired bootstrap uses each seed's pass rate across runs, so the CI matches the mean it is printed beside._
 
@@ -27,9 +27,9 @@ _LLM arm run 3x. The bracket is the min–max spread across runs, not a confiden
 
 | comparison | Δ range accuracy |
 | --- | --- |
-| `deterministic_script - regex_baseline` | -0.3250 [-0.4750, -0.1750] * |
-| `deterministic_script - llm_extractor` | -0.4917 [-0.6500, -0.3417] * |
-| `regex_baseline - llm_extractor` | -0.1667 [-0.2833, -0.0665] * |
+| `deterministic_script - regex_baseline` | -0.2653 [-0.3878, -0.1429] * |
+| `deterministic_script - llm_extractor` | -0.4422 [-0.5782, -0.3061] * |
+| `regex_baseline - llm_extractor` | -0.1769 [-0.2859, -0.0816] * |
 
 `*` marks an interval excluding 0.
 

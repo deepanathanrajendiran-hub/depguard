@@ -44,7 +44,8 @@
     }
   ],
   "aliases": [
-    "CVE-2024-56201"
+    "CVE-2024-56201",
+    "PYSEC-2026-1472"
   ],
   "database_specific": {
     "cwe_ids": [
@@ -57,7 +58,7 @@
   },
   "details": "A bug in the Jinja compiler allows an attacker that controls both the content and filename of a template to execute arbitrary Python code, regardless of if Jinja's sandbox is used.\n\nTo exploit the vulnerability, an attacker needs to control both the filename and the contents of a template. Whether that is the case depends on the type of application using Jinja. This vulnerability impacts users of applications which execute untrusted templates where the template author can also choose the template filename.",
   "id": "GHSA-gmj6-6f8f-6699",
-  "modified": "2026-02-04T02:33:41.652230Z",
+  "modified": "2026-07-07T17:56:55.074166933Z",
   "published": "2024-12-23T17:54:12Z",
   "references": [
     {

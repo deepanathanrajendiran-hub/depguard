@@ -220,13 +220,19 @@ def test_no_http_in_the_tool_and_data_layer():
     extractor are the legitimate outbound LLM/telemetry integrations by design — all
     env-gated on LLM_API_KEY / an OTLP endpoint and never reached by the tool/corpus code.
 
+    judge.py is exempt for the same reason as llm_extractor.py: it calls a model. Note it is
+    fenced off from the correctness path separately and far more strictly, by import graph,
+    in tests/test_judge_calibration.py — being allowed to reach the network is not the same
+    as being allowed to influence a verdict.
+
     Note what is NOT on this list: depguard/extractors.py, which holds the null and regex
-    extractors. The regex arm is the prose slice's scientific control, so it must be
+    extractors, nor rails.py / redteam.py, which are pure text transforms. The regex arm is the prose slice's scientific control, so it must be
     mechanically impossible for it to have consulted anything but the frozen bytes it was
     handed — which is why the LLM extractor lives in its own module."""
     import depguard
     root = Path(depguard.__file__).parent
-    allowed_network = {"graph.py", "otel.py", "single_agent.py", "llm_extractor.py"}
+    allowed_network = {"graph.py", "otel.py", "single_agent.py", "llm_extractor.py",
+                       "judge.py"}
     offenders = []
     for py in root.rglob("*.py"):
         if py.name in allowed_network:

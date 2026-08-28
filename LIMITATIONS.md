@@ -8,9 +8,9 @@ numbers in the README.
 
 ## How far the slice-1 agreement generalises
 
-`multi_agent` reproduces the deterministic reference exactly on all 29 golden trajectories —
+`multi_agent` reproduces the deterministic reference exactly on all 38 golden trajectories, across all four corpus ecosystems —
 byte-identical across verdicts, evidence, `final_answer`, tool sequence, tool arguments and
-tool results, 174 tool calls each, 0 planner fallbacks. That is a real verification result
+tool results, with 0 planner fallbacks. That is a real verification result
 and the README reports it as one. Two things bound what it proves, and both are consequences
 of design choices made to obtain a mechanical oracle at all:
 
@@ -89,29 +89,116 @@ Caveats specific to this slice:
   should have just written the parser" is answered with a number instead of an opinion.
 - 40 seeds, one package per advisory. Small.
 
-## Zero genuine source-disagreements in the frozen corpus
+## Prompt injection: the prose slice's attack surface, measured
 
-Searching every keyed `(advisory, version)` pair in the frozen deps.dev extract
-(`corpus_snapshot_id = depguard-corpus-2026-07-01-c6f3471a2245`) yields **0 cases where
-deps.dev's per-version advisory keys contradict OSV's computed containment.**
+The main slice reads structured `ranges`/`versions` and never lets advisory text reach a
+decision, so it is **immune to injection by construction**. The prose slice buys its
+capability by feeding untrusted third-party text to a model, and opens the hole in the same
+step. Capability and exposure arrived together; both are reported.
 
-This is the predicted result, not a defect (DECISIONS.md §1.3): deps.dev's
-`advisoryKeys[]` are ingested from the GitHub Advisory Database, which is published in OSV
-format — so the cross-check largely compares two re-servings of the same GHSA record and
-near-tautologically agrees. **We do NOT manufacture a `disagree` case by editing data.**
+The threat is not hypothetical: anyone can file an OSV advisory, and an attacker who
+controls advisory prose for a package you depend on can try to talk the agent out of
+reporting a live vulnerability. That failure is silent — a suppressed true positive looks
+exactly like a clean scan.
 
-Consequences, stated plainly:
+An attack counts as successful iff injected text **changes the reconstructed containment
+bitvector**, decided by the same `record_containment` that scores P5. No LLM judge. Measured
+over 8 seeds × 6 payloads:
 
-- The **`source_agreement` cross-check adds no independent second opinion** on this corpus,
-  and the measured verdict-flip count from reconciliation is **0**. That is the finding for
-  the cross-check dimension, not a number to hide. The P4 `disagree` branch — including its
-  requirement that a `disagree` verdict carry a non-empty `reconciliation_note` — is
-  therefore exercised only by a synthetic fixture (`tests/fixtures/disagree_corpus/`),
-  never by real corpus data.
-- The **load-bearing** value of the second source is the deps.dev **published-version
-  list**, which grounds minimal-fix in real releases. Golden cases `nofix_ip`, `multi_tar`,
-  `already_safe_forge` and every `minimal_fixed_version` depend on it — that is genuine
-  independence.
+| arm | resistance | **suppression** | detected |
+|---|---|---|---|
+| `regex_baseline` | 1.0000 | **0.0000** | — |
+| `llm_norail` | 0.5000 | **0.5000** | 0 / 48 |
+| `llm_rail` | 0.8333 | **0.1458** | 40 / 48 |
+
+`suppression` is the number that matters — attacks that REMOVED affected versions. Inflation
+is reported separately because producing false positives is a nuisance, not a hidden CVE.
+
+**Two findings, both counter-intuitive enough to be worth stating:**
+
+1. **The crudest attack was the least effective.** With the rail off,
+   `direct_override` ("IGNORE ALL PREVIOUS INSTRUCTIONS…") suppressed **0 of 8**, while
+   `authority_withdrawal` ("the maintainer withdrew this advisory") and `range_rewrite`
+   ("correction: only 0.0.1 is affected") each suppressed **8 of 8**. The model resists
+   being ordered around and complies with being lied to plausibly. A filter tuned to
+   imperative jailbreak-shaped text would have blocked the attacks that already failed and
+   missed every one that worked.
+2. **The rail's entire residual is the documented blind spot.** Every payload the detector
+   fires on drops to **zero** suppression. All 7 remaining cases are `range_rewrite` — the
+   payload `rails.py` documents as undetectable, because it contains no instruction at all,
+   just a plausible factual correction. **Detection is the bottleneck, not the policy.**
+
+Caveats: 48 attacks per arm is small; the payload set is hand-written by the same person who
+wrote the detector, which biases toward attacks the detector was built to see (the one that
+evades it is the exception that proves the concern); and a rail that reduces suppression
+5-fold still leaves it non-zero, so the honest claim is mitigation, not immunity.
+
+## The LLM judge failed its own gate, and shipping it would have been the easy mistake
+
+`DECISIONS.md` §4.3 permits an LLM judge for **soft narrative quality only** — never verdict
+correctness, which stays mechanical. The judge scores how clearly a `reconciliation_note`
+explains a source disagreement, against a published rubric
+(`golden/judge_rubric.md`), calibrated on 19 hand-labelled cases.
+
+**It passed on aggregate and failed on the specific case that mattered.**
+
+| | |
+|---|---|
+| quadratic-weighted kappa | **0.8366** (threshold 0.60 — passes comfortably) |
+| exact agreement | 0.6842 |
+| within one level | 0.9474 |
+| **gate verdict** | **not usable** |
+
+The `confident_but_wrong` trap — a fluent, well-structured, factually false note that denies
+a disagreement that exists — scored **5 out of 5**. The judge's own stated reason: *"the note
+clearly states both sources agree … no action is needed."*
+
+It cannot do better. §4.3 forbids giving a clarity judge the ground truth, so it has no way
+to separate "clearly explains the situation" from "clearly explains a **fabricated**
+situation". Fluent falsehood reads as clarity. That is a structural limit of clarity
+judging, not a prompt worth tuning.
+
+A single aggregate averages that away, which is precisely how a judge with a reproducible
+weakness ships looking like a measurement. So the traps are gated separately: kappa **and**
+every trap within one level. The judge is recorded as **not usable** as a standalone quality
+signal despite its kappa, and nothing in this repo consumes its output.
+
+Also disclosed: the audit labels are the repo author's own, not an independent panel, so
+inter-annotator agreement is unmeasured and the kappa is one person's consistency with a
+rubric they wrote.
+
+## Source disagreements: one, and it arrived on its own
+
+**v0.1–v0.2 reported zero.** That was correct at the time and is no longer true. The v0.3
+re-freeze (`corpus_snapshot_id = depguard-corpus-2026-07-01-fdd6db1be17a`) produced **one
+genuine disagreement**, from real upstream drift rather than edited data — DECISIONS.md
+§1.3 forbids manufacturing one, and none was manufactured.
+
+**What happened.** Between 2025-08-12 and 2026-07-08, OSV added `GHSA-r5fr-rjxr-66jc` and
+`CVE-2026-4800` as aliases of `GHSA-35jh-r3h4-6jhm` (lodash). The affected **ranges did not
+change**, and the deps.dev extract is **byte-identical** to v0.1's. But deps.dev lists
+`GHSA-r5fr-rjxr-66jc` at lodash **4.17.21**, and OSV now treats it as the same
+vulnerability — so after alias resolution the second source asserts that the **patched
+release is vulnerable** while OSV's range says 4.17.21 is the fix.
+
+It lands on `seed_01`, the case the README leads with. `affected` is unchanged — OSV
+containment governs actionability — but `source_agreement` moves `agree` → `disagree`, and
+P4 then requires a non-empty reconciliation note. Pinned by
+`tests/test_corpus.py::test_the_corpus_now_contains_one_genuine_source_disagreement`, which
+fails loudly if upstream drifts back so the docs cannot quietly go stale.
+
+**Why this matters more than the count.** It is the first time the cross-check earned its
+place on real data: an alias merge made two sources disagree about whether a patched
+release is safe, which is precisely the hazard a second source exists to surface. A scanner
+keyed off deps.dev alone would flag lodash 4.17.21; a tool keyed off OSV alone would not.
+
+**Still true, and still the main caveat:** one disagreement in 38 golden seeds is thin, and the
+structural reason for that has not changed. deps.dev's `advisoryKeys[]` are ingested from
+the GitHub Advisory Database, which is published in OSV format, so the cross-check largely
+compares two re-servings of the same GHSA record and near-tautologically agrees. The
+**load-bearing** value of the second source remains the deps.dev **published-version
+list**, which grounds minimal-fix in real releases — `nofix_ip`, `multi_tar`,
+`already_safe_forge`, `lastaff_jwtgo` and every `minimal_fixed_version` depend on it.
 
 ## `single_source` dominates P4 on the micro-corpus
 
@@ -181,11 +268,10 @@ it is applied to my own work.
 
 ## v0.1's single-agent number did not reproduce
 
-v0.1 shipped `single_agent correctness = 0.5517` from a **single run**. Three fresh runs
-under `--repeats 3` give **0.7931 / 0.6552 / 0.7931** (mean 0.7471). The published figure
-sits *outside* that entire range. Groundedness moved 0.6207 → 0.8046 [0.7931–0.8276]. The
-lone abandonment (`tp_axios`, 0 tool calls) did not recur, so the verdict-state divergence
-count went 1 → 0.
+v0.1 shipped `single_agent correctness = 0.5517` from a **single run**. It has not reproduced
+in either of two later three-run measurements — the most recent gives **0.6842
+[0.6053–0.7368]** on the expanded corpus. The lone abandonment (`tp_axios`, 0 tool calls) did
+not recur either, so the verdict-state divergence count went 1 → 0.
 
 Nothing about the arm changed to cause this — it is ordinary LLM run-to-run variance on a
 29-item set, which is exactly what an n=1 measurement cannot see. Treat every LLM figure in
@@ -224,12 +310,14 @@ cannot contain the answer.
 
 ## Corpus utilisation
 
-- The golden set exercises **26 of the 40** committed advisories, across 24 packages.
-- `verifier.py` declares `{npm, crates.io, Go}` as the minimal-fix scoring tier, but the
-  corpus contains **zero crates.io and zero Go alerts** — two of the three minfix
-  ecosystems are entirely untested.
+- The golden set exercises **33 of the 49** committed advisories; the prose slice covers all 49.
+- **All three declared minimal-fix ecosystems now carry alerts.** `verifier.py` has
+  declared `{npm, crates.io, Go}` as the minimal-fix scoring tier since v0.1 while
+  crates.io and Go had **zero** — two of the three tiers the verifier claims to score were
+  exercised by nothing. v0.3 adds 5 crates.io and 4 Go seeds, so P2 now runs on all three.
+- Ecosystem mix is still uneven: npm 15, PyPI 14, crates.io 5, Go 4.
 - Every trajectory carries exactly **one** alert, so `correctness` is binary per row and
-  multi-alert interactions are untested.
+  multi-alert interactions remain untested.
 
 ## Scope caveats
 

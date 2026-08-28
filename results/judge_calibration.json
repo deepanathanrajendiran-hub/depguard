@@ -1,0 +1,184 @@
+{
+  "n_cases": 19,
+  "threshold": 0.6,
+  "stats": {
+    "n": 19,
+    "exact": 0.6842105263157895,
+    "within_1": 0.9473684210526315,
+    "kappa_quadratic": 0.8366093366093366,
+    "unscored": 0
+  },
+  "judge_usable": false,
+  "per_case": [
+    {
+      "id": "empty",
+      "human": 1,
+      "judge": 1,
+      "delta": 0,
+      "trap": false,
+      "reason": "The note is empty, asserting no conflict and providing no actionable information."
+    },
+    {
+      "id": "bare_assertion",
+      "human": 1,
+      "judge": 1,
+      "delta": 0,
+      "trap": false,
+      "reason": "The note only asserts a disagreement without naming sources, versions, or providing any direction."
+    },
+    {
+      "id": "canned_depguard",
+      "human": 2,
+      "judge": 2,
+      "delta": 0,
+      "trap": false,
+      "reason": "Names two sources and a disagreement but gives no version, claims, or direction."
+    },
+    {
+      "id": "one_sided",
+      "human": 2,
+      "judge": 2,
+      "delta": 0,
+      "trap": false,
+      "reason": "The note names only one source and gives no version or direction, leaving the engineer without actionable information."
+    },
+    {
+      "id": "vague_conflict",
+      "human": 2,
+      "judge": 1,
+      "delta": -1,
+      "trap": false,
+      "reason": "The note only asserts a conflict exists without naming sources, versions, or any actionable direction."
+    },
+    {
+      "id": "states_both",
+      "human": 3,
+      "judge": 3,
+      "delta": 0,
+      "trap": false,
+      "reason": "It names the version and both sources' claims, but leaves the reader to infer which source governs and what action to take."
+    },
+    {
+      "id": "states_both_terse",
+      "human": 3,
+      "judge": 3,
+      "delta": 0,
+      "trap": false,
+      "reason": "It names the version and both sources' claims but does not state which source governs or what action to take."
+    },
+    {
+      "id": "both_plus_mechanism",
+      "human": 3,
+      "judge": 3,
+      "delta": 0,
+      "trap": false,
+      "reason": "The note states both sources' claims for version 4.17.21 but does not specify which source governs or what action to take."
+    },
+    {
+      "id": "clear_with_governing",
+      "human": 4,
+      "judge": 5,
+      "delta": 1,
+      "trap": false,
+      "reason": "Names the specific version, both sources' claims, which source governs, and the concrete consequence that the version is not affected."
+    },
+    {
+      "id": "clear_alias_cause",
+      "human": 4,
+      "judge": 5,
+      "delta": 1,
+      "trap": false,
+      "reason": "Names the specific version, both sources' claims, identifies which one governs, and the consequence is that the pinned version is the fix so it is not vulnerable."
+    },
+    {
+      "id": "clear_but_no_consequence",
+      "human": 4,
+      "judge": 4,
+      "delta": 0,
+      "trap": false,
+      "reason": "Names version, both sources, and the governing source, but does not explicitly state the resulting status of the pinned version."
+    },
+    {
+      "id": "excellent_full",
+      "human": 5,
+      "judge": 5,
+      "delta": 0,
+      "trap": false,
+      "reason": "The note names the pinned version, clearly states both sources' positions, identifies OSV's structured range as governing, and gives the concrete consequence that no upgrade is needed while other scanners may still flag it."
+    },
+    {
+      "id": "excellent_actionable",
+      "human": 5,
+      "judge": 5,
+      "delta": 0,
+      "trap": false,
+      "reason": "Names the exact version, both sources' claims, the governing source, and the concrete action (no action or pin 4.17.22)."
+    },
+    {
+      "id": "correctness_flavoured",
+      "human": 1,
+      "judge": 1,
+      "delta": 0,
+      "trap": true,
+      "reason": "The note only asserts correctness without naming any sources, versions, or actionable direction."
+    },
+    {
+      "id": "confident_but_wrong",
+      "human": 2,
+      "judge": 5,
+      "delta": 3,
+      "trap": true,
+      "reason": "The note clearly states both sources agree the pinned version is unaffected, making the concrete consequence that no action is needed."
+    },
+    {
+      "id": "wall_of_text",
+      "human": 1,
+      "judge": 1,
+      "delta": 0,
+      "trap": false,
+      "reason": "The note only says sources disagree without naming them, a version, or any actionable direction."
+    },
+    {
+      "id": "jargon_only",
+      "human": 2,
+      "judge": 1,
+      "delta": -1,
+      "trap": false,
+      "reason": "The note only mentions an internal disagreement with no source names, version numbers, or actionable direction."
+    },
+    {
+      "id": "wrong_package",
+      "human": 1,
+      "judge": 2,
+      "delta": 1,
+      "trap": true,
+      "reason": "It names the version and both sources but omits each source's claim and which one governs, leaving the engineer to re-read both advisories."
+    },
+    {
+      "id": "hedged",
+      "human": 1,
+      "judge": 1,
+      "delta": 0,
+      "trap": false,
+      "reason": "The note asserts a vague possibility of disagreement without naming any source, version, or actionable direction."
+    }
+  ],
+  "meter": {
+    "calls": 19,
+    "prompt_tokens": 6405,
+    "completion_tokens": 3796,
+    "total_tokens": 10201,
+    "cost_usd": 0.005904950000000001,
+    "fallbacks": 0
+  },
+  "scope": "narrative clarity of reconciliation notes ONLY; never verdict correctness (DECISIONS.md \u00a74.3)",
+  "audit_labels_provenance": "hand-assigned by the repo author against golden/judge_rubric.md before the judge was first run; single annotator, so inter-annotator agreement is unmeasured (see LIMITATIONS.md)",
+  "gate_failures": [
+    "trap confident_but_wrong: off by +3 (max 1)"
+  ],
+  "gate": {
+    "kappa_threshold": 0.6,
+    "max_trap_delta": 1,
+    "note": "Recomputed from the recorded per-case scores when the trap gate was added; no new model calls, same data."
+  }
+}

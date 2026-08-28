@@ -47,10 +47,17 @@ async def _session(fn):
             return await fn(session)
 
 
+def _input_schema(tool):
+    """mcp 2.x renamed Tool.inputSchema to Tool.input_schema. Read whichever the
+    installed major exposes, so this test asserts the CONTRACT (every tool publishes an
+    input schema) rather than one SDK's spelling of it."""
+    return getattr(tool, "inputSchema", None) or getattr(tool, "input_schema", None)
+
+
 def test_lists_exactly_the_six_registry_tools():
     async def go(session):
         tools = await session.list_tools()
-        return {t.name: t.inputSchema for t in tools.tools}
+        return {t.name: _input_schema(t) for t in tools.tools}
 
     schemas = _run(_session(go))
     assert sorted(schemas) == sorted(REGISTRY)

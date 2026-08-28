@@ -1,7 +1,7 @@
 {
-  "corpus_snapshot_id": "depguard-corpus-2026-07-01-c6f3471a2245",
-  "n_trajectories": 29,
-  "n_alerts": 29,
+  "corpus_snapshot_id": "depguard-corpus-2026-07-01-fdd6db1be17a",
+  "n_trajectories": 38,
+  "n_alerts": 38,
   "arms_run": [
     "deterministic_script",
     "single_agent",
@@ -24,11 +24,11 @@
       "correctness": 1.0
     },
     "single_agent": {
-      "tool_selection": 0.896969696969697,
+      "tool_selection": 0.8767145135566188,
       "verdict_yield": 1.0,
-      "plan_adherence": 0.5402298850574713,
-      "groundedness": 0.8275862068965517,
-      "correctness": 0.7931034482758621
+      "plan_adherence": 0.537280701754386,
+      "groundedness": 0.8157894736842105,
+      "correctness": 0.7105263157894737
     },
     "multi_agent": {
       "tool_selection": 1.0,
@@ -41,10 +41,10 @@
   "pairwise_ci": {
     "deterministic_script__vs__single_agent": {
       "tool_selection": {
-        "observed": 0.10303030303030304,
-        "ci_lo": 0.05538140020898643,
-        "ci_hi": 0.15465517241379306,
-        "n": 29,
+        "observed": 0.12328548644338119,
+        "ci_lo": 0.08054226475279107,
+        "ci_hi": 0.1695374800637958,
+        "n": 38,
         "n_boot": 10000,
         "alpha": 0.05,
         "significant": true,
@@ -54,37 +54,37 @@
         "observed": 0.0,
         "ci_lo": 0.0,
         "ci_hi": 0.0,
-        "n": 29,
+        "n": 38,
         "n_boot": 10000,
         "alpha": 0.05,
         "significant": false,
         "degenerate": true
       },
       "plan_adherence": {
-        "observed": 0.4597701149425287,
-        "ci_lo": 0.4425287356321838,
-        "ci_hi": 0.47701149425287354,
-        "n": 29,
+        "observed": 0.46271929824561403,
+        "ci_lo": 0.44956140350877183,
+        "ci_hi": 0.4758771929824561,
+        "n": 38,
         "n_boot": 10000,
         "alpha": 0.05,
         "significant": true,
         "degenerate": false
       },
       "groundedness": {
-        "observed": 0.1724137931034483,
-        "ci_lo": 0.034482758620689655,
-        "ci_hi": 0.3103448275862069,
-        "n": 29,
+        "observed": 0.18421052631578946,
+        "ci_lo": 0.07894736842105263,
+        "ci_hi": 0.3157894736842105,
+        "n": 38,
         "n_boot": 10000,
         "alpha": 0.05,
         "significant": true,
         "degenerate": false
       },
       "correctness": {
-        "observed": 0.20689655172413793,
-        "ci_lo": 0.06896551724137931,
-        "ci_hi": 0.3793103448275862,
-        "n": 29,
+        "observed": 0.2894736842105263,
+        "ci_lo": 0.15789473684210525,
+        "ci_hi": 0.4473684210526316,
+        "n": 38,
         "n_boot": 10000,
         "alpha": 0.05,
         "significant": true,
@@ -96,7 +96,7 @@
         "observed": 0.0,
         "ci_lo": 0.0,
         "ci_hi": 0.0,
-        "n": 29,
+        "n": 38,
         "n_boot": 10000,
         "alpha": 0.05,
         "significant": false,
@@ -106,7 +106,7 @@
         "observed": 0.0,
         "ci_lo": 0.0,
         "ci_hi": 0.0,
-        "n": 29,
+        "n": 38,
         "n_boot": 10000,
         "alpha": 0.05,
         "significant": false,
@@ -116,7 +116,7 @@
         "observed": 0.0,
         "ci_lo": 0.0,
         "ci_hi": 0.0,
-        "n": 29,
+        "n": 38,
         "n_boot": 10000,
         "alpha": 0.05,
         "significant": false,
@@ -126,7 +126,7 @@
         "observed": 0.0,
         "ci_lo": 0.0,
         "ci_hi": 0.0,
-        "n": 29,
+        "n": 38,
         "n_boot": 10000,
         "alpha": 0.05,
         "significant": false,
@@ -136,7 +136,7 @@
         "observed": 0.0,
         "ci_lo": 0.0,
         "ci_hi": 0.0,
-        "n": 29,
+        "n": 38,
         "n_boot": 10000,
         "alpha": 0.05,
         "significant": false,
@@ -145,10 +145,10 @@
     },
     "single_agent__vs__multi_agent": {
       "tool_selection": {
-        "observed": -0.10303030303030304,
-        "ci_lo": -0.15465517241379312,
-        "ci_hi": -0.05538140020898644,
-        "n": 29,
+        "observed": -0.12328548644338119,
+        "ci_lo": -0.1695374800637958,
+        "ci_hi": -0.08054226475279107,
+        "n": 38,
         "n_boot": 10000,
         "alpha": 0.05,
         "significant": true,
@@ -158,37 +158,37 @@
         "observed": 0.0,
         "ci_lo": 0.0,
         "ci_hi": 0.0,
-        "n": 29,
+        "n": 38,
         "n_boot": 10000,
         "alpha": 0.05,
         "significant": false,
         "degenerate": true
       },
       "plan_adherence": {
-        "observed": -0.4597701149425287,
-        "ci_lo": -0.47701149425287354,
-        "ci_hi": -0.4425287356321838,
-        "n": 29,
+        "observed": -0.46271929824561403,
+        "ci_lo": -0.4758771929824561,
+        "ci_hi": -0.44956140350877183,
+        "n": 38,
         "n_boot": 10000,
         "alpha": 0.05,
         "significant": true,
         "degenerate": false
       },
       "groundedness": {
-        "observed": -0.1724137931034483,
-        "ci_lo": -0.3103448275862069,
-        "ci_hi": -0.034482758620689655,
-        "n": 29,
+        "observed": -0.18421052631578946,
+        "ci_lo": -0.3157894736842105,
+        "ci_hi": -0.07894736842105263,
+        "n": 38,
         "n_boot": 10000,
         "alpha": 0.05,
         "significant": true,
         "degenerate": false
       },
       "correctness": {
-        "observed": -0.20689655172413793,
-        "ci_lo": -0.3793103448275862,
-        "ci_hi": -0.06896551724137931,
-        "n": 29,
+        "observed": -0.2894736842105263,
+        "ci_lo": -0.4473684210526316,
+        "ci_hi": -0.15789473684210525,
+        "n": 38,
         "n_boot": 10000,
         "alpha": 0.05,
         "significant": true,
@@ -224,19 +224,19 @@
       "fallbacks": 0
     },
     "single_agent": {
-      "calls": 175,
-      "prompt_tokens": 67652,
-      "completion_tokens": 75846,
-      "total_tokens": 143498,
-      "cost_usd": 0.10169664000000002,
+      "calls": 222,
+      "prompt_tokens": 85519,
+      "completion_tokens": 91692,
+      "total_tokens": 177211,
+      "cost_usd": 0.12395133000000001,
       "fallbacks": 0
     },
     "multi_agent": {
-      "calls": 29,
-      "prompt_tokens": 8201,
-      "completion_tokens": 13435,
-      "total_tokens": 21636,
-      "cost_usd": 0.01699277,
+      "calls": 38,
+      "prompt_tokens": 10797,
+      "completion_tokens": 16553,
+      "total_tokens": 27350,
+      "cost_usd": 0.02112349,
       "fallbacks": 0
     }
   },
@@ -249,21 +249,21 @@
     "single_agent": {
       "n": 3,
       "correctness": [
-        0.7931034482758621,
-        0.6551724137931034,
-        0.7931034482758621
+        0.7105263157894737,
+        0.7368421052631579,
+        0.6052631578947368
       ],
-      "correctness_mean": 0.7471264367816092,
-      "correctness_min": 0.6551724137931034,
-      "correctness_max": 0.7931034482758621,
+      "correctness_mean": 0.6842105263157894,
+      "correctness_min": 0.6052631578947368,
+      "correctness_max": 0.7368421052631579,
       "groundedness": [
-        0.8275862068965517,
-        0.7931034482758621,
-        0.7931034482758621
+        0.8157894736842105,
+        0.8421052631578947,
+        0.7105263157894737
       ],
-      "groundedness_mean": 0.8045977011494253,
-      "groundedness_min": 0.7931034482758621,
-      "groundedness_max": 0.8275862068965517
+      "groundedness_mean": 0.7894736842105262,
+      "groundedness_min": 0.7105263157894737,
+      "groundedness_max": 0.8421052631578947
     },
     "multi_agent": {
       "n": 3,

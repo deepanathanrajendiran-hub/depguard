@@ -29,7 +29,10 @@ OSV_DIR = CORPUS / "osv"
 EXTRACT_DIR = CORPUS / "depsdev_extract"
 ATTRIBUTION = REPO / "NOTICE" / "ATTRIBUTION.md"
 
-CORPUS_ECOSYSTEMS = {"npm", "PyPI"}  # v0.1 micro-corpus (editorial note 3)
+# v0.3: crates.io and Go joined the corpus. verifier.py had declared {npm, crates.io, Go}
+# as the minimal-fix scoring tier since v0.1 while two of those three carried zero alerts,
+# so the tier was asserted by the code and exercised by nothing.
+CORPUS_ECOSYSTEMS = {"npm", "PyPI", "crates.io", "Go"}
 
 
 # --------------------------------------------------------------------------- #
@@ -126,7 +129,7 @@ def test_every_record_parses_and_passes_curation():
             )
 
 
-def test_every_record_ecosystem_is_npm_or_pypi():
+def test_every_record_ecosystem_is_a_corpus_ecosystem():
     for path, rec in _load_records():
         ecos = {
             (e.get("package") or {}).get("ecosystem")
@@ -261,13 +264,17 @@ def test_at_least_one_cc0_and_one_ccby_record_exercise_both_branches():
 # --------------------------------------------------------------------------- #
 
 def test_extract_exists_for_every_corpus_package():
-    system = {"npm": "npm", "PyPI": "pypi"}
+    from depguard.corpus_snapshot import extract_filename
+
+    system = {"npm": "npm", "PyPI": "pypi", "crates.io": "cargo", "Go": "go"}
     for path, rec in _load_records():
         dir_eco = path.parent.name
         sysname = system[dir_eco]
         for e in _surviving_entries(rec, dir_eco):
             name = (e["package"]["name"])
-            f = EXTRACT_DIR / sysname / f"{name}.json"
+            # Go module paths and npm scoped names contain slashes; the extract layout is
+            # flat and percent-encodes them (see corpus_snapshot.extract_filename).
+            f = EXTRACT_DIR / sysname / f"{extract_filename(name)}.json"
             assert f.is_file(), f"missing deps.dev extract for {sysname}/{name}"
 
 
@@ -280,3 +287,36 @@ def test_extract_shape_is_derived_not_raw():
         assert required <= set(ext), f"{f} missing derived fields {required - set(ext)}"
         assert isinstance(ext["versions"], list) and ext["versions"]
         assert isinstance(ext["advisory_keys_by_version"], dict)
+
+
+def test_the_corpus_now_contains_one_genuine_source_disagreement():
+    """v0.1 through v0.2 reported ZERO genuine source-disagreements, and the P4 `disagree`
+    branch was exercised only by a synthetic fixture. Re-freezing for v0.3 produced a real
+    one, from real upstream drift rather than edited data (which DECISIONS.md §1.3
+    forbids).
+
+    Mechanism: between 2025-08-12 and 2026-07-08 OSV added `GHSA-r5fr-rjxr-66jc` and
+    `CVE-2026-4800` as aliases of GHSA-35jh-r3h4-6jhm. The affected RANGES did not change
+    and the deps.dev extract is byte-identical to v0.1's. But deps.dev lists
+    GHSA-r5fr-rjxr-66jc at lodash 4.17.21, and OSV now treats it as the same
+    vulnerability — so after alias resolution the second source asserts that the PATCHED
+    release is vulnerable while OSV's range says it is the fix.
+
+    That is exactly the hazard the cross-check exists to catch, and it lands on `seed_01`,
+    the case the README leads with. `affected` is unchanged (OSV containment governs
+    actionability); only `source_agreement` moves, and P4 then requires a non-empty
+    reconciliation note."""
+    rec = json.loads((OSV_DIR / "npm" / "GHSA-35jh-r3h4-6jhm.json").read_text())
+    assert "GHSA-r5fr-rjxr-66jc" in rec.get("aliases", []), (
+        "the alias that creates the disagreement is gone — upstream drifted again; "
+        "re-check whether seed_01 is still a disagree case before trusting the docs"
+    )
+    gold = json.loads(
+        (REPO / "golden" / "expected" / "seed_01.jsonl").read_text().strip().splitlines()[0]
+    )
+    verdict = gold["gold_verdicts"][0]
+    assert verdict["source_agreement"] == "disagree"
+    assert verdict["reconciliation_note"], "P4 requires a note on disagree (§3.3)"
+    assert verdict["affected"] is False, (
+        "the disagreement must not change actionability — OSV containment governs that"
+    )

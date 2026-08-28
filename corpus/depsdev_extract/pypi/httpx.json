@@ -34,10 +34,10 @@
       "GHSA-h8pj-cxx2-jfg2",
       "PYSEC-2022-183"
     ],
-    "1.0.0.dev3": []
+    "1.0.0.dev5": []
   },
   "captured_at": "2026-07-01",
-  "default_version": "1.0.0.dev3",
+  "default_version": "1.0.0.dev5",
   "name": "httpx",
   "system": "pypi",
   "versions": [
@@ -113,6 +113,8 @@
     "0.9.5",
     "1.0.0.dev1",
     "1.0.0.dev2",
-    "1.0.0.dev3"
+    "1.0.0.dev3",
+    "1.0.0.dev4",
+    "1.0.0.dev5"
   ]
 }

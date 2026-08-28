@@ -25,6 +25,14 @@
       "correctness": 1.0
     },
     {
+      "seed": "fp_gin",
+      "tool_selection": 1.0,
+      "verdict_yield": 1.0,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
       "seed": "fp_handlebars",
       "tool_selection": 1.0,
       "verdict_yield": 1.0,
@@ -33,7 +41,23 @@
       "correctness": 1.0
     },
     {
+      "seed": "fp_hyper",
+      "tool_selection": 1.0,
+      "verdict_yield": 1.0,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
       "seed": "fp_requests",
+      "tool_selection": 1.0,
+      "verdict_yield": 1.0,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "fp_tokio",
       "tool_selection": 1.0,
       "verdict_yield": 1.0,
       "plan_adherence": 1.0,
@@ -57,7 +81,23 @@
       "correctness": 1.0
     },
     {
+      "seed": "lastaff_jwtgo",
+      "tool_selection": 1.0,
+      "verdict_yield": 1.0,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
       "seed": "multi_tar",
+      "tool_selection": 1.0,
+      "verdict_yield": 1.0,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "multi_time",
       "tool_selection": 1.0,
       "verdict_yield": 1.0,
       "plan_adherence": 1.0,
@@ -129,6 +169,14 @@
       "correctness": 1.0
     },
     {
+      "seed": "tp_gin",
+      "tool_selection": 1.0,
+      "verdict_yield": 1.0,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
       "seed": "tp_jinja2",
       "tool_selection": 1.0,
       "verdict_yield": 1.0,
@@ -193,6 +241,14 @@
       "correctness": 1.0
     },
     {
+      "seed": "tp_smallvec",
+      "tool_selection": 1.0,
+      "verdict_yield": 1.0,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
       "seed": "tp_sqlparse",
       "tool_selection": 1.0,
       "verdict_yield": 1.0,
@@ -201,7 +257,23 @@
       "correctness": 1.0
     },
     {
+      "seed": "tp_tokio",
+      "tool_selection": 1.0,
+      "verdict_yield": 1.0,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
       "seed": "tp_ws",
+      "tool_selection": 1.0,
+      "verdict_yield": 1.0,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_xcrypto",
       "tool_selection": 1.0,
       "verdict_yield": 1.0,
       "plan_adherence": 1.0,
@@ -244,11 +316,11 @@
     },
     {
       "seed": "fp_axios",
-      "tool_selection": 1.0,
+      "tool_selection": 0.6666666666666666,
       "verdict_yield": 1.0,
-      "plan_adherence": 0.4166666666666667,
-      "groundedness": 0.0,
-      "correctness": 1.0
+      "plan_adherence": 0.5,
+      "groundedness": 1.0,
+      "correctness": 0.0
     },
     {
       "seed": "fp_cross_spawn",
@@ -259,7 +331,23 @@
       "correctness": 0.0
     },
     {
+      "seed": "fp_gin",
+      "tool_selection": 0.9090909090909091,
+      "verdict_yield": 1.0,
+      "plan_adherence": 0.5,
+      "groundedness": 0.0,
+      "correctness": 1.0
+    },
+    {
       "seed": "fp_handlebars",
+      "tool_selection": 0.6666666666666666,
+      "verdict_yield": 1.0,
+      "plan_adherence": 0.5,
+      "groundedness": 1.0,
+      "correctness": 0.0
+    },
+    {
+      "seed": "fp_hyper",
       "tool_selection": 0.6666666666666666,
       "verdict_yield": 1.0,
       "plan_adherence": 0.5,
@@ -275,6 +363,14 @@
       "correctness": 1.0
     },
     {
+      "seed": "fp_tokio",
+      "tool_selection": 0.8,
+      "verdict_yield": 1.0,
+      "plan_adherence": 0.5,
+      "groundedness": 1.0,
+      "correctness": 0.0
+    },
+    {
       "seed": "fp_ua_parser",
       "tool_selection": 0.6666666666666666,
       "verdict_yield": 1.0,
@@ -284,7 +380,15 @@
     },
     {
       "seed": "fp_urllib3",
-      "tool_selection": 0.8,
+      "tool_selection": 0.6666666666666666,
+      "verdict_yield": 1.0,
+      "plan_adherence": 0.5,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "lastaff_jwtgo",
+      "tool_selection": 1.0,
       "verdict_yield": 1.0,
       "plan_adherence": 0.5833333333333334,
       "groundedness": 1.0,
@@ -292,6 +396,14 @@
     },
     {
       "seed": "multi_tar",
+      "tool_selection": 1.0,
+      "verdict_yield": 1.0,
+      "plan_adherence": 0.5833333333333334,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "multi_time",
       "tool_selection": 1.0,
       "verdict_yield": 1.0,
       "plan_adherence": 0.5833333333333334,
@@ -316,14 +428,6 @@
     },
     {
       "seed": "single_src_pillow",
-      "tool_selection": 1.0,
-      "verdict_yield": 1.0,
-      "plan_adherence": 0.5833333333333334,
-      "groundedness": 1.0,
-      "correctness": 1.0
-    },
-    {
-      "seed": "tp_axios",
       "tool_selection": 0.9090909090909091,
       "verdict_yield": 1.0,
       "plan_adherence": 0.5,
@@ -331,11 +435,19 @@
       "correctness": 1.0
     },
     {
-      "seed": "tp_cross_spawn",
+      "seed": "tp_axios",
       "tool_selection": 1.0,
       "verdict_yield": 1.0,
       "plan_adherence": 0.5833333333333334,
       "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_cross_spawn",
+      "tool_selection": 0.9090909090909091,
+      "verdict_yield": 1.0,
+      "plan_adherence": 0.5,
+      "groundedness": 0.0,
       "correctness": 1.0
     },
     {
@@ -363,6 +475,14 @@
       "correctness": 1.0
     },
     {
+      "seed": "tp_gin",
+      "tool_selection": 0.9090909090909091,
+      "verdict_yield": 1.0,
+      "plan_adherence": 0.5,
+      "groundedness": 0.0,
+      "correctness": 1.0
+    },
+    {
       "seed": "tp_jinja2",
       "tool_selection": 1.0,
       "verdict_yield": 1.0,
@@ -380,10 +500,10 @@
     },
     {
       "seed": "tp_lodash_29mw",
-      "tool_selection": 0.9090909090909091,
+      "tool_selection": 1.0,
       "verdict_yield": 1.0,
-      "plan_adherence": 0.5,
-      "groundedness": 0.0,
+      "plan_adherence": 0.5833333333333334,
+      "groundedness": 1.0,
       "correctness": 1.0
     },
     {
@@ -396,18 +516,18 @@
     },
     {
       "seed": "tp_oauthlib",
-      "tool_selection": 1.0,
-      "verdict_yield": 1.0,
-      "plan_adherence": 0.5833333333333334,
-      "groundedness": 1.0,
-      "correctness": 1.0
-    },
-    {
-      "seed": "tp_prismjs",
       "tool_selection": 0.9090909090909091,
       "verdict_yield": 1.0,
       "plan_adherence": 0.5,
       "groundedness": 0.0,
+      "correctness": 0.0
+    },
+    {
+      "seed": "tp_prismjs",
+      "tool_selection": 1.0,
+      "verdict_yield": 1.0,
+      "plan_adherence": 0.5833333333333334,
+      "groundedness": 1.0,
       "correctness": 1.0
     },
     {
@@ -427,12 +547,28 @@
       "correctness": 1.0
     },
     {
+      "seed": "tp_smallvec",
+      "tool_selection": 1.0,
+      "verdict_yield": 1.0,
+      "plan_adherence": 0.5833333333333334,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
       "seed": "tp_sqlparse",
       "tool_selection": 1.0,
       "verdict_yield": 1.0,
       "plan_adherence": 0.5833333333333334,
       "groundedness": 1.0,
       "correctness": 1.0
+    },
+    {
+      "seed": "tp_tokio",
+      "tool_selection": 0.9090909090909091,
+      "verdict_yield": 1.0,
+      "plan_adherence": 0.5,
+      "groundedness": 0.0,
+      "correctness": 0.0
     },
     {
       "seed": "tp_ws",
@@ -443,8 +579,16 @@
       "correctness": 1.0
     },
     {
-      "seed": "withdrawn_minimist",
+      "seed": "tp_xcrypto",
       "tool_selection": 1.0,
+      "verdict_yield": 1.0,
+      "plan_adherence": 0.5833333333333334,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "withdrawn_minimist",
+      "tool_selection": 0.6666666666666666,
       "verdict_yield": 1.0,
       "plan_adherence": 0.5,
       "groundedness": 1.0,
@@ -452,9 +596,9 @@
     },
     {
       "seed": "withdrawn_pillow",
-      "tool_selection": 1.0,
+      "tool_selection": 0.9090909090909091,
       "verdict_yield": 1.0,
-      "plan_adherence": 0.5833333333333334,
+      "plan_adherence": 0.5,
       "groundedness": 1.0,
       "correctness": 1.0
     },
@@ -493,6 +637,14 @@
       "correctness": 1.0
     },
     {
+      "seed": "fp_gin",
+      "tool_selection": 1.0,
+      "verdict_yield": 1.0,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
       "seed": "fp_handlebars",
       "tool_selection": 1.0,
       "verdict_yield": 1.0,
@@ -501,7 +653,23 @@
       "correctness": 1.0
     },
     {
+      "seed": "fp_hyper",
+      "tool_selection": 1.0,
+      "verdict_yield": 1.0,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
       "seed": "fp_requests",
+      "tool_selection": 1.0,
+      "verdict_yield": 1.0,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "fp_tokio",
       "tool_selection": 1.0,
       "verdict_yield": 1.0,
       "plan_adherence": 1.0,
@@ -525,7 +693,23 @@
       "correctness": 1.0
     },
     {
+      "seed": "lastaff_jwtgo",
+      "tool_selection": 1.0,
+      "verdict_yield": 1.0,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
       "seed": "multi_tar",
+      "tool_selection": 1.0,
+      "verdict_yield": 1.0,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "multi_time",
       "tool_selection": 1.0,
       "verdict_yield": 1.0,
       "plan_adherence": 1.0,
@@ -597,6 +781,14 @@
       "correctness": 1.0
     },
     {
+      "seed": "tp_gin",
+      "tool_selection": 1.0,
+      "verdict_yield": 1.0,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
       "seed": "tp_jinja2",
       "tool_selection": 1.0,
       "verdict_yield": 1.0,
@@ -661,6 +853,14 @@
       "correctness": 1.0
     },
     {
+      "seed": "tp_smallvec",
+      "tool_selection": 1.0,
+      "verdict_yield": 1.0,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
       "seed": "tp_sqlparse",
       "tool_selection": 1.0,
       "verdict_yield": 1.0,
@@ -669,7 +869,23 @@
       "correctness": 1.0
     },
     {
+      "seed": "tp_tokio",
+      "tool_selection": 1.0,
+      "verdict_yield": 1.0,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
       "seed": "tp_ws",
+      "tool_selection": 1.0,
+      "verdict_yield": 1.0,
+      "plan_adherence": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0
+    },
+    {
+      "seed": "tp_xcrypto",
       "tool_selection": 1.0,
       "verdict_yield": 1.0,
       "plan_adherence": 1.0,

@@ -5,10 +5,16 @@ Protocol](https://modelcontextprotocol.io) server. Any stock MCP client (Claude 
 Claude Desktop, …) can install it and call the exact same tools the agents use — each
 returning the same `{ok, data, error}` envelope.
 
-- **Transport:** stdio only. (Streamable HTTP is deliberately out of scope for v0.1 — see
-  the v0.2 backlog.)
-- **Data:** the frozen `corpus/` snapshot only. **No network, no API key.** Verdicts are
-  reproducible against `corpus_snapshot_id = depguard-corpus-2026-07-01-c6f3471a2245`.
+- **Transports:** `stdio` (default), `streamable-http`, `sse`.
+- **SDK:** works on `mcp` 1.x and 2.x. The 2.0 release renamed `FastMCP` to `MCPServer`;
+  the server aliases whichever is installed, and the dependency is pinned `>=1.2,<3` —
+  bounded at the next major, because an unbounded `mcp>=1.2` is what let 2.x silently break
+  a fresh install in the first place.
+- **Data:** the frozen `corpus/` snapshot only. **No network, no API key.** Serving over
+  HTTP is *inbound* and does not grant the tool layer outbound access — the no-network
+  invariant is enforced by a grep in `tests/test_external_tools.py`, and `mcp_server.py` is
+  not on its allowlist. Verdicts are reproducible against
+  `corpus_snapshot_id = depguard-corpus-2026-07-01-c6f3471a2245`.
 
 ## The six tools
 
@@ -97,3 +103,28 @@ release, so it is **not** contained by `GHSA-35jh-r3h4-6jhm`:
 
 Errors are typed envelopes, never exceptions — e.g. an unsupported ecosystem returns
 `{ "ok": false, "data": null, "error": { "code": "BAD_INPUT", "retryable": false, ... } }`.
+
+## Serving over HTTP
+
+stdio is right for a desktop client. For a shared or containerised deployment, use
+Streamable HTTP:
+
+```bash
+depguard-mcp --transport streamable-http --host 0.0.0.0 --port 8000 --path /mcp
+```
+
+| flag | default | meaning |
+|---|---|---|
+| `--transport` | `stdio` | `stdio`, `streamable-http`, or `sse` |
+| `--host` | `127.0.0.1` | bind address; loopback by default, deliberately |
+| `--port` | `8000` | bind port |
+| `--path` | `/mcp` | URL path for streamable-http |
+
+To mount it inside an existing ASGI app instead of running the built-in server, use
+`depguard.mcp_server.mcp.streamable_http_app()`.
+
+**Before exposing it beyond loopback:** the server has no authentication of its own. It
+serves read-only tools over a frozen corpus, so there is nothing to write and no key to
+leak, but it will answer anyone who can reach the port. Put it behind whatever
+authentication your deployment already has. The default bind is `127.0.0.1` so that
+exposing it is an explicit act.

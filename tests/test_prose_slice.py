@@ -86,8 +86,22 @@ def test_redaction_keeps_identity_and_prose_drops_only_ranges():
 
 
 def test_snapshot_id_is_unchanged_by_the_slice():
-    """The corpus directory is never written, so every v0.1 number stays reproducible."""
-    assert SNAP.snapshot_id == "depguard-corpus-2026-07-01-c6f3471a2245"
+    """Redaction is a pure in-memory transform: it must never touch the corpus.
+
+    Asserts the id still matches SNAPSHOT.lock rather than a literal. The literal was
+    wrong to pin here — it made this test fail when the corpus was legitimately re-frozen
+    to add crates.io and Go, which is a snapshot change the slice had nothing to do with.
+    What the slice must guarantee is that IT changes nothing, which is what this checks."""
+    from depguard.corpus_snapshot import compute_snapshot_id, load_snapshot_lock
+
+    lock = load_snapshot_lock(CORPUS)
+    before = SNAP.snapshot_id
+    assert before == lock["corpus_snapshot_id"]
+    for path in sorted((CORPUS / "osv").rglob("*.json"))[:5]:
+        redact_ranges(json.loads(path.read_text()))
+    assert compute_snapshot_id(
+        CORPUS, lock["capture_date"], lock["curation_ruleset_version"]
+    ) == before, "redaction mutated the corpus on disk"
 
 
 # ===================================================================== #

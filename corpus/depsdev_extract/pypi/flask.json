@@ -8,7 +8,9 @@
   "advisory_keys_by_version": {
     "3.1.0": [
       "GHSA-4grg-w6v8-c28g",
-      "GHSA-68rp-wp8r-4726"
+      "GHSA-68rp-wp8r-4726",
+      "PYSEC-2026-1377",
+      "PYSEC-2026-2151"
     ],
     "3.1.3": []
   },

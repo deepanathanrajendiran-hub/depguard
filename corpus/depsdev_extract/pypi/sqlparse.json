@@ -9,23 +9,41 @@
     "0.4.0": [
       "GHSA-27jp-wm6q-gp25",
       "GHSA-2m57-hf25-phgg",
+      "GHSA-3496-9g83-7v6x",
+      "GHSA-f2ff-p2ww-7p4p",
       "GHSA-p5w8-wqhj-9hhf",
+      "GHSA-prg7-hcfm-mfcr",
+      "GHSA-pwgv-4x5q-6m9f",
       "GHSA-rrm6-wvj7-cwh2",
       "PYSEC-2021-333",
-      "PYSEC-2023-87"
+      "PYSEC-2023-87",
+      "PYSEC-2026-1940",
+      "PYSEC-2026-3696",
+      "PYSEC-2026-3697",
+      "PYSEC-2026-3698",
+      "PYSEC-2026-3699"
     ],
     "0.4.1": [
       "GHSA-27jp-wm6q-gp25",
       "GHSA-2m57-hf25-phgg",
+      "GHSA-3496-9g83-7v6x",
+      "GHSA-f2ff-p2ww-7p4p",
       "GHSA-p5w8-wqhj-9hhf",
+      "GHSA-prg7-hcfm-mfcr",
+      "GHSA-pwgv-4x5q-6m9f",
       "GHSA-rrm6-wvj7-cwh2",
       "PYSEC-2021-333",
-      "PYSEC-2023-87"
+      "PYSEC-2023-87",
+      "PYSEC-2026-1940",
+      "PYSEC-2026-3696",
+      "PYSEC-2026-3697",
+      "PYSEC-2026-3698",
+      "PYSEC-2026-3699"
     ],
-    "0.5.5": []
+    "0.6.0": []
   },
   "captured_at": "2026-07-01",
-  "default_version": "0.5.5",
+  "default_version": "0.6.0",
   "name": "sqlparse",
   "system": "pypi",
   "versions": [
@@ -66,6 +84,7 @@
     "0.5.2",
     "0.5.3",
     "0.5.4",
-    "0.5.5"
+    "0.5.5",
+    "0.6.0"
   ]
 }

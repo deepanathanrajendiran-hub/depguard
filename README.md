@@ -24,18 +24,19 @@ exactly and serves as a **reference implementation**. Running the agentic system
 is differential testing: two independent implementations, one oracle, and any disagreement
 is a defect in one of them.
 
-**There were no disagreements.** `multi_agent` reproduces the reference on all 29
-trajectories — every verdict, every minimal-fix, every evidence row, every tool call — with
-**0 planner fallbacks**, so the agreement is genuine LLM planning and not a silent
-fall-through to the rule-based path (instrumented precisely because that artifact would look
-identical). That is a validation result: on the slice where correctness is checkable, the
-agentic system is *checkably correct*.
+**There were no disagreements.** `multi_agent` reproduces the reference on all **38
+trajectories across npm, PyPI, crates.io and Go** — every verdict, every minimal-fix, every
+evidence row, every tool call — with **0 planner fallbacks**, so the agreement is genuine LLM
+planning and not a silent fall-through to the rule-based path (instrumented precisely because
+that artifact would look identical). That is a validation result: on the slice where
+correctness is checkable, the agentic system is *checkably correct* — including on Go
+pseudo-versions and `+incompatible` build metadata.
 
 | arm | correctness | groundedness | latency | cost |
 |---|---|---|---|---|
-| `deterministic_script` | 1.0000 | 1.0000 | 0.6 s | $0.00 |
-| `single_agent` (ReAct) | 0.7471 [0.6552–0.7931] | 0.8046 [0.7931–0.8276] | 782 s | $0.102 |
-| `multi_agent` (planner→executor) | 1.0000 [1.0000–1.0000] | 1.0000 | 114 s | $0.017 |
+| `deterministic_script` | 1.0000 | 1.0000 | 1.0 s | $0.00 |
+| `single_agent` (ReAct) | 0.6842 [0.6053–0.7368] | 0.7895 [0.7105–0.8421] | 963 s | $0.124 |
+| `multi_agent` (planner→executor) | 1.0000 [1.0000–1.0000] | 1.0000 | 154 s | $0.021 |
 
 LLM rows are the mean of 3 runs with the min–max spread; the deterministic arm is
 bit-reproducible. `deterministic_script − multi_agent` = `+0.0000` on every metric, printed
@@ -44,15 +45,14 @@ zero-variance delta is exact agreement, and dressing it up as a `[0, 0]` CI woul
 precision estimate that isn't there.
 
 The comparison also has teeth in the other direction: `single_agent`, the same LLM without
-the planner→executor scaffold, does **not** reach the reference (0.7471 [0.6552–0.7931]). So
+the planner→executor scaffold, does **not** reach the reference (0.6842 [0.6053–0.7368]). So
 the agreement above is a property of this architecture, not something any LLM arm gets for
 free.
 
 **One caveat, stated up front:** v0.1 shipped `single_agent correctness = 0.5517` from a
-single run, and three fresh runs give 0.7931 / 0.6552 / 0.7931 — the old number sits
-*outside* that range. Nothing about the arm changed; that is ordinary run-to-run variance,
-which is exactly what an n=1 measurement cannot see. Every LLM figure here is a mean over
-repeats for that reason.
+single run. It has not reproduced since, in either of two later three-run measurements. That
+is ordinary run-to-run variance, which is exactly what an n=1 measurement cannot see — every
+LLM figure here is a mean over repeats for that reason.
 
 ### Slice 2 — where the reference implementation cannot follow
 
@@ -64,27 +64,27 @@ deterministic path doesn't score badly here, it structurally cannot answer at al
 
 | arm | range accuracy | correct | wrong abstain | wrong range |
 |---|---|---|---|---|
-| `deterministic_script` | **0.1500** | 6 / 40 | 34 | 0 |
-| `regex_baseline` | **0.4750** | 19 / 40 | 11 | 10 |
-| `llm_extractor` | **0.6417** [0.6250–0.6500] | 25.7 / 40 | 1.7 | 12.7 |
+| `deterministic_script` | **0.1837** | 9 / 49 | 40 | 0 |
+| `regex_baseline` | **0.4490** | 22 / 49 | 15 | 12 |
+| `llm_extractor` | **0.6259** [0.6122–0.6327] | 30.7 / 49 | 1.7 | 16.7 |
 
 | Δ | range accuracy, 95% CI |
 |---|---|
-| `llm_extractor − deterministic_script` | **+0.4917 [+0.3417, +0.6500]** * |
-| `llm_extractor − regex_baseline` | **+0.1667 [+0.0665, +0.2833]** * |
-| `regex_baseline − deterministic_script` | +0.3250 [+0.1750, +0.4750] * |
+| `llm_extractor − deterministic_script` | **+0.4422 [+0.3061, +0.5782]** * |
+| `llm_extractor − regex_baseline` | **+0.1769 [+0.0816, +0.2859]** * |
+| `regex_baseline − deterministic_script` | +0.2653 [+0.1429, +0.3878] * |
 
 Accuracy and counts are means over 3 runs (hence the fractions); latency, calls and cost are
 totals over every run paid for; the bootstrap uses each seed's pass rate across runs, so the
-CI matches the mean beside it. 120 LLM calls, **0 extractor fallbacks**, $0.25 all in.
+CI matches the mean beside it. 147 LLM calls, **0 extractor fallbacks**, $0.30 all in.
 
-The script's 6 correct answers are **only** the 6 seeds whose prose names no version at all,
-where abstaining is right. On the 34 records that do describe a range it scores **0/34**.
-The ordering is strict and holds in **every one of the 3 runs**: the LLM wins 6–7 seeds the
+The script's 9 correct answers are **only** the 9 seeds whose prose names no version at all,
+where abstaining is right. On the 40 records that do describe a range it scores **0/40**.
+The ordering is strict and holds in **every one of the 3 runs**: the LLM wins 8 seeds the
 regex loses and loses **none** it wins; the regex beats the script on 13 and loses none.
 
-An earlier version of this table read `regex 0.4000` and `llm − regex +0.2500`. That delta
-was inflated by two bugs in my own baseline — `"2.1.0 through 2.5.3"` was parsed as
+An earlier version of this table read `regex 0.4000` and `llm − regex +0.2500`, on a smaller
+corpus. That delta was inflated by two bugs in my own baseline — `"2.1.0 through 2.5.3"` was parsed as
 *excluding* 2.5.3, and the grammar could not read a `v`-prefixed version at all. Fixing the
 control cost the headline a third of its size. The corrected number is above.
 
@@ -100,25 +100,25 @@ Knowing an arm's score is less useful than knowing which direction it fails in. 
 is visible in an aggregate; it comes out of the per-trajectory rows.
 
 **The LLM over-scopes, in the safe direction.** Its dominant error is dropping the
-advisory's lower bound and claiming everything before the fix is vulnerable — **9 of its 12
+advisory's lower bound and claiming everything before the fix is vulnerable — **most of its
 range errors propose `introduced: "0"`** where the advisory scoped the flaw to a branch
 (`cryptography` 40.0.0, `redis` 4.2.0, `lodash` 4.0.0, `prismjs` 1.14.0…). Counting by
-direction, **10 of 12 over-claim which versions are affected and only 2 under-claim** — it
-produces false positives, which is the thing DepGuard exists to reduce, rather than missing
-live vulnerabilities. Three residual misses are pure boundary slips (`cross-spawn` 6.0.6,
-`hosted-git-info` 2.8.9), the exact inclusive/exclusive semantics the script gets right for
-free.
+direction, the large majority **over-claim** which versions are affected rather than
+under-claiming — it produces false positives, which is the thing DepGuard exists to reduce,
+rather than missing live vulnerabilities. A handful of residual misses are pure boundary
+slips (`cross-spawn` 6.0.6, `hosted-git-info` 2.8.9), the exact inclusive/exclusive semantics
+the script gets right for free.
 
-**The regex baseline fails by giving up.** 11 of its 21 misses are abstentions — prose forms
+**The regex baseline fails by giving up.** 15 of its 27 misses are abstentions — prose forms
 its grammar doesn't cover. It is a good-faith baseline, not a straw man: it handles the
 interleaved branch form ("Django 2.2 before 2.2.28, 3.2 before 3.2.13, and 4.0 before
 4.0.4") correctly, and two rounds of bug-fixing went into it *after* it was first measured.
 
-**The single agent skips evidence, not judgment.** This is the one slice-1 finding that
-*did* reproduce, and it got stronger: across both measured runs its affected/not-affected
-call was correct on **every alert it answered** — 28/28 in v0.1, **29/29** now — and so was
-`withdrawn`. It loses points only on evidence it skipped: `crosscheck_second_source` went
-unrun on **12 of 29** alerts this time (22 of 29 in v0.1), taking `source_agreement` with it.
+**The single agent skips evidence, not judgment.** This is the slice-1 finding that keeps
+reproducing: across every measured run its affected/not-affected call has been correct on
+**every alert it answered**, and so has `withdrawn`. It loses points only on evidence it
+skipped — `crosscheck_second_source` goes unrun on a large fraction of alerts, taking
+`source_agreement` down with it.
 
 Note the split: the *direction* of that finding is stable across runs, the *magnitude* is
 not. Anything quoted as a rate here should be read as one of a handful of samples.
